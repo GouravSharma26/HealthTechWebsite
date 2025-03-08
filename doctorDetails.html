@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Doctor Details</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+</head>
+<body>
+<div class="nav-buttons">
+  <button onclick="goBack()">🔙 Back</button>
+  <button onclick="goHome()">🏠 Home</button>
+</div>
+
+<div class="doctor-details-container">
+  <div class="doctor-card">
+    <img src="https://via.placeholder.com/150" alt="Doctor Image">
+    <h2 id="doctor-name">Dr. Rajesh Sharma</h2>
+    <p><strong>Specialization:</strong> Cardiologist</p>
+    <p><strong>Experience:</strong> Jan 2010 to Dec 2023</p>
+    <p><strong>Contact:</strong> 9876543210</p>
+    <p><strong>Email:</strong> rajesh.sharma@example.com</p>
+    <p><strong>Address:</strong> Mumbai, India</p>
+  </div>
+
+  <div class="doctor-review">
+    <h3>Write a Review</h3>
+    <textarea id="review-text" placeholder="Share your experience"></textarea>
+    <button onclick="submitReview()">Submit Review</button>
+    <div id="review-list"></div>
+  </div>
+
+  <div id="map" style="height: 400px; width: 100%; margin: 20px 0;"></div>
+  <button onclick="showDoctorLocation()">View Location</button>
+  
+ 
+
+  <div class="distance-info">
+    <button onclick="calculateDistance()">Show Distance & Time</button>
+    <p id="distance-info">Distance and estimated time will appear here...</p>
+  </div>
+</div>
+
+<script>
+function showDoctorLocation() {
+  let map = L.map('map').setView([28.7041, 77.1025], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  let doctorMarker = L.marker([28.7041, 77.1025]).addTo(map)
+    .bindPopup('Doctor Location')
+    .openPopup();
+}
+
+function calculateDistance() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(position => {
+      let userLat = position.coords.latitude;
+      let userLng = position.coords.longitude;
+
+      let route = L.Routing.control({
+        waypoints: [
+          L.latLng(userLat, userLng),
+          L.latLng(28.7041, 77.1025)
+        ],
+        routeWhileDragging: true
+      });
+
+      route.on('routesfound', function (e) {
+        let distance = e.routes[0].summary.totalDistance / 1000;
+        let time = Math.round(e.routes[0].summary.totalTime / 60);
+
+        if (distance > 100) {
+          document.getElementById("distance-info").innerHTML = "You are too far!";
+        } else {
+          document.getElementById("distance-info").innerHTML = `Distance: ${distance.toFixed(2)} km<br>Estimated Time: ${time} mins`;
+        }
+      });
+
+      route.on('routingerror', function () {
+        document.getElementById("distance-info").innerHTML = "You are too far!";
+      });
+
+      route.addTo(map);
+    }, () => {
+      alert("Unable to access your location");
+    });
+  } else {
+    alert("Geolocation is not supported by your browser");
+  }
+}
+
+function submitReview() {
+  let review = document.getElementById("review-text").value;
+  if (review) {
+    let reviewList = document.getElementById("review-list");
+    let newReview = document.createElement("p");
+    newReview.textContent = review;
+    reviewList.appendChild(newReview);
+    document.getElementById("review-text").value = "";
+    alert("Review Submitted!");
+  } else {
+    alert("Please write a review before submitting.");
+  }
+}
+</script>
+</body>
+</html>

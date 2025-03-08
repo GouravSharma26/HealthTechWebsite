@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="nav-buttons">
+    <button onclick="goBack()">🔙 Back</button>
+    <button onclick="goHome()">🏠 Home</button>
+  </div>
+
+<div class="form-container">
+  <div class="tabs">
+    <button class="tab-button active" onclick="showTab('patient')">Login as Patient</button>
+    <button class="tab-button" onclick="showTab('doctor')">Login as Doctor</button>
+  </div>
+
+  <div class="form-content">
+    <div class="form patient-form active">
+      <h2>Patient Login</h2>
+      <input type="text" placeholder="Username" required>
+      <input type="password" placeholder="Password" required>
+      <button onclick="loginUser('patient')">Login</button>
+    </div>
+
+    <div class="form doctor-form">
+      <h2>Doctor Login</h2>
+      <input type="text" placeholder="Username" required>
+      <input type="password" placeholder="Password" required>
+      <button onclick="loginUser('doctor')">Login</button>
+    </div>
+  </div>
+</div>
+
+
+
+<p>Don't have an account? <a href="signup.html">Signup</a></p>
+
+<script src="script.js"></script>
+</body>
+</html>

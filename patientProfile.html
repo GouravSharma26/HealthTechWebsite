@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Patient Profile</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="nav-buttons">
+  <button onclick="goBack()">🔙 Back</button>
+  <button onclick="goHome()">🏠 Home</button>
+</div>
+
+<div class="profile-container">
+  <h2>Patient Profile</h2>
+  <form onsubmit="savePatientProfile()">
+    <label>Full Name:</label>
+    <input type="text" placeholder="Enter Full Name" required>
+
+    <label>Email:</label>
+    <input type="email" placeholder="Enter Email" required>
+
+    <label>Contact Number:</label>
+    <input type="text" placeholder="Enter Contact Number">
+
+    <label>Address:</label>
+    <textarea placeholder="Enter Address"></textarea>
+
+    <button type="submit">Save Profile</button>
+  </form>
+</div>
+
+<div class="appointment-history">
+  <h3>Appointment History</h3>
+  <ul id="appointment-list">
+    <li>No Appointments Yet</li>
+  </ul>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+

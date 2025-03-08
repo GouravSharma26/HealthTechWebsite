@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+<div class="page">
+  <h1><i class="ph ph-heart"></i> About Us</h1>
+  <p>Welcome to <b>HealthTech</b>, where technology meets healthcare. Our mission is to revolutionize the way patients connect with doctors.</p>
+  <div class="faq">
+    <div class="faq-item" onclick="toggleDropdown('about1')">
+      <i class="ph ph-users"></i> Connecting Patients
+      <i class="ph ph-caret-down arrow"></i>
+    </div>
+    <div class="faq-dropdown" id="about1">
+      <img src="images/patient.jpg" alt="Connecting Patients" style="width:100%; border-radius: 10px; margin-bottom: 10px;">
+      <p>We provide an easy-to-use platform that helps patients find the best doctors nearby. Patients can browse verified profiles, read reviews, and book appointments effortlessly.</p>
+    </div>
+
+    <div class="faq-item" onclick="toggleDropdown('about2')">
+      <i class="ph ph-stethoscope"></i> Verified Doctors
+      <i class="ph ph-caret-down arrow"></i>
+    </div>
+    <div class="faq-dropdown" id="about2">
+      <img src="images/doctor.jpg" alt="Verified Doctors" style="width:100%; border-radius: 10px; margin-bottom: 10px;">
+      <p>All doctors on our platform are verified professionals with certifications and experience, ensuring you receive top-quality care.</p>
+    </div>
+
+    <div class="faq-item" onclick="toggleDropdown('about3')">
+      <i class="ph ph-shield-check"></i> Secure Appointments
+      <i class="ph ph-caret-down arrow"></i>
+    </div>
+    <div class="faq-dropdown" id="about3">
+      <img src="images/security.jpg" alt="Secure Appointments" style="width:100%; border-radius: 10px; margin-bottom: 10px;">
+      <p>Your personal and medical data are encrypted, and all appointments are secured with industry-standard protocols.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleDropdown(id) {
+    const dropdown = document.getElementById(id);
+    dropdown.classList.toggle("show");
+    const arrow = dropdown.previousElementSibling.querySelector(".arrow");
+    arrow.classList.toggle("rotate");
+  }
+</script>
+</body>
+</html>

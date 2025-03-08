@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Doctor Details</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Add Doctor Details</h1>
+<div class="nav-buttons">
+  <button onclick="goBack()">🔙 Back</button>
+  <button onclick="goHome()">🏠 Home</button>
+</div>
+
+
+
+<form>
+  Name: <input type="text" id="doctor-name"><br>
+  Experience: <input type="date" id="start-date"> to <input type="date" id="end-date"><br>
+  Specialization: <input type="text" id="specialization"><br>
+  Contact: <input type="text" id="contact"><br>
+  Email: <input type="email" id="email"><br>
+  Address: <input type="text" id="address"><br>
+  <button type="button" onclick="addDoctorDetails()">Submit</button>
+</form>
+
+<script src="script.js"></script>
+</body>
+</html>

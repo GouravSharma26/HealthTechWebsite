@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help & Support</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+<div class="page">
+  <h1><i class="ph ph-question"></i> Help & Support</h1>
+  <p>Welcome to our Help & Support section. How can we help you?</p>
+  
+  <input type="text" id="search" placeholder="Search FAQs..." onkeyup="searchFAQs()">
+
+  <div class="faq">
+    <div class="faq-item" onclick="toggleDropdown('faq1')">
+      How to Book an Appointment?
+      <i class="ph ph-caret-down arrow"></i>
+    </div>
+    <div class="faq-dropdown" id="faq1">
+      <ul>
+        <li>Go to the Doctor List Page.</li>
+        <li>Click on the desired Doctor's Tab.</li>
+        <li>Press Book Appointment and choose your date & time.</li>
+        <li>Click Confirm to finalize the appointment.</li>
+      </ul>
+    </div>
+
+    <div class="faq-item" onclick="toggleDropdown('faq2')">
+      How to Find Nearby Doctors?
+      <i class="ph ph-caret-down arrow"></i>
+    </div>
+    <div class="faq-dropdown" id="faq2">
+      <ul>
+        <li>Navigate to the Home Page.</li>
+        <li>Allow Location Access if asked.</li>
+        <li>Click on Doctors Nearby to see nearby doctors.</li>
+      </ul>
+    </div>
+
+    <div class="faq-item" onclick="toggleDropdown('faq3')">
+      How to Reset Password?
+      <i class="ph ph-caret-down arrow"></i>
+    </div>
+    <div class="faq-dropdown" id="faq3">
+      <ul>
+        <li>Go to the Login Page.</li>
+        <li>Click on Forgot Password?.</li>
+        <li>Enter your **Email Address and submit.</li>
+        <li>Follow the **Email Instructions to reset your password.</li>
+      </ul>
+    </div>
+
+    <div class="faq-item" onclick="toggleDropdown('faq4')">
+      How to Update Doctor Profile?
+      <i class="ph ph-caret-down arrow"></i>
+    </div>
+    <div class="faq-dropdown" id="faq4">
+      <ul>
+        <li>Go to your Doctor Profile Page.</li>
+        <li>Click the Edit Button.</li>
+        <li>Make necessary changes.</li>
+        <li>Press **Save** to update your details.</li>
+      </ul>
+    </div>
+
+    <div class="faq-item" onclick="toggleDropdown('faq5')">
+      How to Contact Support?
+      <i class="ph ph-caret-down arrow"></i>
+    </div>
+    <div class="faq-dropdown" id="faq5">
+      <ul>
+        <li>Go to the Contact Us Page.</li>
+        <li>Fill out the Support Form.</li>
+        <li>Submit your request and wait for a response.</li>
+      </ul>
+    </div>
+
+    <div class="faq-item" onclick="toggleDropdown('faq6')">
+      How to Delete an Appointment?
+      <i class="ph ph-caret-down arrow"></i>
+    </div>
+    <div class="faq-dropdown" id="faq6">
+      <ul>
+        <li>Go to your Appointment History.</li>
+        <li>Select the appointment you want to delete.</li>
+        <li>Click the Delete Button.</li>
+        <li>Confirm the deletion.</li>
+      </ul>
+    </div>
+
+    <div class="faq-item" onclick="toggleDropdown('faq7')">
+      How to Enable Dark Mode?
+      <i class="ph ph-caret-down arrow"></i>
+    </div>
+    <div class="faq-dropdown" id="faq7">
+      <ul>
+        <li>Go to the **Menu Tab.</li>
+        <li>Select Change Appearance.</li>
+        <li>Toggle to Dark Mode.</li>
+      </ul>
+    </div>
+
+    <div class="faq-item" onclick="toggleDropdown('faq8')">
+      How to Cancel a Doctor Signup?
+      <i class="ph ph-caret-down arrow"></i>
+    </div>
+    <div class="faq-dropdown" id="faq8">
+      <ul>
+        <li>Click on the Profile Tab.</li>
+        <li>Select Delete Account.</li>
+        <li>Confirm your Cancellation Request.</li>
+      </ul>
+    </div>
+
+    <div class="faq-item" onclick="toggleDropdown('faq9')">
+      How to Edit Contact Details?
+      <i class="ph ph-caret-down arrow"></i>
+    </div>
+    <div class="faq-dropdown" id="faq9">
+      <ul>
+        <li>Navigate to your Profile Page.</li>
+        <li>Click on Edit Profile.</li>
+        <li>Change your Phone Number or Email Address.</li>
+        <li>Press Save.</li>
+      </ul>
+    </div>
+
+    <div class="faq-item" onclick="toggleDropdown('faq10')">
+      How to Logout from Account?
+      <i class="ph ph-caret-down arrow"></i>
+    </div>
+    <div class="faq-dropdown" id="faq10">
+      <ul>
+        <li>Click on the Menu Tab.</li>
+        <li>Press Logout Button.</li>
+        <li>You will be redirected to the Login Page.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<button onclick="window.location.href='contact.html'">Contact Us</button>
+<script>
+  function toggleDropdown(id) {
+    const dropdown = document.getElementById(id);
+    dropdown.classList.toggle("show");
+    const arrow = dropdown.previousElementSibling.querySelector(".arrow");
+    arrow.classList.toggle("rotate");
+  }
+
+  function searchFAQs() {
+    let input = document.getElementById("search").value.toLowerCase();
+    let faqItems = document.querySelectorAll(".faq-item");
+
+    faqItems.forEach(item => {
+      let text = item.textContent.toLowerCase();
+      if (text.includes(input)) {
+        item.style.display = "block";
+      } else {
+        item.style.display = "none";
+      }
+    });
+  }
+</script>
+</body>
+</html>

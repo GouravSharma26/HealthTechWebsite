@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthTech Website</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+</head>
+<body>
+<h1>HealthTech Website</h1>
+<div class="navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #4CAF50; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);">
+  <div class="menu" style="position: relative;">
+    <button class="menu-button" onclick="toggleMenu()">☰ Menu</button>
+    <div class="dropdown" id="menuDropdown" style="left: 0; display: none;">
+      <a href="profile.html">👤 Profile</a>
+      <a href="#" onclick="toggleDarkMode()">🌙 Change Appearance</a>
+      <a href="help.html">❓ Help & Support</a>
+      <a href="about.html">📄 About Us</a>
+      <a href="contact.html">📞 Contact Us</a>
+      <a href="#" onclick="logout()" style="background: #f44336; color: white;">🚪 Logout</a>
+    </div>
+  </div>
+
+  
+  <div>
+    <button onclick="window.location.href='login.html'">Login</button>
+    <button onclick="window.location.href='signup.html'">Signup</button>
+  </div>
+</div>
+
+<div class="content" style="text-align: center; margin-top: 50px;">
+  <div class="hero">
+    <h1>Welcome to HealthTech</h1>
+    <p>Your trusted partner in finding the best doctors nearby.</p>
+    <button class="explore-btn" onclick="window.location.href='doctors.html'">Explore Doctors</button>
+  </div>
+
+<script src="script.js"></script>
+<script>
+  function toggleMenu() {
+    const menu = document.getElementById("menuDropdown");
+    if (menu.style.display === "none" || menu.style.display === "") {
+      menu.style.display = "block";
+    } else {
+      menu.style.display = "none";
+    }
+  }
+</script>
+<div class="footer">
+  <a href="help.html">Help & Support</a>
+  <a href="about.html">About Us</a>
+  <a href="contact.html">Contact Us</a>
+</div>
+</body>
+</html>
