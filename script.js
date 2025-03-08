@@ -112,11 +112,14 @@
   }
   
   window.onclick = function(event) {
-    if (!event.target.closest('.menu')) {
-      let dropdowns = document.querySelectorAll(".dropdown");
-      dropdowns.forEach(dropdown => dropdown.classList.remove("show"));
+    if (!event.target.matches('.menu-button')) {
+      let dropdowns = document.getElementsByClassName("dropdown");
+      for (let i = 0; i < dropdowns.length; i++) {
+        dropdowns[i].classList.remove("show");
+      }
     }
-  }
+  };
+  
   
   function toggleDarkMode() {
     document.body.classList.toggle("dark-mode");

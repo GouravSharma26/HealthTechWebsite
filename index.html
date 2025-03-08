@@ -10,26 +10,28 @@
   <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 </head>
 <body>
-<h1>HealthTech Website</h1>
-<div class="navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #4CAF50; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);">
-  <div class="menu" style="position: relative;">
-    <button class="menu-button" onclick="toggleMenu()">☰ Menu</button>
-    <div class="dropdown" id="menuDropdown" style="left: 0; display: none;">
-      <a href="profile.html">👤 Profile</a>
-      <a href="#" onclick="toggleDarkMode()">🌙 Change Appearance</a>
-      <a href="help.html">❓ Help & Support</a>
-      <a href="about.html">📄 About Us</a>
-      <a href="contact.html">📞 Contact Us</a>
-      <a href="#" onclick="logout()" style="background: #f44336; color: white;">🚪 Logout</a>
+  <div class="navbar" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #4CAF50; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);">
+    <div class="menu" style="position: relative;">
+      <button class="menu-button" onclick="toggleMenu()">☰ Menu</button>
+      <div class="dropdown" id="menuDropdown" style="left: 0; display: none;">
+        <a href="profile.html">👤 Profile</a>
+        <a href="#" onclick="toggleDarkMode()">🌙 Change Appearance</a>
+        <a href="help.html">❓ Help & Support</a>
+        <a href="about.html">📄 About Us</a>
+        <a href="contact.html">📞 Contact Us</a>
+        <a href="#" onclick="logout()" style="background: #f44336; color: white;">🚪 Logout</a>
+      </div>
+    </div>
+    <div class="logo-container" onclick="window.location.href='index.html'" style="display: flex; align-items: center; gap: 10px;">
+      <img src="images/logo.png" alt="HealthTech Logo" class="logo">
+      <h2 style="color: white; margin: 0;">HealthTech</h2>
+    </div>
+    <div>
+      <button onclick="window.location.href='login.html'">Login</button>
+      <button onclick="window.location.href='signup.html'">Signup</button>
     </div>
   </div>
-
   
-  <div>
-    <button onclick="window.location.href='login.html'">Login</button>
-    <button onclick="window.location.href='signup.html'">Signup</button>
-  </div>
-</div>
 
 <div class="content" style="text-align: center; margin-top: 50px;">
   <div class="hero">

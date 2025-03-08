@@ -8,6 +8,15 @@
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
+
+  <div id="navbar-container"></div>
+  <script>
+    fetch("navbar.html")
+      .then(response => response.text())
+      .then(data => document.getElementById("navbar-container").innerHTML = data);
+  </script>
+  
+
 <div class="page">
   <h1><i class="ph ph-question"></i> Help & Support</h1>
   <p>Welcome to our Help & Support section. How can we help you?</p>
@@ -164,5 +173,6 @@
     });
   }
 </script>
+<script src="script.js"></script>
 </body>
 </html>

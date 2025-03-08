@@ -8,6 +8,15 @@
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
+
+  <div id="navbar-container"></div>
+  <script>
+    fetch("navbar.html")
+      .then(response => response.text())
+      .then(data => document.getElementById("navbar-container").innerHTML = data);
+  </script>
+  
+
 <div class="page">
   <h1><i class="ph ph-heart"></i> About Us</h1>
   <p>Welcome to <b>HealthTech</b>, where technology meets healthcare. Our mission is to revolutionize the way patients connect with doctors.</p>
@@ -49,5 +58,6 @@
     arrow.classList.toggle("rotate");
   }
 </script>
+<script src="script.js"></script>
 </body>
 </html>

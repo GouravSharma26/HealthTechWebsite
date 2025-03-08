@@ -443,17 +443,6 @@ button:hover {
   background: #45a049;
 }
 
-.star-rating {
-  font-size: 30px;
-  cursor: pointer;
-  color: #ccc;
-}
-
-.star-rating span:hover,
-.star-rating span:hover ~ span {
-  color: gold;
-}
-
 .profile-container {
   padding: 20px;
   background: white;
@@ -546,7 +535,6 @@ button:hover {
   border-radius: 10px;
   font-size: 20px;
 }
-
 .dropdown {
   display: none;
   position: absolute;
@@ -765,3 +753,39 @@ form button:hover {
   transform: rotate(180deg);
 }
 
+.logo {
+  height: 50px;
+  margin-left: 10px;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background: #4CAF50;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.menu-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: white;
+}
+
+.go-back {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: white;
+}

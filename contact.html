@@ -8,6 +8,15 @@
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
+
+  <div id="navbar-container"></div>
+  <script>
+    fetch("navbar.html")
+      .then(response => response.text())
+      .then(data => document.getElementById("navbar-container").innerHTML = data);
+  </script>
+  
+
 <div class="page">
   <h1><i class="ph ph-phone"></i> Contact Us</h1>
   <p>Need assistance? Reach out to us.</p>
@@ -21,5 +30,6 @@
     <button type="submit"><i class="ph ph-paper-plane"></i> Send</button>
   </form>
 </div>
+<script src="script.js"></script>
 </body>
 </html>

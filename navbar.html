@@ -1,0 +1,19 @@
+<div class="navbar">
+   <button onclick="goBack()">🔙 Back</button>
+    <div class="logo-container" onclick="window.location.href='index.html'">
+      <img src="images/logo.png" alt="HealthTech Logo" class="logo">
+      <h2>HealthTech</h2>
+    </div>
+    <div class="menu" style="position: relative;">
+        <button class="menu-button" onclick="toggleMenu()">☰ Menu</button>
+        <div class="dropdown" id="menuDropdown">
+          <a href="profile.html">👤 Profile</a>
+          <a href="#" onclick="toggleDarkMode()">🌙 Change Appearance</a>
+          <a href="help.html">❓ Help & Support</a>
+          <a href="about.html">📄 About Us</a>
+          <a href="contact.html">📞 Contact Us</a>
+          <a href="#" onclick="logout()" style="background: #f44336; color: white;">🚪 Logout</a>
+      </div>
+    </div>
+  </div>
+  

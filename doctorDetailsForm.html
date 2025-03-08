@@ -6,10 +6,12 @@
 </head>
 <body>
 <h1>Add Doctor Details</h1>
-<div class="nav-buttons">
-  <button onclick="goBack()">🔙 Back</button>
-  <button onclick="goHome()">🏠 Home</button>
-</div>
+<div id="navbar-container"></div>
+<script>
+  fetch("navbar.html")
+    .then(response => response.text())
+    .then(data => document.getElementById("navbar-container").innerHTML = data);
+</script>
 
 
 
