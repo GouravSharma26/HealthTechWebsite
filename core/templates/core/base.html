@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}HealthTech Platform{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+  
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/" class="logo-container">
+      <img src="{% static 'core/images/logo.png' %}" alt="HealthTech Logo" height="40" onerror="this.style.display='none'">
+      <h2>HealthTech</h2>
+    </a>
+    <div class="nav-links">
+      <a href="#" class="btn btn-outline">Explore Doctors</a>
+      {% if user.is_authenticated %}
+        <div class="menu">
+          <button class="btn btn-primary" onclick="toggleMenu()">Profile ▼</button>
+          <div class="dropdown" id="menuDropdown">
+            <a href="#">👤 My Profile</a>
+            <a href="#">📅 Appointments</a>
+            <a href="#">🚪 Logout</a>
+          </div>
+        </div>
+      {% else %}
+        <a href="#" class="btn btn-outline">Login</a>
+        <a href="#" class="btn btn-primary">Signup</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div>
+      <a href="#">Help & Support</a>
+      <a href="#">About Us</a>
+      <a href="#">Contact Us</a>
+    </div>
+    <p class="mt-4">&copy; 2026 HealthTech. All rights reserved.</p>
+  </footer>
+
+  <script src="{% static 'core/js/script.js' %}"></script>
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById('menuDropdown');
+      menu.classList.toggle('show');
+    }
+    
+    // Close dropdown when clicking outside
+    window.onclick = function(event) {
+      if (!event.target.matches('.btn-primary') && !event.target.closest('.menu')) {
+        const dropdowns = document.getElementsByClassName("dropdown");
+        for (let i = 0; i < dropdowns.length; i++) {
+          if (dropdowns[i].classList.contains('show')) {
+            dropdowns[i].classList.remove('show');
+          }
+        }
+      }
+    }
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

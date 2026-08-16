@@ -1,0 +1,38 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Welcome to HealthTech{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>Find Your Perfect Doctor</h1>
+  <p>Connecting you with the best healthcare professionals nearby, instantly and seamlessly. Book appointments and manage your health journey in one place.</p>
+  <a href="#" class="btn btn-primary" style="font-size: 1.2rem; padding: 16px 32px;">Explore Doctors Now</a>
+</section>
+
+<section class="content text-center mt-4">
+  <h2 style="font-size: 2.5rem; color: #0f172a; margin-bottom: 40px; font-weight: 700;">How It Works</h2>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 20px;">
+    
+    <div class="card">
+      <div style="font-size: 3rem; margin-bottom: 20px;">🔍</div>
+      <h3 style="color: #0ea5e9; font-size: 1.5rem; margin-bottom: 15px;">Search</h3>
+      <p style="color: #64748b;">Find specialists and general practitioners in your area using our advanced location services.</p>
+    </div>
+
+    <div class="card">
+      <div style="font-size: 3rem; margin-bottom: 20px;">⭐</div>
+      <h3 style="color: #0ea5e9; font-size: 1.5rem; margin-bottom: 15px;">Review</h3>
+      <p style="color: #64748b;">Read verified reviews from other patients to ensure you are getting the best care possible.</p>
+    </div>
+
+    <div class="card">
+      <div style="font-size: 3rem; margin-bottom: 20px;">📅</div>
+      <h3 style="color: #0ea5e9; font-size: 1.5rem; margin-bottom: 15px;">Book</h3>
+      <p style="color: #64748b;">Schedule an appointment instantly with your chosen doctor and manage it through your profile.</p>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

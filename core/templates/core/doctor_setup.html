@@ -1,0 +1,110 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Doctor Profile Setup{% endblock %}
+
+{% block extra_head %}
+<!-- Leaflet CSS for Map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+  #map-picker {
+    height: 300px;
+    width: 100%;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    border: 1px solid #cbd5e1;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content mt-4 mb-4">
+  <div style="max-width: 800px; margin: 0 auto;">
+    <h2 class="text-center" style="color: var(--primary); margin-bottom: 30px;">Complete Your Doctor Profile</h2>
+    
+    <form method="POST" id="doctor-setup-form">
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <label for="specialization">Specialization</label>
+        <input type="text" id="specialization" name="specialization" placeholder="e.g. Cardiologist" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="experience_years">Years of Experience</label>
+        <input type="number" id="experience_years" name="experience_years" min="0" required>
+      </div>
+
+      <div class="form-group">
+        <label for="contact">Contact Number</label>
+        <input type="text" id="contact" name="contact" required>
+      </div>
+
+      <div class="form-group">
+        <label>Clinic Location</label>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px;">Drag the marker or click on the map to set your clinic's precise location.</p>
+        <div id="map-picker"></div>
+        
+        <input type="hidden" id="latitude" name="latitude" required>
+        <input type="hidden" id="longitude" name="longitude" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="address">Full Address</label>
+        <textarea id="address" name="address" rows="3" placeholder="Enter full textual address..." required></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 15px;">Save Profile</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Default center (e.g. India)
+    var defaultLat = 20.5937;
+    var defaultLng = 78.9629;
+
+    var map = L.map('map-picker').setView([defaultLat, defaultLng], 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var marker = L.marker([defaultLat, defaultLng], {draggable: true}).addTo(map);
+
+    // Try to get user's current location to center map
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var lat = position.coords.latitude;
+        var lng = position.coords.longitude;
+        map.setView([lat, lng], 13);
+        marker.setLatLng([lat, lng]);
+        updateInputs(lat, lng);
+      });
+    }
+
+    function updateInputs(lat, lng) {
+      document.getElementById('latitude').value = lat.toFixed(6);
+      document.getElementById('longitude').value = lng.toFixed(6);
+    }
+
+    // Update on drag end
+    marker.on('dragend', function(e) {
+      var position = marker.getLatLng();
+      updateInputs(position.lat, position.lng);
+    });
+
+    // Update on click
+    map.on('click', function(e) {
+      marker.setLatLng(e.latlng);
+      updateInputs(e.latlng.lat, e.latlng.lng);
+    });
+  });
+</script>
+{% endblock %}
