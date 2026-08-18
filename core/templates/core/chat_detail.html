@@ -1,0 +1,226 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Chat with {{ other_user.get_full_name|default:other_user.username }}{% endblock %}
+
+{% block content %}
+<div class="content mt-4 mb-4">
+  <div style="margin-bottom: 20px;">
+    <a href="{% url 'chat_list' %}" class="btn btn-outline" style="display: inline-flex; align-items: center; padding: 6px 12px; font-size: 0.9rem;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; margin-right: 6px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
+      Back to Messages
+    </a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 350px; gap: 30px; align-items: start;">
+    
+    <!-- Left Column: Chat Area -->
+    <div class="card" style="display: flex; flex-direction: column; height: 70vh; padding: 0; overflow: hidden;">
+      <!-- Chat Header -->
+      <div style="background: var(--bg-color); padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 15px;">
+        {% if other_user.is_doctor and other_user.doctor_profile.profile_picture %}
+          <img src="{{ other_user.doctor_profile.profile_picture.url }}" alt="{{ other_user.username }}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
+        {% else %}
+          <div style="width: 45px; height: 45px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold;">
+            {{ other_user.username|make_list|first|upper }}
+          </div>
+        {% endif %}
+        <div>
+          <h3 style="margin: 0; color: var(--text-dark); font-size: 1.2rem;">{% if other_user.is_doctor %}Dr. {% endif %}{{ other_user.get_full_name|default:other_user.username }}</h3>
+          <p style="margin: 0; color: var(--text-muted); font-size: 0.85rem;">
+            {% if other_user.is_doctor %}{{ other_user.doctor_profile.specialization }}{% else %}Patient{% endif %}
+          </p>
+        </div>
+      </div>
+      
+      <!-- Messages Container -->
+      <div id="messages-container" style="flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background: #f8fafc;">
+        {% for msg in messages_history %}
+          <div style="display: flex; flex-direction: column; max-width: 75%; {% if msg.sender == request.user %}align-self: flex-end;{% else %}align-self: flex-start;{% endif %}">
+            <div style="padding: 12px 16px; border-radius: 18px; line-height: 1.4; font-size: 0.95rem; {% if msg.sender == request.user %}background: var(--primary); color: white; border-bottom-right-radius: 4px;{% else %}background: white; color: var(--text-dark); border: 1px solid var(--border-color); border-bottom-left-radius: 4px;{% endif %}">
+              {{ msg.message|linebreaksbr }}
+            </div>
+            <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; {% if msg.sender == request.user %}text-align: right;{% endif %}">
+              {{ msg.timestamp|date:"M d, g:i a" }}
+            </span>
+          </div>
+        {% empty %}
+          <div style="text-align: center; color: var(--text-muted); margin-top: auto; margin-bottom: auto;">
+            No messages yet. Send a message to start the conversation!
+          </div>
+        {% endfor %}
+      </div>
+      
+      <!-- Message Input -->
+      <div style="padding: 15px 20px; background: white; border-top: 1px solid var(--border-color);">
+        <form method="POST" style="display: flex; gap: 10px; margin: 0; padding: 0; background: none; box-shadow: none; border: none; border-radius: 0; overflow: visible;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="send_message">
+          <textarea name="message" rows="1" placeholder="Type a message..." required style="flex: 1; padding: 12px 15px; border-radius: 20px; border: 1px solid var(--border-color); resize: none; font-family: inherit; font-size: 0.95rem; outline: none;"></textarea>
+          <button type="submit" class="btn btn-primary" style="border-radius: 50%; width: 45px; height: 45px; padding: 0; display: flex; align-items: center; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; transform: rotate(-45deg); margin-left: 4px; margin-top: -2px;"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" /></svg>
+          </button>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Right Column: History & Booking -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      
+      {% if user.is_patient and doctor_obj %}
+      <!-- Booking Widget -->
+      <div class="card">
+        <h4 style="color: var(--primary); margin-bottom: 15px; text-align: center;">Book Follow-up</h4>
+        {% if has_active_appointment %}
+          <div style="text-align: center; padding: 15px 0;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" style="width: 40px; height: 40px; margin-bottom: 10px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <p style="color: #ef4444; font-size: 0.9rem; font-weight: 500; margin-bottom: 0;">You already have an active appointment.</p>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 5px;">Please wait for it to complete.</p>
+          </div>
+        {% else %}
+        <form action="{% url 'doctor_detail' doctor_obj.id %}" method="POST" style="margin: 0; padding: 0; background: none; border: none; box-shadow: none; border-radius: 0; overflow: visible;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="book">
+          
+          <div class="form-group" style="margin-bottom: 15px;">
+            <label style="font-size: 0.9rem; margin-bottom: 5px;">Select Date</label>
+            <input type="date" name="date" id="booking-date" required style="width: 100%; padding: 8px; border-radius: 8px;">
+          </div>
+          
+          <div class="form-group">
+            <label style="font-size: 0.9rem; margin-bottom: 5px;">Select Time Slot</label>
+            <input type="hidden" name="time_slot_id" id="time_slot_id" required>
+            <div id="slots-container" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 150px; overflow-y: auto;">
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Select a date to view slots.</p>
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 0.95rem; margin-top: 15px;">Confirm Booking</button>
+        </form>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Past Appointments History -->
+      <div class="card">
+        <h4 style="color: var(--text-dark); margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Appointment History</h4>
+        
+        {% if shared_appointments %}
+          <div style="display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 5px;">
+            {% for appt in shared_appointments %}
+              <div style="padding: 12px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                  <span style="font-weight: 600; font-size: 0.9rem;">{{ appt.date }}</span>
+                  <span class="badge {% if appt.status == 'Completed' %}badge-success{% elif appt.status == 'Cancelled' %}badge-pending{% else %}badge-pending{% endif %}" style="font-size: 0.7rem;">{{ appt.status }}</span>
+                </div>
+                
+                {% if appt.status == 'Completed' %}
+                  {% if appt.prescription_medicines %}
+                    <div style="margin-top: 8px; font-size: 0.85rem; color: var(--text-dark);">
+                      <strong>Prescription:</strong><br>
+                      {{ appt.prescription_medicines|truncatechars:100 }}
+                    </div>
+                  {% endif %}
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; margin: 20px 0;">No past appointments found.</p>
+        {% endif %}
+      </div>
+      
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Auto-scroll chat to bottom
+  const container = document.getElementById('messages-container');
+  if (container) {
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // Booking logic for the sidebar widget
+  const dateInput = document.getElementById('booking-date');
+  if (dateInput) {
+    // Set min date to today
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.setAttribute('min', today);
+    
+    dateInput.addEventListener('change', function() {
+      const dateStr = this.value;
+      if (!dateStr) return;
+      
+      const slotsContainer = document.getElementById('slots-container');
+      const timeSlotInput = document.getElementById('time_slot_id');
+      {% if doctor_obj %}
+      const doctorId = '{{ doctor_obj.id }}';
+      
+      slotsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">Loading slots...</p>';
+      timeSlotInput.value = '';
+      
+      fetch(`/api/doctor/${doctorId}/slots/?date=${dateStr}`)
+        .then(res => res.json())
+        .then(data => {
+          slotsContainer.innerHTML = '';
+          if (data.slots && data.slots.length > 0) {
+            data.slots.forEach(slot => {
+              const btn = document.createElement('button');
+              btn.type = 'button';
+              btn.className = 'btn btn-outline';
+              btn.style.padding = '6px 10px';
+              btn.style.fontSize = '0.8rem';
+              btn.innerHTML = `${slot.start_time} - ${slot.end_time}<br><small style="font-size:0.7rem; color:var(--text-muted)">Available (${slot.capacity - slot.booked} left)</small>`;
+              
+              if (slot.is_full || slot.is_passed) {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.innerHTML = `${slot.start_time} - ${slot.end_time}<br><small style="font-size:0.7rem; color:red">${slot.is_passed ? 'Time Passed' : 'Full'}</small>`;
+              } else {
+                btn.onclick = function() {
+                  const allBtns = slotsContainer.querySelectorAll('button');
+                  allBtns.forEach(b => {
+                    b.classList.remove('btn-primary');
+                    b.classList.add('btn-outline');
+                  });
+                  btn.classList.remove('btn-outline');
+                  btn.classList.add('btn-primary');
+                  timeSlotInput.value = slot.id;
+                };
+              }
+              slotsContainer.appendChild(btn);
+            });
+          } else {
+            slotsContainer.innerHTML = '<p style="color: #ef4444; font-size: 0.85rem;">No available slots for this date.</p>';
+          }
+        })
+        .catch(err => {
+          slotsContainer.innerHTML = '<p style="color: #ef4444; font-size: 0.85rem;">Error loading slots.</p>';
+        });
+      {% endif %}
+    });
+  }
+  
+  // Auto-refresh chat messages every 3 seconds
+  setInterval(function() {
+    fetch(window.location.href)
+      .then(response => response.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newMessages = doc.getElementById('messages-container').innerHTML;
+        const currentMessages = document.getElementById('messages-container');
+        
+        if (currentMessages.innerHTML !== newMessages) {
+          currentMessages.innerHTML = newMessages;
+          currentMessages.scrollTop = currentMessages.scrollHeight;
+        }
+      })
+      .catch(err => console.error('Error fetching new messages:', err));
+  }, 3000);
+</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+databases:
+  - name: healthtech_db
+    databaseName: healthtech
+    user: healthtech_user
+    plan: free
+
+services:
+  - type: web
+    name: healthtech-web
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn healthtech.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: healthtech_db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: "*"

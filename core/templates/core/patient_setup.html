@@ -1,0 +1,25 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Patient Profile Setup{% endblock %}
+
+{% block content %}
+<div class="content mt-4 mb-4">
+  <div style="max-width: 600px; margin: 0 auto;">
+    <h2 class="text-center" style="color: var(--primary); margin-bottom: 30px;">Complete Your Patient Profile</h2>
+    
+    <div class="card">
+      <form method="POST">
+        {% csrf_token %}
+        
+        <div class="form-group">
+          <label for="contact">Contact Number</label>
+          <input type="text" id="contact" name="contact" placeholder="Your phone number" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 15px;">Save Profile</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,117 +1,392 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Doctor Details</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
-</head>
-<body>
-  <div id="navbar-container"></div>
-  <script>
-    fetch("navbar.html")
-      .then(response => response.text())
-      .then(data => document.getElementById("navbar-container").innerHTML = data);
-  </script>
-  
+{% extends 'core/base.html' %}
+{% load static %}
 
-<div class="doctor-details-container">
-  <div class="doctor-card">
-    <img src="https://via.placeholder.com/150" alt="Doctor Image">
-    <h2 id="doctor-name">Dr. Rajesh Sharma</h2>
-    <p><strong>Specialization:</strong> Cardiologist</p>
-    <p><strong>Experience:</strong> Jan 2010 to Dec 2023</p>
-    <p><strong>Contact:</strong> 9876543210</p>
-    <p><strong>Email:</strong> rajesh.sharma@example.com</p>
-    <p><strong>Address:</strong> Mumbai, India</p>
+{% block title %}Doctor Details{% endblock %}
+
+{% block content %}
+<div class="content mt-4 mb-4">
+  <div class="nav-buttons" style="margin-bottom: 20px;">
+    <a href="{% url 'doctors' %}" class="btn btn-outline" style="display: inline-flex; align-items: center;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 8px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg> 
+      Back to Directory
+    </a>
   </div>
 
-  <div class="doctor-review">
-    <h3>Write a Review</h3>
-    <textarea id="review-text" placeholder="Share your experience"></textarea>
-    <button onclick="submitReview()">Submit Review</button>
-    <div id="review-list"></div>
+  <!-- Hero Header -->
+  <div class="card" style="margin-bottom: 40px; display: flex; flex-wrap: wrap; gap: 30px; align-items: center; background: linear-gradient(135deg, var(--bg-color), #ffffff);">
+    <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: center;">
+      {% if doctor.profile_picture %}
+        <img src="{{ doctor.profile_picture.url }}" alt="Dr. {{ doctor.user.get_full_name }}" style="width: 160px; height: 160px; border-radius: 50%; object-fit: cover; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 4px solid white;">
+      {% else %}
+        <div style="font-size: 5rem; line-height: 1; padding: 25px; background: var(--bg-color); border-radius: 50%; box-shadow: inset 5px 5px 10px rgba(0,0,0,0.05), inset -5px -5px 10px rgba(255,255,255,1);">👨‍⚕️</div>
+      {% endif %}
+    </div>
+    
+    <div style="flex: 1; min-width: 250px;">
+      <h1 style="color: var(--primary); margin: 0 0 5px 0; font-size: 2.2rem;">Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}</h1>
+      <p style="color: var(--accent); font-weight: 600; font-size: 1.2rem; margin: 0 0 10px 0;">{{ doctor.specialization }}</p>
+      
+      {% if doctor.qualifications %}
+        <p style="color: var(--text-muted); font-size: 1rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; color: var(--text-muted);"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72l5 2.73 5-2.73v3.72z"/></svg>
+          {{ doctor.qualifications }}
+        </p>
+      {% endif %}
+      
+      <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px;">
+        <span style="background: #e0f2fe; color: #0369a1; padding: 8px 12px; border-radius: 8px; font-weight: 600; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05), inset -2px -2px 5px rgba(255,255,255,0.8); display: flex; align-items: center; gap: 6px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px;"><path fill-rule="evenodd" d="M7.5 5.25a3 3 0 013-3h3a3 3 0 013 3v.205c.933.085 1.857.197 2.774.334 1.454.218 2.476 1.483 2.476 2.917v3.033c0 1.211-.734 2.352-1.936 2.752A24.726 24.726 0 0112 15.75c-2.73 0-5.36-.442-7.814-1.259-1.202-.4-1.936-1.541-1.936-2.752V8.706c0-1.434 1.022-2.7 2.476-2.917A48.814 48.814 0 017.5 5.455V5.25zm7.5 0v.09a49.01 49.01 0 00-6 0v-.09a1.5 1.5 0 011.5-1.5h3a1.5 1.5 0 011.5 1.5zm-3 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" /></svg>
+          {{ doctor.experience_years }} Years Experience
+        </span>
+        
+        {% if doctor.consultation_fee %}
+          <span style="background: #dcfce7; color: #15803d; padding: 8px 12px; border-radius: 8px; font-weight: 600; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05), inset -2px -2px 5px rgba(255,255,255,0.8); display: flex; align-items: center; gap: 6px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            ₹{{ doctor.consultation_fee }} Consultation Fee
+          </span>
+        {% endif %}
+        
+        {% if doctor.languages_spoken %}
+          <span style="background: #f3e8ff; color: #7e22ce; padding: 8px 12px; border-radius: 8px; font-weight: 600; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05), inset -2px -2px 5px rgba(255,255,255,0.8); display: flex; align-items: center; gap: 6px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px;"><path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.73 3.73 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clip-rule="evenodd" /></svg>
+            Speaks: {{ doctor.languages_spoken }}
+          </span>
+        {% endif %}
+      </div>
+    </div>
   </div>
 
-  <div id="map" style="height: 400px; width: 100%; margin: 20px 0;"></div>
-  <button onclick="showDoctorLocation()">View Location</button>
-  
- 
+  <div style="display: grid; grid-template-columns: 1fr 350px; gap: 40px; align-items: start;">
+    
+    <!-- Left Column (Main Content) -->
+    <div style="display: flex; flex-direction: column; gap: 30px; min-width: 0;">
+      
+      <!-- About -->
+      {% if doctor.about %}
+      <div class="card">
+        <h3 style="color: var(--text-dark); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; color: var(--accent);"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm4.28 10.28a.75.75 0 000-1.06l-3-3a.75.75 0 10-1.06 1.06l1.72 1.72H8.25a.75.75 0 000 1.5h5.69l-1.72 1.72a.75.75 0 101.06 1.06l3-3z" clip-rule="evenodd" /></svg>
+          About Me
+        </h3>
+        <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.7;">{{ doctor.about }}</p>
+      </div>
+      {% endif %}
 
-  <div class="distance-info">
-    <button onclick="calculateDistance()">Show Distance & Time</button>
-    <p id="distance-info">Distance and estimated time will appear here...</p>
+      <!-- Professional Details -->
+      <div class="card">
+        <h3 style="color: var(--text-dark); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; color: var(--accent);"><path fill-rule="evenodd" d="M7.5 5.25a3 3 0 013-3h3a3 3 0 013 3v.205c.933.085 1.857.197 2.774.334 1.454.218 2.476 1.483 2.476 2.917v3.033c0 1.211-.734 2.352-1.936 2.752A24.726 24.726 0 0112 15.75c-2.73 0-5.36-.442-7.814-1.259-1.202-.4-1.936-1.541-1.936-2.752V8.706c0-1.434 1.022-2.7 2.476-2.917A48.814 48.814 0 017.5 5.455V5.25zm7.5 0v.09a49.01 49.01 0 00-6 0v-.09a1.5 1.5 0 011.5-1.5h3a1.5 1.5 0 011.5 1.5zm-3 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" /></svg>
+          Professional Details
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+          <div style="background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center;">
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 5px 0; font-weight: 500;">Specialization</p>
+            <p style="color: var(--text-dark); font-weight: 700; font-size: 1.1rem; margin: 0;">{{ doctor.specialization }}</p>
+          </div>
+          
+          <div style="background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center;">
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 5px 0; font-weight: 500;">Experience</p>
+            <p style="color: var(--text-dark); font-weight: 700; font-size: 1.1rem; margin: 0;">{{ doctor.experience_years }} Years</p>
+          </div>
+          
+          {% if doctor.qualifications %}
+          <div style="background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center;">
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 5px 0; font-weight: 500;">Qualifications</p>
+            <p style="color: var(--text-dark); font-weight: 700; font-size: 1.1rem; margin: 0;">{{ doctor.qualifications }}</p>
+          </div>
+          {% endif %}
+          
+          {% if doctor.languages_spoken %}
+          <div style="background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center;">
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 5px 0; font-weight: 500;">Languages Spoken</p>
+            <p style="color: var(--text-dark); font-weight: 700; font-size: 1.1rem; margin: 0;">{{ doctor.languages_spoken }}</p>
+          </div>
+          {% endif %}
+          
+          {% if doctor.consultation_fee %}
+          <div style="background: #f0fdf4; padding: 15px; border-radius: 12px; border: 1px solid #bbf7d0; display: flex; flex-direction: column; justify-content: center;">
+            <p style="color: #166534; font-size: 0.9rem; margin: 0 0 5px 0; font-weight: 600;">Consultation Fee</p>
+            <p style="color: #15803d; font-weight: 800; font-size: 1.2rem; margin: 0;">₹{{ doctor.consultation_fee }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Clinic Location -->
+      <div class="card">
+        <h3 style="color: var(--text-dark); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; color: var(--accent);"><path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>
+          Clinic Location
+        </h3>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">{{ doctor.address }}</p>
+        <div id="map" style="height: 350px; border-radius: 20px; overflow: hidden; box-shadow: inset 4px 4px 10px rgba(0,0,0,0.1), inset -4px -4px 10px rgba(255,255,255,1); position: relative;"></div>
+        <div id="distance-info" style="margin-top: 15px; padding: 15px; background: #e0f2fe; border-radius: 12px; color: #0369a1; text-align: center; font-weight: 600; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05), inset -2px -2px 5px rgba(255,255,255,0.8);">
+          Calculating distance from your location...
+        </div>
+      </div>
+
+      <!-- Reviews Section -->
+      <div class="card">
+        <h3 style="color: var(--text-dark); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; color: var(--accent);"><path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" /></svg>
+          Patient Reviews
+        </h3>
+        
+        {% if can_review %}
+          <form method="POST" style="margin-bottom: 40px; padding: 25px; background: var(--bg-color); border-radius: 20px; box-shadow: inset 4px 4px 10px rgba(0,0,0,0.05), inset -4px -4px 10px rgba(255,255,255,0.8);">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="review">
+            
+            <h5 style="margin-bottom: 15px; color: var(--primary);">Leave a Review</h5>
+            <div class="form-group">
+              <label>Rating (1-5)</label>
+              <input type="number" name="rating" min="1" max="5" value="5" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Your Review</label>
+              <textarea name="text" rows="3" required placeholder="Share your experience..."></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+          </form>
+        {% elif user.is_authenticated and user.is_patient %}
+          <div style="text-align: center; margin-bottom: 30px; padding: 20px; background: var(--bg-color); border-radius: 12px; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05), inset -2px -2px 5px rgba(255,255,255,0.8);">
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin: 0;">You can leave a review after completing an appointment with this doctor.</p>
+          </div>
+        {% endif %}
+
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          {% for review in reviews %}
+          <div style="padding: 20px; background: white; border-radius: 20px; box-shadow: 4px 4px 10px rgba(0,0,0,0.03), -4px -4px 10px rgba(255,255,255,1), inset 2px 2px 5px rgba(255,255,255,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <strong style="color: var(--text-dark); font-size: 1.1rem;">{{ review.patient.user.username }}</strong>
+                <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">{{ review.created_at|timesince }} ago</div>
+              </div>
+              <div style="display: flex; gap: 2px;">
+                {% for i in "12345"|make_list %}
+                  {% if forloop.counter <= review.rating %}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px; color: #f59e0b;"><path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" /></svg>
+                  {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; color: #cbd5e1;"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.536a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+            <p style="color: var(--text-dark); line-height: 1.5; margin: 0;">{{ review.text }}</p>
+          </div>
+          {% empty %}
+          <div style="text-align: center; padding: 30px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 48px; color: var(--text-muted); margin-bottom: 10px;"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
+            <p style="color: var(--text-muted); font-size: 1.1rem; margin: 0;">No reviews yet. Be the first to leave one!</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column (Sticky Booking Widget) -->
+    <div style="min-width: 0;">
+      <div>
+        {% if user.is_patient %}
+        <div class="card" style="border: 2px solid var(--accent);">
+          <h3 style="color: var(--primary); margin-bottom: 20px; text-align: center;">Book Appointment</h3>
+          {% if has_active_appointment %}
+            <div style="text-align: center; padding: 20px 0;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" style="width: 48px; height: 48px; margin-bottom: 15px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <p style="color: #ef4444; font-size: 0.95rem; font-weight: 500; margin-bottom: 0;">You already have an active appointment with this doctor.</p>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 5px;">Please wait for it to be completed before booking another.</p>
+            </div>
+          {% else %}
+          <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="book">
+            
+            <div class="form-group">
+              <label>Select Date</label>
+              <input type="date" name="date" id="appointment_date" required style="width: 100%; box-sizing: border-box;">
+            </div>
+            <div class="form-group">
+              <label>Select Time Slot</label>
+              <input type="hidden" name="time_slot_id" id="time_slot_id" required>
+              <div id="slots-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; max-height: 250px; overflow-y: auto; padding: 10px; background: var(--bg-color); border-radius: 12px; box-shadow: inset 4px 4px 10px rgba(0,0,0,0.05), inset -4px -4px 10px rgba(255,255,255,0.8);">
+                <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; width: 100%;">Please select a date first.</p>
+              </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 15px; font-size: 1.1rem;">Confirm Booking</button>
+          </form>
+          {% endif %}
+        </div>
+        {% elif not user.is_authenticated %}
+        <div class="card" style="text-align: center;">
+          <h3 style="color: var(--primary); margin-bottom: 15px;">Book Appointment</h3>
+          <p style="color: var(--text-muted); margin-bottom: 20px;">You need an account to book an appointment.</p>
+          <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary" style="width: 100%; display: block; box-sizing: border-box; text-align: center;">Log In to Book</a>
+        </div>
+        {% elif user.is_doctor %}
+        <div class="card" style="text-align: center;">
+          <p style="color: var(--text-muted); margin: 0;">Doctors cannot book appointments.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
   </div>
 </div>
+{% endblock %}
 
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 <script>
-function showDoctorLocation() {
-  let map = L.map('map').setView([28.7041, 77.1025], 13);
+  document.addEventListener('DOMContentLoaded', function() {
+    var latStr = "{{ doctor.latitude|default_if_none:'' }}";
+    var lngStr = "{{ doctor.longitude|default_if_none:'' }}";
+    var docLat = latStr ? parseFloat(latStr) : null;
+    var docLng = lngStr ? parseFloat(lngStr) : null;
+    
+    if (docLat === null || docLng === null) {
+      document.getElementById('map').innerHTML = "<p style='padding: 20px; text-align: center;'>Doctor location not provided yet.</p>";
+      document.getElementById('distance-info').style.display = 'none';
+      return;
+    }
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(map);
+    var map = L.map('map').setView([docLat, docLng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
 
-  let doctorMarker = L.marker([28.7041, 77.1025]).addTo(map)
-    .bindPopup('Doctor Location')
-    .openPopup();
-}
+    setTimeout(function() {
+      map.invalidateSize();
+    }, 500);
 
-function calculateDistance() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(position => {
-      let userLat = position.coords.latitude;
-      let userLng = position.coords.longitude;
+    var docMarker = L.marker([docLat, docLng]).addTo(map).bindPopup("Doctor's Clinic").openPopup();
 
-      let route = L.Routing.control({
-        waypoints: [
-          L.latLng(userLat, userLng),
-          L.latLng(28.7041, 77.1025)
-        ],
-        routeWhileDragging: true
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var userLat = position.coords.latitude;
+        var userLng = position.coords.longitude;
+
+        var userMarker = L.marker([userLat, userLng]).addTo(map).bindPopup('Your Location');
+
+        var routeControl = L.Routing.control({
+          waypoints: [
+            L.latLng(userLat, userLng),
+            L.latLng(docLat, docLng)
+          ],
+          routeWhileDragging: false,
+          showAlternatives: false,
+          lineOptions: {
+            styles: [{color: '#0ea5e9', opacity: 0.8, weight: 6}]
+          },
+          createMarker: function() { return null; } // Don't duplicate markers
+        }).addTo(map);
+
+        routeControl.on('routesfound', function(e) {
+          var distance = e.routes[0].summary.totalDistance / 1000; // km
+          var time = Math.round(e.routes[0].summary.totalTime / 60); // minutes
+          
+          document.getElementById("distance-info").innerHTML = `Distance: ${distance.toFixed(1)} km <br> Estimated Drive: ${time} mins`;
+        });
+        
+        routeControl.on('routingerror', function() {
+          document.getElementById("distance-info").innerHTML = "Could not calculate a route (Too far or no roads found).";
+        });
+
+      }, function() {
+        document.getElementById("distance-info").innerHTML = "Location access denied. Displaying clinic location only.";
       });
+    } else {
+      document.getElementById("distance-info").innerHTML = "Geolocation not supported by your browser.";
+    }
+  });
 
-      route.on('routesfound', function (e) {
-        let distance = e.routes[0].summary.totalDistance / 1000;
-        let time = Math.round(e.routes[0].summary.totalTime / 60);
-
-        if (distance > 100) {
-          document.getElementById("distance-info").innerHTML = "You are too far!";
-        } else {
-          document.getElementById("distance-info").innerHTML = `Distance: ${distance.toFixed(2)} km<br>Estimated Time: ${time} mins`;
+  document.addEventListener('DOMContentLoaded', function() {
+    var dateInput = document.getElementById('appointment_date');
+    if (dateInput) {
+      dateInput.addEventListener('change', function() {
+        var date = this.value;
+        var slotsContainer = document.getElementById('slots-container');
+        var timeSlotInput = document.getElementById('time_slot_id');
+        
+        if (!date) {
+          slotsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Please select a date first.</p>';
+          timeSlotInput.value = '';
+          return;
         }
+        
+        slotsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Loading slots...</p>';
+        timeSlotInput.value = '';
+        
+        fetch(`/api/doctor/{{ doctor.id }}/slots/?date=${date}`)
+          .then(res => res.json())
+          .then(data => {
+            slotsContainer.innerHTML = '';
+            if (data.slots && data.slots.length > 0) {
+              data.slots.forEach(slot => {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn-outline';
+                btn.style.padding = '8px 12px';
+                btn.style.fontSize = '0.9rem';
+                
+                if (slot.is_full || slot.is_passed) {
+                  btn.innerHTML = `${slot.start_time} - ${slot.end_time}<br><small>${slot.is_passed ? 'Time Passed' : 'Full'}</small>`;
+                  btn.style.backgroundColor = '#e2e8f0';
+                  btn.style.color = '#94a3b8';
+                  btn.style.borderColor = '#cbd5e1';
+                  btn.style.cursor = 'not-allowed';
+                  btn.disabled = true;
+                } else {
+                  btn.innerHTML = `${slot.start_time} - ${slot.end_time}<br><small>Available (${slot.capacity - slot.booked} left)</small>`;
+                  
+                  btn.addEventListener('click', function() {
+                    // Deselect all
+                    Array.from(slotsContainer.children).forEach(c => {
+                      if(!c.disabled) {
+                        c.style.backgroundColor = 'transparent';
+                        c.style.color = 'var(--primary)';
+                      }
+                    });
+                    
+                    // Select this
+                    this.style.backgroundColor = 'var(--primary)';
+                    this.style.color = 'white';
+                    timeSlotInput.value = slot.id;
+                  });
+                }
+                slotsContainer.appendChild(btn);
+              });
+            } else {
+              slotsContainer.innerHTML = '<p style="color: #ef4444; font-size: 0.9rem;">No slots available for this doctor.</p>';
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            slotsContainer.innerHTML = '<p style="color: #ef4444; font-size: 0.9rem;">Error loading slots.</p>';
+          });
       });
-
-      route.on('routingerror', function () {
-        document.getElementById("distance-info").innerHTML = "You are too far!";
-      });
-
-      route.addTo(map);
-    }, () => {
-      alert("Unable to access your location");
-    });
-  } else {
-    alert("Geolocation is not supported by your browser");
-  }
-}
-
-function submitReview() {
-  let review = document.getElementById("review-text").value;
-  if (review) {
-    let reviewList = document.getElementById("review-list");
-    let newReview = document.createElement("p");
-    newReview.textContent = review;
-    reviewList.appendChild(newReview);
-    document.getElementById("review-text").value = "";
-    alert("Review Submitted!");
-  } else {
-    alert("Please write a review before submitting.");
-  }
-}
-
+      
+      // Auto-select date if passed via query param
+      var urlParams = new URLSearchParams(window.location.search);
+      var prefillDate = urlParams.get('date');
+      if (prefillDate) {
+        // Wait a small amount to ensure flatpickr is initialized from base.html
+        setTimeout(function() {
+          if (dateInput._flatpickr) {
+            dateInput._flatpickr.setDate(prefillDate);
+          } else {
+            dateInput.value = prefillDate;
+          }
+          dateInput.dispatchEvent(new Event('change'));
+        }, 100);
+      }
+    }
+  });
 </script>
-<script src="script.js"></script>
-</body>
-</html>
+{% endblock %}

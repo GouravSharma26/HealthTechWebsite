@@ -1,0 +1,29 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Verify Account - HealthTech{% endblock %}
+
+{% block extra_head %}
+
+{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 80px auto; text-align: center;">
+  <h2>Verify Your Account</h2>
+  <p style="color: #64748b; margin-top: 10px;">
+    We've sent a 6-digit OTP to your email and phone number.<br>
+    <small>(For development, check your terminal console for the OTP!)</small>
+  </p>
+  
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-danger" style="margin-top:20px;">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+  
+  <form method="POST">
+    {% csrf_token %}
+    <input type="text" name="otp" class="form-control otp-input" maxlength="6" pattern="\d{6}" required placeholder="••••••" autocomplete="off">
+    <button type="submit" class="btn btn-primary">Verify Account</button>
+  </form>
+</div>
+{% endblock %}

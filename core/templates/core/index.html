@@ -3,36 +3,310 @@
 
 {% block title %}Welcome to HealthTech{% endblock %}
 
-{% block content %}
-<section class="hero">
-  <h1>Find Your Perfect Doctor</h1>
-  <p>Connecting you with the best healthcare professionals nearby, instantly and seamlessly. Book appointments and manage your health journey in one place.</p>
-  <a href="#" class="btn btn-primary" style="font-size: 1.2rem; padding: 16px 32px;">Explore Doctors Now</a>
-</section>
-
-<section class="content text-center mt-4">
-  <h2 style="font-size: 2.5rem; color: #0f172a; margin-bottom: 40px; font-weight: 700;">How It Works</h2>
+{% block extra_head %}
+<style>
+  /* Base page override to support claymorphism */
+  body {
+    background-color: #f1f5f9; /* Very soft grayish blue */
+    overflow-x: hidden;
+  }
   
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 20px;">
-    
-    <div class="card">
-      <div style="font-size: 3rem; margin-bottom: 20px;">🔍</div>
-      <h3 style="color: #0ea5e9; font-size: 1.5rem; margin-bottom: 15px;">Search</h3>
-      <p style="color: #64748b;">Find specialists and general practitioners in your area using our advanced location services.</p>
-    </div>
+  /* Abstract floating shapes */
+  .clay-blob {
+    position: absolute;
+    border-radius: 50%;
+    z-index: -1;
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .blob-1 {
+    width: 300px;
+    height: 300px;
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    top: -50px;
+    right: -50px;
+    box-shadow: inset 10px 10px 20px rgba(255,255,255,0.8), inset -10px -10px 20px rgba(14, 165, 233, 0.2);
+  }
+  
+  .blob-2 {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, #f0fdf4, #bbf7d0);
+    bottom: 50px;
+    left: -80px;
+    animation-delay: -3s;
+    box-shadow: inset 8px 8px 16px rgba(255,255,255,0.8), inset -8px -8px 16px rgba(34, 197, 94, 0.2);
+  }
+  
+  .blob-3 {
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(135deg, #fff1f2, #fecdd3);
+    top: 40%;
+    right: 20%;
+    animation-duration: 8s;
+    box-shadow: inset 6px 6px 12px rgba(255,255,255,0.8), inset -6px -6px 12px rgba(244, 63, 94, 0.2);
+  }
 
-    <div class="card">
-      <div style="font-size: 3rem; margin-bottom: 20px;">⭐</div>
-      <h3 style="color: #0ea5e9; font-size: 1.5rem; margin-bottom: 15px;">Review</h3>
-      <p style="color: #64748b;">Read verified reviews from other patients to ensure you are getting the best care possible.</p>
-    </div>
+  @keyframes float {
+    0% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-20px) scale(1.05); }
+    100% { transform: translateY(0px) scale(1); }
+  }
 
-    <div class="card">
-      <div style="font-size: 3rem; margin-bottom: 20px;">📅</div>
-      <h3 style="color: #0ea5e9; font-size: 1.5rem; margin-bottom: 15px;">Book</h3>
-      <p style="color: #64748b;">Schedule an appointment instantly with your chosen doctor and manage it through your profile.</p>
-    </div>
+  /* Section styling */
+  .hero-section {
+    position: relative;
+    padding: 80px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 80vh;
+    gap: 40px;
+  }
 
+  .hero-text {
+    flex: 1;
+    z-index: 10;
+  }
+
+  .hero-text h1 {
+    font-size: 4rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  
+  .hero-text h1 span {
+    color: #0ea5e9;
+  }
+
+  .hero-text p {
+    font-size: 1.25rem;
+    color: #64748b;
+    margin-bottom: 40px;
+    line-height: 1.6;
+    max-width: 500px;
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .hero-image-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+  }
+
+  .hero-image {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 40px;
+    animation: float 5s ease-in-out infinite;
+    /* We don't apply clay shadow to the img itself because it's transparent/3D */
+    filter: drop-shadow(0 20px 30px rgba(0,0,0,0.15));
+  }
+
+  .section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 50px;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+
+  .feature-card {
+    padding: 40px 30px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .feature-icon {
+    width: 80px;
+    height: 80px;
+    background: #e0f2fe;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    box-shadow: inset 4px 4px 8px rgba(255,255,255,0.8), inset -4px -4px 8px rgba(14, 165, 233, 0.1);
+  }
+
+  .feature-card h3 {
+    color: #0f172a;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    font-weight: 700;
+  }
+
+  .feature-card p {
+    color: #64748b;
+    line-height: 1.6;
+  }
+  
+  .doctor-section {
+    background: #ffffff;
+    padding: 80px 20px;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.02);
+    border-radius: 60px 60px 0 0;
+    position: relative;
+    z-index: 5;
+  }
+  
+  .cta-banner {
+    max-width: 1000px;
+    margin: 40px auto 80px;
+    padding: 60px 40px;
+    text-align: center;
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    border-radius: 40px;
+    box-shadow: 
+      10px 10px 30px rgba(14, 165, 233, 0.2), 
+      -10px -10px 30px rgba(255, 255, 255, 0.8),
+      inset 4px 4px 20px rgba(255, 255, 255, 0.4),
+      inset -4px -4px 20px rgba(0, 0, 0, 0.1);
+    color: white;
+    position: relative;
+    z-index: 10;
+  }
+  
+  .cta-banner h2 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: white;
+  }
+  
+  .cta-banner p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+  }
+  
+  .cta-btn {
+    background: white;
+    color: #0ea5e9;
+    box-shadow: 
+      8px 8px 16px rgba(0, 0, 0, 0.1), 
+      -8px -8px 16px rgba(255, 255, 255, 0.2),
+      inset 2px 2px 5px rgba(255, 255, 255, 1),
+      inset -2px -2px 5px rgba(0, 0, 0, 0.05);
+  }
+  
+  .cta-btn:hover {
+    color: #0284c7;
+    background: #f8fafc;
+  }
+
+  @media (max-width: 900px) {
+    .hero-section {
+      flex-direction: column-reverse;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .hero-text h1 { font-size: 3rem; }
+    .hero-buttons { justify-content: center; }
+    .blob-1, .blob-2, .blob-3 { opacity: 0.5; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Decorative Background Shapes -->
+<div class="clay-blob blob-1"></div>
+<div class="clay-blob blob-2"></div>
+<div class="clay-blob blob-3"></div>
+
+<!-- HERO SECTION -->
+<div class="hero-section">
+  <div class="hero-text">
+    <h1>Healthcare made <span>simple</span> & <span>beautiful</span>.</h1>
+    <p>Experience the next generation of patient care. Connect with top doctors, manage your appointments, and take control of your health journey in one intuitive platform.</p>
+    <div class="hero-buttons">
+      <a href="{% url 'doctors' %}" class="btn btn-primary">Find a Doctor</a>
+      <a href="{% url 'signup' %}" class="btn">Join as Provider</a>
+    </div>
   </div>
-</section>
+  <div class="hero-image-wrapper">
+    <!-- Using the generated 3D clay medical illustration -->
+    <img src="{% static 'images/hero_3d.jpg' %}" alt="3D Medical Illustration" class="hero-image">
+  </div>
+</div>
+
+<!-- PATIENTS SECTION -->
+<div style="margin-top: 40px;">
+  <h2 class="section-title">Seamless Experience for Patients</h2>
+  <div class="features-grid">
+    <div class="card feature-card">
+      <div class="feature-icon">🔍</div>
+      <h3>Smart Search</h3>
+      <p>Instantly find general practitioners and specialists in your area. Filter by availability and specialization to find the perfect match.</p>
+    </div>
+    
+    <div class="card feature-card">
+      <div class="feature-icon">📅</div>
+      <h3>Instant Booking</h3>
+      <p>No more waiting on the phone. Select an available time slot and lock in your appointment with a single tap.</p>
+    </div>
+    
+    <div class="card feature-card">
+      <div class="feature-icon">⭐</div>
+      <h3>Verified Reviews</h3>
+      <p>Read real, transparent feedback from other patients. Make informed decisions about who you trust with your health.</p>
+    </div>
+  </div>
+</div>
+
+<!-- DOCTORS SECTION -->
+<div class="doctor-section">
+  <h2 class="section-title">Powerful Tools for Doctors</h2>
+  <div class="features-grid">
+    <div class="card feature-card" style="background: #f8fafc;">
+      <div class="feature-icon" style="background: #dbeafe;">⏰</div>
+      <h3>Flexible Scheduling</h3>
+      <p>Set your available hours, define patient capacity per slot, and let the system handle the booking automatically.</p>
+    </div>
+    
+    <div class="card feature-card" style="background: #f8fafc;">
+      <div class="feature-icon" style="background: #dbeafe;">📍</div>
+      <h3>Clinic Geolocation</h3>
+      <p>Pinpoint your exact clinic location on the interactive map so patients can easily navigate to your office.</p>
+    </div>
+    
+    <div class="card feature-card" style="background: #f8fafc;">
+      <div class="feature-icon" style="background: #dbeafe;">📈</div>
+      <h3>Dashboard Analytics</h3>
+      <p>Track your upcoming appointments, manage cancellations, and monitor your clinic's performance in real-time.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CTA BANNER -->
+<div class="cta-banner">
+  <h2>Ready to transform your health?</h2>
+  <p>Join thousands of patients and doctors already using HealthTech.</p>
+  <a href="{% url 'signup' %}" class="btn cta-btn" style="font-size: 1.25rem; padding: 20px 40px; border-radius: 25px;">Create Your Free Account</a>
+</div>
+
 {% endblock %}

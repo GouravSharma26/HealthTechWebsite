@@ -1,46 +1,614 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Doctor Profile</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div id="navbar-container"></div>
-  <script>
-    fetch("navbar.html")
-      .then(response => response.text())
-      .then(data => document.getElementById("navbar-container").innerHTML = data);
-  </script>
-  
-<div class="profile-container">
-  <h1>Doctor Profile</h1>
-  <div class="profile-card">
-    <div class="profile-header">
-      <img src="https://via.placeholder.com/150" alt="Doctor Image">
-      <h2 id="profile-name">Dr. Name</h2>
-      <p id="profile-specialization">Specialization</p>
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Doctor Dashboard{% endblock %}
+
+{% block content %}
+<div class="content mt-4 mb-4">
+  <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+    
+    <!-- Profile Info -->
+    <div class="card text-center" style="align-self: start;">
+      <div style="margin-bottom: 20px;">
+        {% if profile.profile_picture %}
+          <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary);">
+        {% else %}
+          <div style="font-size: 4rem;">👨‍⚕️</div>
+        {% endif %}
+      </div>
+      <h3 style="color: var(--primary); margin-bottom: 5px;">Dr. {{ profile.user.get_full_name|default:profile.user.username }}</h3>
+      <p style="color: var(--accent); font-weight: 600; margin-bottom: 5px;">{{ profile.specialization }}</p>
+      {% if profile.qualifications %}
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">🎓 {{ profile.qualifications }}</p>
+      {% else %}
+        <div style="margin-bottom: 20px;"></div>
+      {% endif %}
+      
+      {% if profile.about %}
+      <p style="text-align: left; font-size: 0.95rem; margin-bottom: 20px; color: var(--text-dark); background: #f8fafc; padding: 15px; border-radius: 12px; font-style: italic; border-left: 4px solid var(--accent);">
+        "{{ profile.about }}"
+      </p>
+      {% endif %}
+      
+      <div style="text-align: left; background: var(--bg-color); padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05), inset -2px -2px 5px rgba(255,255,255,0.8); display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: flex-start; gap: 10px;">
+          <span style="font-size: 1.2rem;">⭐</span>
+          <div>
+            <strong style="color: var(--text-dark); display: block; font-size: 0.9rem;">Experience</strong>
+            <span style="color: var(--text-muted); font-size: 0.95rem;">{{ profile.experience_years }} Years</span>
+          </div>
+        </div>
+        
+        {% if profile.consultation_fee %}
+        <div style="display: flex; align-items: flex-start; gap: 10px;">
+          <span style="font-size: 1.2rem;">💰</span>
+          <div>
+            <strong style="color: var(--text-dark); display: block; font-size: 0.9rem;">Consultation Fee</strong>
+            <span style="color: var(--text-muted); font-size: 0.95rem;">₹{{ profile.consultation_fee }}</span>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if profile.languages_spoken %}
+        <div style="display: flex; align-items: flex-start; gap: 10px;">
+          <span style="font-size: 1.2rem;">🗣️</span>
+          <div>
+            <strong style="color: var(--text-dark); display: block; font-size: 0.9rem;">Languages</strong>
+            <span style="color: var(--text-muted); font-size: 0.95rem;">{{ profile.languages_spoken }}</span>
+          </div>
+        </div>
+        {% endif %}
+
+        <div style="display: flex; align-items: flex-start; gap: 10px;">
+          <span style="font-size: 1.2rem;">📞</span>
+          <div>
+            <strong style="color: var(--text-dark); display: block; font-size: 0.9rem;">Contact</strong>
+            <span style="color: var(--text-muted); font-size: 0.95rem;">{{ profile.contact }}</span>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: flex-start; gap: 10px;">
+          <span style="font-size: 1.2rem;">🏥</span>
+          <div>
+            <strong style="color: var(--text-dark); display: block; font-size: 0.9rem;">Clinic</strong>
+            <span style="color: var(--text-muted); font-size: 0.95rem;">{{ profile.address }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <a href="{% url 'doctor_setup' %}" class="btn btn-outline" style="width: 100%; margin-bottom: 10px; font-weight: 600;">Edit Clinic Profile</a>
     </div>
-    <div class="profile-body">
-      <label>About Me:</label>
-      <textarea id="profile-about"></textarea>
 
-      <label>Experience:</label>
-      <input type="month" id="start-date"> to <input type="month" id="end-date">
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      
+      <!-- Tabs -->
+      <div style="display: flex; gap: 10px; border-bottom: 2px solid var(--border-color); padding-bottom: 0;">
+        <button id="tab-appointments" class="btn btn-primary" style="border-radius: 8px 8px 0 0;" onclick="switchTab('appointments')">Appointments</button>
+        <button id="tab-manage" class="btn btn-outline" style="border-radius: 8px 8px 0 0; border-bottom: none;" onclick="switchTab('manage')">Manage Slots</button>
+      </div>
 
-      <label>Contact Number:</label>
-      <input type="text" id="profile-contact">
+      <!-- Manage Slots Section -->
+      <div id="section-manage" style="display: none;">
+        
+        <div class="card" style="margin-bottom: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: none;">
+          <h4 style="color: var(--text-dark); margin-bottom: 15px;">1. Select Shift & Generate Slots</h4>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <div class="shift-toggles" style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <style>
+                .shift-btn {
+                  padding: 10px 20px;
+                  border: 1px solid var(--border-color);
+                  border-radius: 8px;
+                  background: white;
+                  cursor: pointer;
+                  font-weight: 500;
+                  transition: all 0.2s;
+                  display: flex;
+                  align-items: center;
+                }
+                input[name="shift"]:checked + .shift-btn {
+                  background: var(--primary);
+                  color: white;
+                  border-color: var(--primary);
+                }
+                input[name="shift"]:checked + .shift-btn svg {
+                  color: white !important;
+                }
+              </style>
+              <label>
+                <input type="radio" name="shift" value="morning" checked onchange="updateShift()" style="display:none;">
+                <div class="shift-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; margin-right: 8px; color: #eab308;"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" /></svg>
+                  Morning (8 AM - 8 PM)
+                </div>
+              </label>
+              <label>
+                <input type="radio" name="shift" value="night" onchange="updateShift()" style="display:none;">
+                <div class="shift-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; margin-right: 8px; color: #818cf8;"><path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd" /></svg>
+                  Night (8 PM - 8 AM)
+                </div>
+              </label>
+              <label>
+                <input type="radio" name="shift" value="24hrs" onchange="updateShift()" style="display:none;">
+                <div class="shift-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; margin-right: 8px; color: #ef4444;"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clip-rule="evenodd" /></svg>
+                  24 Hours
+                </div>
+              </label>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="openSlotModal()" style="padding: 12px 24px; font-weight: 600; border-radius: 8px;">Select Available Slots</button>
+          </div>
+        </div>
 
-      <label>Email:</label>
-      <input type="email" id="profile-email">
+        <div class="card">
+          <h4 style="color: var(--text-dark); margin-bottom: 20px;">2. Set Slot Capacities</h4>
+          <form method="POST" action="{% url 'update_slot_capacity' %}" id="capacity-form">
+            {% csrf_token %}
+            <div style="margin-bottom: 20px; padding: 20px; background: white; border: 1px solid var(--border-color); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+              <div>
+                <h5 style="margin-bottom: 5px; color: var(--text-dark);">Global Capacity</h5>
+                <label style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.95rem; cursor: pointer;">
+                  <input type="checkbox" id="keep-same-toggle" name="apply_to_all" onchange="toggleMasterCapacity()" style="width: 18px; height: 18px; accent-color: var(--primary);"> Keep capacity same for all slots
+                </label>
+              </div>
+              <div id="master-capacity-container" style="display: none; align-items: center; gap: 10px;">
+                <label style="font-weight: 600;">Capacity:</label>
+                <input type="number" id="master-capacity" name="master_capacity" value="{% if slots %}{{ slots.0.capacity }}{% else %}1{% endif %}" min="1" max="8" style="width: 80px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; text-align: center;" onchange="updateMasterCapacity()">
+              </div>
+            </div>
 
-      <label>Address:</label>
-      <input type="text" id="profile-address">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              {% for slot in slots %}
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--bg-color); border-radius: 8px;">
+                <div>
+                  <strong>{{ slot.start_time|time:"h:i A" }} - {{ slot.end_time|time:"h:i A" }}</strong>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                  <div>
+                    <label style="font-size: 0.9rem;">Capacity:</label>
+                    <input type="number" name="capacity_{{ slot.id }}" value="{{ slot.capacity }}" min="1" max="8" class="slot-capacity-input" style="width: 60px; padding: 5px;">
+                  </div>
+                  <button type="button" class="btn btn-outline" style="padding: 4px 8px; color: #ef4444; border-color: #ef4444; font-size: 0.8rem;" onclick="deleteSlot({{ slot.id }})">Delete</button>
+                </div>
+              </div>
+              {% empty %}
+              <p style="color: var(--text-muted); text-align: center;">No slots configured yet.</p>
+              {% endfor %}
+            </div>
+            {% if slots %}
+            <div style="margin-top: 20px; text-align: right;">
+              <button type="submit" class="btn btn-primary">Save Capacities</button>
+            </div>
+            {% endif %}
+          </form>
+        </div>
+      </div>
 
-      <button onclick="saveProfile()">Save Profile</button>
+      <!-- Appointments Dashboard -->
+      <div id="section-appointments" class="card">
+        <h3 style="color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">Upcoming Appointments</h3>
+        
+        {% if appointments %}
+          <div style="display: flex; flex-direction: column; gap: 15px;">
+            {% for appt in appointments %}
+              {% if appt.status != 'Completed' and appt.status != 'Cancelled' %}
+            <div style="display: flex; flex-direction: column; background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px solid {% if 'Requested' in appt.status %}#f59e0b{% else %}var(--border-color){% endif %};">
+              
+              {% if appt.auto_approved %}
+                <div style="background: #fef3c7; color: #b45309; padding: 8px; border-radius: 6px; margin-bottom: 10px; font-size: 0.85rem; font-weight: bold; text-align: center;">
+                  Notice: No active action taken. Patient's request was auto-approved.
+                </div>
+              {% endif %}
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div>
+                  <h4 style="color: var(--text-dark);">Patient: {{ appt.patient.user.get_full_name|default:appt.patient.user.username }}</h4>
+                  <p style="color: var(--text-muted); font-size: 0.9rem;">Contact: {{ appt.patient.contact }}</p>
+                </div>
+                <div class="text-center">
+                  <p style="font-weight: 600;">{{ appt.date }}</p>
+                  <p style="color: var(--primary); font-weight: 700;">{{ appt.time }}</p>
+                  <span class="badge {% if appt.status == 'Confirmed' %}badge-success{% elif 'Requested' in appt.status %}badge-pending{% else %}badge-pending{% endif %}" style="margin-top: 5px;">{{ appt.status }}</span>
+                </div>
+              </div>
+
+              {% if 'Requested' in appt.status %}
+                <div style="background: white; padding: 15px; border-radius: 8px; border: 1px dashed #f59e0b; margin-top: 10px;">
+                  <h5 style="color: #d97706; margin-bottom: 10px;">⚠️ Patient Request Pending</h5>
+                  <p><strong>Reason:</strong> {{ appt.patient_reason }}</p>
+                  
+                  {% if appt.status == 'Reschedule Requested' %}
+                    <p><strong>Requested New Time:</strong> {{ appt.reschedule_date }} at {{ appt.reschedule_time }}</p>
+                  {% endif %}
+
+                  <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <form method="POST" style="margin: 0; padding: 0; background: none; border: none; box-shadow: none; display: inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="approve">
+                      <input type="hidden" name="appointment_id" value="{{ appt.id }}">
+                      <button type="submit" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;">Approve Request</button>
+                    </form>
+
+                    <button type="button" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.85rem; color: #ef4444; border-color: #ef4444;" onclick="document.getElementById('reject-{{ appt.id }}').style.display='block';">Reject & Cancel</button>
+                  </div>
+
+                  <!-- Reject Form -->
+                  <form id="reject-{{ appt.id }}" method="POST" style="display: none; margin-top: 15px; background: var(--bg-color); padding: 15px; border-radius: 8px; box-shadow: none;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reject">
+                    <input type="hidden" name="appointment_id" value="{{ appt.id }}">
+                    <h6 style="color: #ef4444; margin-bottom: 10px;">Provide Cancellation Reason</h6>
+                    <div style="margin-bottom: 10px;"><input type="text" name="reason" placeholder="Why are you canceling this?" required style="padding: 8px;"></div>
+                    <div style="display: flex; gap: 10px;">
+                      <button type="submit" class="btn btn-primary" style="background: #ef4444; padding: 6px 12px; font-size: 0.8rem;">Confirm Rejection</button>
+                      <button type="button" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;" onclick="document.getElementById('reject-{{ appt.id }}').style.display='none';">Cancel</button>
+                    </div>
+                  </form>
+                </div>
+              {% endif %}
+
+              {% if appt.status == 'Pending' %}
+                <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 10px;">
+                  <h5 style="color: var(--primary); margin-bottom: 10px;">New Appointment Request</h5>
+                  <div style="display: flex; gap: 10px;">
+                    <form method="POST" style="margin: 0; padding: 0; background: none; border: none; box-shadow: none; display: inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="confirm_appointment">
+                      <input type="hidden" name="appointment_id" value="{{ appt.id }}">
+                      <button type="submit" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;">Confirm Appointment</button>
+                    </form>
+                    <button type="button" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.85rem; color: #ef4444; border-color: #ef4444;" onclick="document.getElementById('cancel-appt-{{ appt.id }}').style.display='block';">Cancel Appointment</button>
+                  </div>
+
+                  <!-- Cancel Form -->
+                  <form id="cancel-appt-{{ appt.id }}" method="POST" style="display: none; margin-top: 15px; background: var(--bg-color); padding: 15px; border-radius: 8px; box-shadow: none;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="cancel_appointment">
+                    <input type="hidden" name="appointment_id" value="{{ appt.id }}">
+                    <h6 style="color: #ef4444; margin-bottom: 10px;">Provide Cancellation Reason</h6>
+                    <div style="margin-bottom: 10px;"><input type="text" name="reason" placeholder="Why are you canceling this?" required style="padding: 8px;"></div>
+                    <div style="display: flex; gap: 10px;">
+                      <button type="submit" class="btn btn-primary" style="background: #ef4444; padding: 6px 12px; font-size: 0.8rem;">Confirm Cancellation</button>
+                      <button type="button" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;" onclick="document.getElementById('cancel-appt-{{ appt.id }}').style.display='none';">Nevermind</button>
+                    </div>
+                  </form>
+                </div>
+              {% endif %}
+
+              {% if appt.status == 'Confirmed' %}
+                <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; margin-top: 10px;">
+                  <h5 style="color: #166534; margin-bottom: 10px;">Action Required: Post-Appointment</h5>
+                  <button type="button" class="btn btn-primary" style="background: #16a34a; border-color: #16a34a; padding: 6px 12px; font-size: 0.85rem;" onclick="document.getElementById('complete-appt-{{ appt.id }}').style.display='block';">Complete & Prescribe</button>
+                  
+                  <form id="complete-appt-{{ appt.id }}" method="POST" enctype="multipart/form-data" style="display: none; margin-top: 15px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="complete_with_prescription">
+                    <input type="hidden" name="appointment_id" value="{{ appt.id }}">
+                    
+                    <h4 style="color: var(--primary); margin-bottom: 15px;">Write Prescription</h4>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                      <label style="font-weight: 600; font-size: 0.9rem;">Medicines</label>
+                      <textarea name="medicines" rows="3" placeholder="e.g. Paracetamol 500mg, Amoxicillin 250mg" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px;" required></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                      <label style="font-weight: 600; font-size: 0.9rem;">Instructions</label>
+                      <textarea name="instructions" rows="2" placeholder="e.g. Take twice a day after meals" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px;"></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                      <label style="font-weight: 600; font-size: 0.9rem;">Attach Document (Optional)</label>
+                      <input type="file" name="prescription_document" style="width: 100%; padding: 10px; border: 1px dashed var(--border-color); border-radius: 6px;">
+                      <small style="color: var(--text-muted);">Upload receipts, test results, or scanned files.</small>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 20px;">
+                      <label style="font-weight: 600; font-size: 0.9rem;">Suggest Follow-up Date (Optional)</label>
+                      <input type="date" name="follow_up_date" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px;">
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                      <button type="button" class="btn btn-outline" onclick="document.getElementById('complete-appt-{{ appt.id }}').style.display='none';">Cancel</button>
+                      <button type="submit" class="btn btn-primary">Submit & Complete Appointment</button>
+                    </div>
+                  </form>
+                </div>
+              {% endif %}
+
+              {% if appt.status == 'Cancelled' and appt.doctor_reason %}
+                <div style="background: #fee2e2; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem;">
+                  <strong style="color: #b91c1c;">Your Cancellation Reason:</strong> {{ appt.doctor_reason }}
+                </div>
+              {% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+          </div>
+
+          <div style="margin-top: 30px;">
+            <button class="btn btn-outline" style="width: 100%; display: flex; justify-content: space-between; align-items: center;" onclick="const el = document.getElementById('previous-appointments-list'); el.style.display = (el.style.display === 'none' ? 'flex' : 'none');">
+              <span style="font-weight: 600;">Previous Appointments (Completed / Cancelled)</span>
+              <span>▼</span>
+            </button>
+            <div id="previous-appointments-list" style="display: none; flex-direction: column; gap: 15px; margin-top: 15px;">
+              {% for appt in appointments %}
+                {% if appt.status == 'Completed' or appt.status == 'Cancelled' %}
+                  <div style="display: flex; flex-direction: column; background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); opacity: 0.8;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                      <div>
+                        <h4 style="color: var(--text-dark);">Patient: {{ appt.patient.user.get_full_name|default:appt.patient.user.username }}</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Contact: {{ appt.patient.contact }}</p>
+                      </div>
+                      <div class="text-center">
+                        <p style="font-weight: 600;">{{ appt.date }}</p>
+                        <p style="color: var(--primary); font-weight: 700;">{{ appt.time }}</p>
+                        <span class="badge {% if appt.status == 'Completed' %}badge-success{% else %}badge-pending{% endif %}" style="margin-top: 5px;">{{ appt.status }}</span>
+                      </div>
+                    </div>
+                    {% if appt.status == 'Cancelled' and appt.doctor_reason %}
+                      <div style="background: #fee2e2; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem;">
+                        <strong style="color: #b91c1c;">Cancellation Reason:</strong> {{ appt.doctor_reason }}
+                      </div>
+                    {% elif appt.status == 'Completed' %}
+                      <div style="margin-top: 10px; padding: 10px; background: #f8fafc; border-radius: 6px; font-size: 0.9rem; color: var(--text-dark);">
+                        <strong>Prescription:</strong> {{ appt.prescription_medicines|truncatechars:80|default:"No medicines prescribed" }}
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        {% else %}
+          <p style="color: var(--text-muted); text-align: center; padding: 20px;">No upcoming appointments.</p>
+        {% endif %}
+      </div>
     </div>
   </div>
 </div>
 
-<script src="script.js"></script>
-</body>
-</html>
+<!-- Slot Selection Modal -->
+<div id="slot-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+    <h3 style="color: var(--primary); margin-bottom: 20px;">Select Time Slots</h3>
+    <div id="modal-slots-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px;">
+      <!-- Slots will be generated here via JS -->
+    </div>
+    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+      <button type="button" class="btn btn-outline" onclick="closeSlotModal()">Cancel</button>
+      <button type="button" class="btn btn-primary" onclick="saveSelectedSlots()">Save</button>
+    </div>
+  </div>
+</div>
+
+<form id="save-slots-form" method="POST" action="{% url 'manage_time_slots' %}" style="display:none;">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="save_slots">
+  <input type="hidden" name="selected_slots" id="selected-slots-input">
+</form>
+
+<form id="delete-slot-form" method="POST" action="{% url 'manage_time_slots' %}" style="display:none;">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="delete_slot">
+  <input type="hidden" name="slot_id" id="delete-slot-id">
+</form>
+
+<script>
+  function switchTab(tab) {
+    sessionStorage.setItem('activeDoctorTab', tab);
+    if (tab === 'appointments') {
+      document.getElementById('section-appointments').style.display = 'block';
+      document.getElementById('section-manage').style.display = 'none';
+      document.getElementById('tab-appointments').className = 'btn btn-primary';
+      document.getElementById('tab-manage').className = 'btn btn-outline';
+    } else {
+      document.getElementById('section-appointments').style.display = 'none';
+      document.getElementById('section-manage').style.display = 'block';
+      document.getElementById('tab-appointments').className = 'btn btn-outline';
+      document.getElementById('tab-manage').className = 'btn btn-primary';
+    }
+  }
+
+  function toggleMasterCapacity() {
+    const isChecked = document.getElementById('keep-same-toggle').checked;
+    const masterContainer = document.getElementById('master-capacity-container');
+    const individualInputs = document.querySelectorAll('.slot-capacity-input');
+    
+    if (isChecked) {
+      masterContainer.style.display = 'block';
+      individualInputs.forEach(input => input.disabled = true);
+      updateMasterCapacity();
+    } else {
+      masterContainer.style.display = 'none';
+      individualInputs.forEach(input => input.disabled = false);
+    }
+  }
+
+  function updateMasterCapacity() {
+    const masterVal = document.getElementById('master-capacity').value;
+    const individualInputs = document.querySelectorAll('.slot-capacity-input');
+    individualInputs.forEach(input => {
+      input.value = masterVal;
+    });
+  }
+
+  async function submitCapacityForm(e) {
+    if (e) e.preventDefault();
+    const form = document.getElementById('capacity-form');
+    const formData = new FormData(form);
+    try {
+      const response = await fetch(form.action, { method: 'POST', body: formData });
+      if(response.ok) reloadSlotsArea();
+    } catch (err) { console.error(err); }
+  }
+
+  async function deleteSlot(id) {
+    const form = document.getElementById('delete-slot-form');
+    document.getElementById('delete-slot-id').value = id;
+    const formData = new FormData(form);
+    try {
+      const response = await fetch(form.action, { method: 'POST', body: formData });
+      if(response.ok) reloadSlotsArea();
+    } catch (err) { console.error(err); }
+  }
+
+  // Generate time slots array
+  function generateTimeSlots(shift) {
+    let slots = [];
+    let startHour = 0;
+    let endHour = 24;
+    
+    if (shift === 'morning') {
+      startHour = 8;
+      endHour = 20;
+    } else if (shift === 'night') {
+      for (let i = 20; i < 24; i++) slots.push(i);
+      for (let i = 0; i < 8; i++) slots.push(i);
+    }
+    
+    if (shift !== 'night') {
+      for (let i = startHour; i < endHour; i++) slots.push(i);
+    }
+    
+    let timeSlots = [];
+    slots.forEach(h => {
+      let startStr = h.toString().padStart(2, '0') + ':00';
+      let endH = (h + 1) % 24;
+      let endStr = endH.toString().padStart(2, '0') + ':00';
+      
+      let ampmStart = h >= 12 ? 'PM' : 'AM';
+      let ampmEnd = endH >= 12 ? 'PM' : 'AM';
+      let hrStart = h % 12 || 12;
+      let hrEnd = endH % 12 || 12;
+      
+      let label = `${hrStart}:00 ${ampmStart} - ${hrEnd}:00 ${ampmEnd}`;
+      timeSlots.push({ start: startStr, end: endStr, label: label });
+    });
+    
+    return timeSlots;
+  }
+
+  function updateShift() {
+    if (document.getElementById('slot-modal').style.display === 'flex') {
+      openSlotModal();
+    }
+  }
+
+  let selectedSlots = new Set();
+
+  function openSlotModal() {
+    const shift = document.querySelector('input[name="shift"]:checked').value;
+    const slots = generateTimeSlots(shift);
+    const grid = document.getElementById('modal-slots-grid');
+    grid.innerHTML = '';
+    
+    slots.forEach(slot => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      const slotVal = `${slot.start}-${slot.end}`;
+      
+      btn.innerText = slot.label;
+      btn.style.padding = '10px';
+      btn.style.borderRadius = '6px';
+      btn.style.border = '1px solid var(--border-color)';
+      btn.style.cursor = 'pointer';
+      
+      if (selectedSlots.has(slotVal)) {
+        btn.style.backgroundColor = '#22c55e';
+        btn.style.color = 'white';
+        btn.style.borderColor = '#22c55e';
+      } else {
+        btn.style.backgroundColor = 'white';
+        btn.style.color = 'var(--text-dark)';
+      }
+      
+      btn.onclick = function() {
+        if (selectedSlots.has(slotVal)) {
+          selectedSlots.delete(slotVal);
+          btn.style.backgroundColor = 'white';
+          btn.style.color = 'var(--text-dark)';
+          btn.style.borderColor = 'var(--border-color)';
+        } else {
+          selectedSlots.add(slotVal);
+          btn.style.backgroundColor = '#22c55e';
+          btn.style.color = 'white';
+          btn.style.borderColor = '#22c55e';
+        }
+      };
+      
+      grid.appendChild(btn);
+    });
+    
+    document.getElementById('slot-modal').style.display = 'flex';
+  }
+
+  function closeSlotModal() {
+    document.getElementById('slot-modal').style.display = 'none';
+  }
+
+  async function saveSelectedSlots() {
+    const form = document.getElementById('save-slots-form');
+    document.getElementById('selected-slots-input').value = Array.from(selectedSlots).join(',');
+    const formData = new FormData(form);
+    try {
+      const response = await fetch(form.action, { method: 'POST', body: formData });
+      if (response.ok) {
+        closeSlotModal();
+        reloadSlotsArea();
+      }
+    } catch(err) { console.error(err); }
+  }
+
+  function reloadSlotsArea() {
+    fetch(window.location.href)
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        document.getElementById('section-manage').innerHTML = doc.getElementById('section-manage').innerHTML;
+        
+        // Re-bind submit event
+        const capForm = document.getElementById('capacity-form');
+        if (capForm) {
+            capForm.addEventListener('submit', submitCapacityForm);
+        }
+
+        // Render flash messages
+        const flash = doc.getElementById('flash-messages');
+        if (flash) {
+            const oldFlash = document.getElementById('flash-messages');
+            if (oldFlash) oldFlash.remove();
+            document.body.appendChild(flash);
+            setTimeout(function() {
+              const currentFlash = document.getElementById('flash-messages');
+              if(currentFlash) {
+                currentFlash.style.transition = 'opacity 0.5s';
+                currentFlash.style.opacity = '0';
+                setTimeout(() => currentFlash.remove(), 500);
+              }
+            }, 4000);
+        }
+      });
+  }
+  
+  // Initialize
+  document.addEventListener("DOMContentLoaded", () => {
+    const activeTab = sessionStorage.getItem('activeDoctorTab') || 'appointments';
+    switchTab(activeTab);
+
+    const capForm = document.getElementById('capacity-form');
+    if (capForm) {
+        capForm.addEventListener('submit', submitCapacityForm);
+    }
+    
+    toggleMasterCapacity(); // Initialize UI state based on checkbox
+    
+    {% for slot in slots %}
+      selectedSlots.add("{{ slot.start_time|time:'H:i' }}-{{ slot.end_time|time:'H:i' }}");
+    {% endfor %}
+  });
+</script>
+
+{% endblock %}

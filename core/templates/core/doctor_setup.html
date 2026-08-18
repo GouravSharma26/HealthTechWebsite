@@ -14,47 +14,270 @@
     margin-bottom: 20px;
     border: 1px solid #cbd5e1;
   }
+  .step-container {
+    display: none;
+    animation: fadeIn 0.3s;
+  }
+  .step-container.active {
+    display: block;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .progress-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    position: relative;
+  }
+  .progress-indicator::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e2e8f0;
+    z-index: 1;
+  }
+  .step-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    z-index: 2;
+    position: relative;
+    transition: all 0.3s;
+  }
+  .step-dot.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 
+      4px 4px 8px rgba(14, 165, 233, 0.2), 
+      -4px -4px 8px rgba(255, 255, 255, 0.8),
+      inset 2px 2px 5px rgba(255, 255, 255, 0.3),
+      inset -2px -2px 5px rgba(0, 0, 0, 0.1);
+  }
+  .shift-btn {
+    padding: 10px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+  }
+  input[name="shift"]:checked + .shift-btn {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  input[name="shift"]:checked + .shift-btn svg {
+    color: white !important;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="content mt-4 mb-4">
-  <div style="max-width: 800px; margin: 0 auto;">
+  <div class="card" style="max-width: 800px; margin: 0 auto; padding: 40px;">
     <h2 class="text-center" style="color: var(--primary); margin-bottom: 30px;">Complete Your Doctor Profile</h2>
     
-    <form method="POST" id="doctor-setup-form">
+    <div class="progress-indicator">
+      <div class="step-dot active" id="dot-1">1</div>
+      <div class="step-dot" id="dot-2">2</div>
+      <div class="step-dot" id="dot-3">3</div>
+      <div class="step-dot" id="dot-4">4</div>
+      <div class="step-dot" id="dot-5">5</div>
+    </div>
+
+    <form method="POST" id="wizard-form" enctype="multipart/form-data">
       {% csrf_token %}
       
-      <div class="form-group">
-        <label for="specialization">Specialization</label>
-        <input type="text" id="specialization" name="specialization" placeholder="e.g. Cardiologist" required>
-      </div>
-      
-      <div class="form-group">
-        <label for="experience_years">Years of Experience</label>
-        <input type="number" id="experience_years" name="experience_years" min="0" required>
-      </div>
-
-      <div class="form-group">
-        <label for="contact">Contact Number</label>
-        <input type="text" id="contact" name="contact" required>
-      </div>
-
-      <div class="form-group">
-        <label>Clinic Location</label>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px;">Drag the marker or click on the map to set your clinic's precise location.</p>
-        <div id="map-picker"></div>
+      <!-- STEP 1: Personal Details -->
+      <div class="step-container active" id="step-1">
+        <h4 style="margin-bottom: 20px; color: var(--text-dark);">Step 1: Personal Details</h4>
         
-        <input type="hidden" id="latitude" name="latitude" required>
-        <input type="hidden" id="longitude" name="longitude" required>
-      </div>
-      
-      <div class="form-group">
-        <label for="address">Full Address</label>
-        <textarea id="address" name="address" rows="3" placeholder="Enter full textual address..." required></textarea>
+        <div class="form-group">
+          <label>Profile Picture (Optional)</label>
+          <input type="file" id="profile_picture" name="profile_picture" accept="image/*" style="padding: 10px; border: 1px dashed var(--border-color); width: 100%; border-radius: 8px;">
+        </div>
+
+        <div class="form-group">
+          <label for="specialization">Specialization <span style="color: red;">*</span></label>
+          <input type="text" id="specialization" name="specialization" placeholder="e.g. Cardiologist" required>
+        </div>
+        <div class="form-group">
+          <label for="qualifications">Qualifications</label>
+          <input type="text" id="qualifications" name="qualifications" placeholder="e.g. MBBS, MD - Cardiology">
+        </div>
+        <div class="form-group">
+          <label for="experience_years">Years of Experience <span style="color: red;">*</span></label>
+          <input type="number" id="experience_years" name="experience_years" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="consultation_fee">Consultation Fee (₹)</label>
+          <input type="number" id="consultation_fee" name="consultation_fee" min="0" placeholder="e.g. 500">
+        </div>
+        <div class="form-group">
+          <label for="languages_spoken">Languages Spoken</label>
+          <input type="text" id="languages_spoken" name="languages_spoken" placeholder="e.g. English, Hindi">
+        </div>
+        
+        <div class="form-group">
+          <label for="contact">Contact Number <span style="color: red;">*</span></label>
+          <input type="text" id="contact" name="contact" required>
+        </div>
+
+        <div class="form-group">
+          <label for="about">About Me / Bio</label>
+          <textarea id="about" name="about" rows="3" placeholder="Tell your patients a bit about yourself..."></textarea>
+        </div>
+
+        <div style="text-align: right; margin-top: 20px;">
+          <button type="button" class="btn btn-primary" onclick="nextStep(2)">Next: Set Availability &rarr;</button>
+        </div>
       </div>
 
-      <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 15px;">Save Profile</button>
+      <!-- STEP 2: Slots Availability -->
+      <div class="step-container" id="step-2">
+        <h4 style="margin-bottom: 20px; color: var(--text-dark);">Step 2: Setup Availability</h4>
+        
+        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+          <h5 style="margin-bottom: 15px;">Global Capacity per Slot</h5>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="number" id="capacity" name="capacity" value="3" min="1" max="8" style="width: 80px; text-align: center; font-size: 1.1rem; padding: 8px;" required>
+            <span style="color: var(--text-muted); font-size: 0.9rem;">patients per time slot</span>
+          </div>
+        </div>
+
+        <h5 style="margin-bottom: 10px;">Select Your Shift</h5>
+        <div class="shift-toggles" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+          <label>
+            <input type="radio" name="shift" value="morning" checked onchange="updateShift()" style="display:none;">
+            <div class="shift-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; margin-right: 8px; color: #eab308;"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" /></svg>
+              Morning (8 AM - 8 PM)
+            </div>
+          </label>
+          <label>
+            <input type="radio" name="shift" value="night" onchange="updateShift()" style="display:none;">
+            <div class="shift-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; margin-right: 8px; color: #818cf8;"><path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd" /></svg>
+              Night (8 PM - 8 AM)
+            </div>
+          </label>
+          <label>
+            <input type="radio" name="shift" value="24hrs" onchange="updateShift()" style="display:none;">
+            <div class="shift-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; margin-right: 8px; color: #ef4444;"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clip-rule="evenodd" /></svg>
+              24 Hours
+            </div>
+          </label>
+        </div>
+
+        <h5 style="margin-bottom: 10px;">Select Active Slots <span style="color: red;">*</span></h5>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Click to toggle your available 1-hour slots.</p>
+        <div id="slots-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px;">
+          <!-- Generated via JS -->
+        </div>
+        <p id="slots-error" style="color: red; display: none; font-size: 0.9rem;">Please select at least one time slot.</p>
+        
+        <input type="hidden" name="selected_slots" id="selected-slots-input" required>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+          <button type="button" class="btn btn-outline" onclick="nextStep(1)">&larr; Back</button>
+          <button type="button" class="btn btn-primary" onclick="validateStep2()">Next: Clinic Location &rarr;</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Clinic Location -->
+      <div class="step-container" id="step-3">
+        <h4 style="margin-bottom: 20px; color: var(--text-dark);">Step 3: Clinic Location</h4>
+        
+        <div class="form-group">
+          <label>Pinpoint on Map <span style="color: red;">*</span></label>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px;">Drag the marker or click on the map to set your clinic's precise location.</p>
+          <div id="map-picker"></div>
+          
+          <input type="hidden" id="latitude" name="latitude" required>
+          <input type="hidden" id="longitude" name="longitude" required>
+          <p id="map-error" style="color: red; display: none; font-size: 0.9rem;">Please select a location on the map.</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="address">Full Textual Address <span style="color: red;">*</span></label>
+          <textarea id="address" name="address" rows="3" placeholder="Enter full textual address..." required></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+          <button type="button" class="btn btn-outline" onclick="nextStep(2)">&larr; Back</button>
+          <button type="button" class="btn btn-primary" onclick="validateStep3()">Next: Documents &rarr;</button>
+        </div>
+      </div>
+
+      
+      <!-- STEP 4: Documents -->
+      <div class="step-container" id="step-4">
+        <h4 style="margin-bottom: 20px; color: var(--text-dark);">Step 4: Verification Documents</h4>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">Upload your official documents for verification. These are required before you can appear in the public directory.</p>
+        
+        <div class="form-group">
+          <label>Medical License Document <span style="color: red;">*</span></label>
+          <input type="file" id="license_document" name="license_document" accept=".pdf,image/*" style="padding: 10px; border: 1px dashed var(--border-color); width: 100%; border-radius: 8px;" required>
+        </div>
+
+        <div class="form-group">
+          <label>Medical Degree Document <span style="color: red;">*</span></label>
+          <input type="file" id="degree_document" name="degree_document" accept=".pdf,image/*" style="padding: 10px; border: 1px dashed var(--border-color); width: 100%; border-radius: 8px;" required>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+          <button type="button" class="btn btn-outline" onclick="nextStep(3)">&larr; Back</button>
+          <button type="button" class="btn btn-primary" onclick="validateStep4()">Next: Review &rarr;</button>
+        </div>
+      </div>
+
+      <!-- STEP 5: Review -->
+      <div class="step-container" id="step-5">
+        <h4 style="margin-bottom: 20px; color: var(--text-dark);">Step 5: Review Details</h4>
+        
+        <div style="background: var(--bg-color); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+          <h5 style="color: var(--primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;">Personal Details</h5>
+          <p><strong>Specialization:</strong> <span id="rev-spec"></span></p>
+          <p><strong>Experience:</strong> <span id="rev-exp"></span> Years</p>
+          <p><strong>Contact:</strong> <span id="rev-contact"></span></p>
+          <p><strong>About:</strong> <span id="rev-about"></span></p>
+          
+          <h5 style="color: var(--primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; margin-top: 20px;">Availability</h5>
+          <p><strong>Global Capacity:</strong> <span id="rev-cap"></span> patients per slot</p>
+          <p><strong>Selected Slots:</strong> <span id="rev-slots"></span></p>
+
+          <h5 style="color: var(--primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; margin-top: 20px;">Location</h5>
+          <p><strong>Address:</strong> <span id="rev-address"></span></p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+            <input type="checkbox" id="confirm-check" style="margin-top: 5px; width: 20px; height: 20px;" required>
+            <span>I confirm that all the details provided above are accurate and I am ready to complete my registration.</span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+          <button type="button" class="btn btn-outline" onclick="nextStep(4)">&larr; Back to Edit</button>
+          <button type="submit" class="btn btn-primary" id="submit-btn" disabled style="background: #22c55e; border-color: #22c55e; font-size: 1.1rem; padding: 12px 24px;">Complete Registration</button>
+        </div>
+      </div>
+
     </form>
   </div>
 </div>
@@ -64,21 +287,164 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Default center (e.g. India)
+  let map, marker;
+  let selectedSlots = new Set();
+
+  function nextStep(step) {
+    // Hide all steps
+    document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
+    // Update dots
+    document.querySelectorAll('.step-dot').forEach((el, index) => {
+      if(index < step) {
+        el.classList.add('active');
+      } else {
+        el.classList.remove('active');
+      }
+    });
+    // Show target step
+    document.getElementById('step-' + step).classList.add('active');
+
+    // Init map when entering step 3
+    if(step === 3 && !map) {
+      setTimeout(initMap, 100);
+    }
+    
+    // Populate review if entering step 4
+    if(step === 5) {
+      populateReview();
+    }
+  }
+
+  function validateStep2() {
+    if(selectedSlots.size === 0) {
+      document.getElementById('slots-error').style.display = 'block';
+      return;
+    }
+    document.getElementById('slots-error').style.display = 'none';
+    document.getElementById('selected-slots-input').value = Array.from(selectedSlots).join(',');
+    nextStep(3);
+  }
+
+  function validateStep3() {
+    if(!document.getElementById('latitude').value) {
+      document.getElementById('map-error').style.display = 'block';
+      return;
+    }
+    document.getElementById('map-error').style.display = 'none';
+    
+    if(!document.getElementById('address').value.trim()) {
+      alert("Please enter a textual address.");
+      return;
+    }
+    nextStep(4);
+  }
+
+  
+  function validateStep4() {
+    if(!document.getElementById('license_document').value || !document.getElementById('degree_document').value) {
+      alert("Please upload both your License and Degree documents.");
+      return;
+    }
+    nextStep(5);
+  }
+
+  function populateReview() {
+    document.getElementById('rev-spec').innerText = document.getElementById('specialization').value;
+    document.getElementById('rev-exp').innerText = document.getElementById('experience_years').value;
+    document.getElementById('rev-contact').innerText = document.getElementById('contact').value;
+    document.getElementById('rev-about').innerText = document.getElementById('about').value || 'N/A';
+    
+    document.getElementById('rev-cap').innerText = document.getElementById('capacity').value;
+    document.getElementById('rev-slots').innerText = Array.from(selectedSlots).length + ' slots selected';
+    
+    document.getElementById('rev-address').innerText = document.getElementById('address').value;
+  }
+
+  document.getElementById('confirm-check').addEventListener('change', function(e) {
+    document.getElementById('submit-btn').disabled = !e.target.checked;
+  });
+
+  // --- Slots Logic ---
+  function generateTimeSlots(shift) {
+    let slots = [];
+    let startHour = 0; let endHour = 24;
+    if (shift === 'morning') { startHour = 8; endHour = 20; } 
+    else if (shift === 'night') {
+      for (let i = 20; i < 24; i++) slots.push(i);
+      for (let i = 0; i < 8; i++) slots.push(i);
+    }
+    if (shift !== 'night') {
+      for (let i = startHour; i < endHour; i++) slots.push(i);
+    }
+    
+    let timeSlots = [];
+    slots.forEach(h => {
+      let startStr = h.toString().padStart(2, '0') + ':00';
+      let endH = (h + 1) % 24;
+      let endStr = endH.toString().padStart(2, '0') + ':00';
+      
+      let ampmStart = h >= 12 ? 'PM' : 'AM';
+      let ampmEnd = endH >= 12 ? 'PM' : 'AM';
+      let hrStart = h % 12 || 12;
+      let hrEnd = endH % 12 || 12;
+      
+      let label = `${hrStart}:00 ${ampmStart} - ${hrEnd}:00 ${ampmEnd}`;
+      timeSlots.push({ start: startStr, end: endStr, label: label });
+    });
+    return timeSlots;
+  }
+
+  function updateShift() {
+    const shift = document.querySelector('input[name="shift"]:checked').value;
+    const slots = generateTimeSlots(shift);
+    const grid = document.getElementById('slots-grid');
+    grid.innerHTML = '';
+    
+    slots.forEach(slot => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      const slotVal = `${slot.start}-${slot.end}`;
+      
+      btn.innerText = slot.label;
+      btn.style.padding = '10px';
+      btn.style.borderRadius = '6px';
+      btn.style.border = '1px solid var(--border-color)';
+      btn.style.cursor = 'pointer';
+      
+      if (selectedSlots.has(slotVal)) {
+        btn.style.backgroundColor = '#22c55e';
+        btn.style.color = 'white';
+        btn.style.borderColor = '#22c55e';
+      } else {
+        btn.style.backgroundColor = 'white';
+        btn.style.color = 'var(--text-dark)';
+      }
+      
+      btn.onclick = function() {
+        if (selectedSlots.has(slotVal)) {
+          selectedSlots.delete(slotVal);
+          btn.style.backgroundColor = 'white';
+          btn.style.color = 'var(--text-dark)';
+          btn.style.borderColor = 'var(--border-color)';
+        } else {
+          selectedSlots.add(slotVal);
+          btn.style.backgroundColor = '#22c55e';
+          btn.style.color = 'white';
+          btn.style.borderColor = '#22c55e';
+        }
+      };
+      grid.appendChild(btn);
+    });
+  }
+
+  // --- Map Logic ---
+  function initMap() {
     var defaultLat = 20.5937;
     var defaultLng = 78.9629;
+    map = L.map('map-picker').setView([defaultLat, defaultLng], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+    marker = L.marker([defaultLat, defaultLng], {draggable: true}).addTo(map);
 
-    var map = L.map('map-picker').setView([defaultLat, defaultLng], 5);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    var marker = L.marker([defaultLat, defaultLng], {draggable: true}).addTo(map);
-
-    // Try to get user's current location to center map
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(position) {
         var lat = position.coords.latitude;
@@ -92,19 +458,28 @@
     function updateInputs(lat, lng) {
       document.getElementById('latitude').value = lat.toFixed(6);
       document.getElementById('longitude').value = lng.toFixed(6);
+      document.getElementById('map-error').style.display = 'none';
     }
 
-    // Update on drag end
     marker.on('dragend', function(e) {
       var position = marker.getLatLng();
       updateInputs(position.lat, position.lng);
     });
 
-    // Update on click
     map.on('click', function(e) {
       marker.setLatLng(e.latlng);
       updateInputs(e.latlng.lat, e.latlng.lng);
     });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize step 1 required fields constraint using native browser validity
+    document.getElementById('step-1').addEventListener('input', function() {
+      // we can do strict validation on Next button if we want
+    });
+    
+    // Init slots
+    updateShift();
   });
 </script>
 {% endblock %}

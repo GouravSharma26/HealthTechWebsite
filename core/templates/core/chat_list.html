@@ -1,0 +1,54 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Messages{% endblock %}
+
+{% block content %}
+<div class="content mt-4 mb-4">
+  <div class="card" style="max-width: 800px; margin: 0 auto;">
+    <h2 style="color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">Messages</h2>
+    
+    {% if users %}
+      <div style="display: flex; flex-direction: column; gap: 15px;">
+        {% for u in users %}
+          <a href="{% url 'chat_detail' u.id %}" style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+            <div style="display: flex; align-items: center; gap: 15px;">
+              {% if hasattr_u_doctor_profile and u.doctor_profile.profile_picture %}
+                <img src="{{ u.doctor_profile.profile_picture.url }}" alt="{{ u.username }}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+              {% else %}
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold;">
+                  {{ u.username|make_list|first|upper }}
+                </div>
+              {% endif %}
+              
+              <div>
+                <h4 style="margin: 0; color: var(--text-dark);">
+                  {% if u.is_doctor %}Dr. {% endif %}{{ u.get_full_name|default:u.username }}
+                </h4>
+                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">
+                  {% if u.is_doctor and hasattr_u_doctor_profile %}
+                    {{ u.doctor_profile.specialization }}
+                  {% elif u.is_patient %}
+                    Patient
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+            
+            <div style="color: var(--primary);">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 40px;">
+        <p style="color: var(--text-muted); font-size: 1.1rem;">You don't have any active conversations yet.</p>
+        {% if user.is_patient %}
+          <a href="{% url 'doctors' %}" class="btn btn-primary mt-3">Find a Doctor</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

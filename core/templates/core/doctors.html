@@ -1,25 +1,41 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Doctors List</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div id="navbar-container"></div>
-  <script>
-    fetch("navbar.html")
-      .then(response => response.text())
-      .then(data => document.getElementById("navbar-container").innerHTML = data);
-  </script>
-  
+{% extends 'core/base.html' %}
+{% load static %}
 
-<h1>Doctors List</h1>
-<input type="text" id="search" placeholder="Search by Name or Specialization" onkeyup="searchDoctors()">
-<div id="doctors-list"></div>
+{% block title %}Doctors Directory - HealthTech{% endblock %}
 
-<script src="script.js"></script>
-<script>
-window.onload = showDoctors;
-</script>
-</body>
-</html>
+{% block content %}
+<div class="content mt-4 mb-4">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 20px;">
+    <h2 style="color: var(--primary);">Explore Doctors</h2>
+    <form method="GET" action="{% url 'doctors' %}" style="display: flex; gap: 10px; padding: 0; box-shadow: none; border: none; background: transparent;">
+      <input type="text" name="q" value="{{ query }}" placeholder="Search by name or specialty..." style="width: 300px; padding: 12px 20px; border-radius: 30px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+      <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+  </div>
+
+  <div id="doctors-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px;">
+    {% for doc in doctors %}
+    <div class="card text-center" style="display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="margin-bottom: 15px;">
+          {% if doc.profile_picture %}
+            <img src="{{ doc.profile_picture.url }}" alt="Dr. {{ doc.user.get_full_name }}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary);">
+          {% else %}
+            <div style="font-size: 3rem;">👨‍⚕️</div>
+          {% endif %}
+        </div>
+        <h3 style="color: var(--primary); font-size: 1.3rem;">Dr. {{ doc.user.get_full_name|default:doc.user.username }}</h3>
+        <p style="color: var(--text-muted); font-weight: 500; font-size: 1.1rem; margin-top: 5px;">{{ doc.specialization }}</p>
+        <p style="font-size: 0.9rem; margin: 15px 0; background: var(--bg-color); padding: 5px; border-radius: 8px;">{{ doc.experience_years }} Years Experience</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">📍 {{ doc.address }}</p>
+      </div>
+      <a href="{% url 'doctor_detail' doc.id %}" class="btn btn-outline" style="width: 100%;">View Profile & Book</a>
+    </div>
+    {% empty %}
+    <div class="card text-center" style="grid-column: 1 / -1;">
+      <h3 style="color: var(--text-muted);">No doctors found matching your criteria.</h3>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
