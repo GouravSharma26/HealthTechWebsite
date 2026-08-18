@@ -14,7 +14,7 @@
         
         <div class="form-group">
           <label for="contact">Contact Number</label>
-          <input type="text" id="contact" name="contact" placeholder="Your phone number" required>
+          <input type="text" id="contact" name="contact" placeholder="Your phone number" value="{{ request.user.phone_number|default_if_none:'' }}" required>
         </div>
 
         <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 15px;">Save Profile</button>

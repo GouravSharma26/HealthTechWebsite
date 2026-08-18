@@ -98,7 +98,7 @@ def doctor_setup(request):
         consultation_fee = request.POST.get('consultation_fee')
         languages_spoken = request.POST.get('languages_spoken')
         experience_years = request.POST.get('experience_years')
-        contact = request.POST.get('contact')
+        contact = request.POST.get('contact') or request.user.phone_number
         about = request.POST.get('about')
         profile_picture = request.FILES.get('profile_picture')
         
@@ -164,7 +164,7 @@ def patient_setup(request):
         return redirect('home')
         
     if request.method == 'POST':
-        contact = request.POST.get('contact')
+        contact = request.POST.get('contact') or request.user.phone_number
         
         PatientProfile.objects.update_or_create(
             user=request.user,
