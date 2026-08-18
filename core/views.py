@@ -32,72 +32,25 @@ def signup_view(request):
             messages.error(request, "Phone number already in use")
             return redirect('signup')
             
-        # Generate 6 digit OTP
-        otp = str(random.randint(100000, 999999))
-        
         user = User.objects.create_user(username=username, email=email, password=password)
         user.phone_number = phone_number
-        user.verification_otp = otp
         if role == 'doctor':
             user.is_doctor = True
         else:
             user.is_patient = True
         user.save()
 
-        # Send OTP via Email
-        from django.core.mail import send_mail
-        from django.conf import settings as django_settings
+        # Log them in
+        login(request, user)
         
-        email_sent = False
-        if django_settings.EMAIL_HOST_USER:
-            try:
-                send_mail(
-                    subject='HealthTech - Your Verification Code',
-                    message=f'Hi {username},\n\nYour verification code is: {otp}\n\nPlease enter this code to verify your account.\n\nThank you,\nHealthTech Team',
-                    from_email=django_settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[email],
-                    fail_silently=True,
-                )
-                email_sent = True
-            except Exception as e:
-                print(f"EMAIL SEND FAILED: {e}")
-        
-        # Always log OTP to console as backup
-        print(f"\n{'='*40}")
-        print(f"OTP for {username} ({email}): {otp} | Email sent: {email_sent}")
-        print(f"{'='*40}\n")
-        
-        request.session['verify_user_id'] = user.id
-        return redirect('verify_account')
+        if user.is_doctor:
+            return redirect('doctor_setup')
+        else:
+            return redirect('patient_setup')
         
     return render(request, 'core/signup.html')
 
-def verify_account(request):
-    user_id = request.session.get('verify_user_id')
-    if not user_id:
-        return redirect('signup')
-        
-    user = User.objects.get(id=user_id)
-    
-    if request.method == 'POST':
-        entered_otp = request.POST.get('otp')
-        if entered_otp == user.verification_otp:
-            user.email_verified = True
-            user.verification_otp = ''  # Clear OTP after successful verification
-            user.save()
-            
-            # Log them in
-            login(request, user)
-            del request.session['verify_user_id']
-            
-            if user.is_doctor:
-                return redirect('doctor_setup')
-            else:
-                return redirect('patient_setup')
-        else:
-            messages.error(request, "Invalid OTP. Please try again.")
-            
-    return render(request, 'core/verify.html', {'user': user})
+
 
 def login_view(request):
     if request.method == 'POST':
