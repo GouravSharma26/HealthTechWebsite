@@ -44,10 +44,24 @@ def signup_view(request):
             user.is_patient = True
         user.save()
 
-        # SIMULATE SENDING OTP (Email & SMS)
-        print(f"\n{'='*40}")
-        print(f"OTP for {username} ({email} / {phone_number}): {otp}")
-        print(f"{'='*40}\n")
+        # Send OTP via Email
+        try:
+            from django.core.mail import send_mail
+            from django.conf import settings as django_settings
+            
+            send_mail(
+                subject='HealthTech - Your Verification Code',
+                message=f'Hi {username},\n\nYour verification code is: {otp}\n\nPlease enter this code to verify your account.\n\nThank you,\nHealthTech Team',
+                from_email=django_settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            # Fallback: print to console if email fails (useful for local development)
+            print(f"\n{'='*40}")
+            print(f"EMAIL SEND FAILED: {e}")
+            print(f"OTP for {username} ({email}): {otp}")
+            print(f"{'='*40}\n")
         
         request.session['verify_user_id'] = user.id
         return redirect('verify_account')
@@ -65,7 +79,7 @@ def verify_account(request):
         entered_otp = request.POST.get('otp')
         if entered_otp == user.verification_otp:
             user.email_verified = True
-            user.phone_verified = True
+            user.verification_otp = ''  # Clear OTP after successful verification
             user.save()
             
             # Log them in
