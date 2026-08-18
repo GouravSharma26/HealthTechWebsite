@@ -10,7 +10,7 @@ services:
     env: python
     plan: free
     buildCommand: "./build.sh"
-    startCommand: "gunicorn healthtech.wsgi:application"
+    startCommand: "gunicorn healthtech.wsgi:application --timeout 120"
     envVars:
       - key: DATABASE_URL
         fromDatabase:

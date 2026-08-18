@@ -45,23 +45,27 @@ def signup_view(request):
         user.save()
 
         # Send OTP via Email
-        try:
-            from django.core.mail import send_mail
-            from django.conf import settings as django_settings
-            
-            send_mail(
-                subject='HealthTech - Your Verification Code',
-                message=f'Hi {username},\n\nYour verification code is: {otp}\n\nPlease enter this code to verify your account.\n\nThank you,\nHealthTech Team',
-                from_email=django_settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=False,
-            )
-        except Exception as e:
-            # Fallback: print to console if email fails (useful for local development)
-            print(f"\n{'='*40}")
-            print(f"EMAIL SEND FAILED: {e}")
-            print(f"OTP for {username} ({email}): {otp}")
-            print(f"{'='*40}\n")
+        from django.core.mail import send_mail
+        from django.conf import settings as django_settings
+        
+        email_sent = False
+        if django_settings.EMAIL_HOST_USER:
+            try:
+                send_mail(
+                    subject='HealthTech - Your Verification Code',
+                    message=f'Hi {username},\n\nYour verification code is: {otp}\n\nPlease enter this code to verify your account.\n\nThank you,\nHealthTech Team',
+                    from_email=django_settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[email],
+                    fail_silently=True,
+                )
+                email_sent = True
+            except Exception as e:
+                print(f"EMAIL SEND FAILED: {e}")
+        
+        # Always log OTP to console as backup
+        print(f"\n{'='*40}")
+        print(f"OTP for {username} ({email}): {otp} | Email sent: {email_sent}")
+        print(f"{'='*40}\n")
         
         request.session['verify_user_id'] = user.id
         return redirect('verify_account')
