@@ -624,7 +624,7 @@ Keep your responses concise, friendly, and formatted nicely."""
             }
             
             payload = {
-                "model": "llama-3.1-8b-instant",
+                "model": "qwen/qwen3.6-27b",
                 "messages": messages
             }
             
