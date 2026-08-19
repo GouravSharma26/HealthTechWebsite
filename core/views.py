@@ -696,14 +696,14 @@ def scan_prescription(request):
         
         payload = {
             "model": "google/gemini-3.7-flash",
-            "max_tokens": 500,
+            "max_tokens": 2000,
             "messages": [
                 {
                     "role": "user",
                     "content": [
                         {
                             "type": "text",
-                            "text": "Extract the handwritten prescription from this image. Return ONLY a valid JSON object with exactly two keys: 'medicines' (a comma-separated string of the medicines with their dosages) and 'instructions' (a string of the usage instructions). Do not include any markdown formatting, backticks, or other text."
+                            "text": "Extract the handwritten prescription from this image. Return ONLY a valid JSON object with exactly two keys: 'medicines' (an array of strings, each string being one medicine and its dosage) and 'instructions' (an array of strings for the usage instructions). Do not include any markdown formatting or other text."
                         },
                         {
                             "type": "image_url",
@@ -727,9 +727,22 @@ def scan_prescription(request):
         # Attempt to clean potential markdown formatting
         content = content.replace('```json', '').replace('```', '').strip()
         
+        # Extract just the JSON block if there's extra text
+        start_idx = content.find('{')
+        end_idx = content.rfind('}')
+        if start_idx != -1 and end_idx != -1:
+            content = content[start_idx:end_idx+1]
+        
         try:
             parsed_content = json.loads(content)
-        except json.JSONDecodeError:
+            
+            # Format arrays into nice text
+            if isinstance(parsed_content.get('medicines'), list):
+                parsed_content['medicines'] = '\n'.join(parsed_content['medicines'])
+            if isinstance(parsed_content.get('instructions'), list):
+                parsed_content['instructions'] = '\n'.join(parsed_content['instructions'])
+                
+        except Exception:
             parsed_content = {
                 "medicines": content,
                 "instructions": "Could not separate instructions. Review extracted text."
