@@ -593,7 +593,6 @@ def chat_detail(request, user_id):
 
 import json
 from django.http import JsonResponse
-from groq import Groq
 
 def ai_chat(request):
     if request.method == 'POST':
@@ -602,11 +601,9 @@ def ai_chat(request):
             user_message = data.get('message', '')
             history = data.get('history', [])
             
-            if not settings.GROQ_API_KEY:
+            if not getattr(settings, 'GROQ_API_KEY', None):
                 return JsonResponse({'error': 'GROQ_API_KEY is not configured in environment variables.'}, status=500)
                 
-            client = Groq(api_key=settings.GROQ_API_KEY)
-            
             system_prompt = """You are HealthBot, an AI triage assistant for the HealthTech platform.
 Your job is to listen to the user's symptoms and recommend the best type of doctor specialization they should see on our platform.
 Do NOT provide definitive medical diagnoses. Emphasize that you are an AI and they must consult a real doctor.
@@ -621,12 +618,23 @@ Keep your responses concise, friendly, and formatted nicely."""
             if not messages or messages[-1]['content'] != user_message:
                 messages.append({"role": "user", "content": user_message})
 
-            chat_completion = client.chat.completions.create(
-                messages=messages,
-                model="llama3-8b-8192",
-            )
+            headers = {
+                "Authorization": f"Bearer {settings.GROQ_API_KEY}",
+                "Content-Type": "application/json"
+            }
             
-            reply = chat_completion.choices[0].message.content
+            payload = {
+                "model": "llama3-8b-8192",
+                "messages": messages
+            }
+            
+            import requests
+            response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload)
+            
+            if not response.ok:
+                return JsonResponse({'error': f"Groq API Error: {response.text}"}, status=response.status_code)
+                
+            reply = response.json()['choices'][0]['message']['content']
             return JsonResponse({'reply': reply})
             
         except Exception as e:
