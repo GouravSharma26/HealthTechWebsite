@@ -4,21 +4,60 @@
 {% block title %}About Us - HealthTech{% endblock %}
 
 {% block content %}
-<div class="content mt-4 mb-4" style="max-width: 800px; margin: 0 auto;">
-  <h2 class="text-center" style="color: var(--primary); margin-bottom: 30px;">About HealthTech</h2>
-  
-  <div class="card text-center">
-    <p style="font-size: 1.1rem; line-height: 1.8;">HealthTech is dedicated to connecting patients with the best healthcare professionals in their area. We believe that accessing quality healthcare should be simple, seamless, and transparent.</p>
-    <div style="display: flex; justify-content: space-around; margin-top: 30px;">
-      <div>
-        <h3 style="color: var(--primary);">10,000+</h3>
-        <p style="color: var(--text-muted);">Verified Doctors</p>
+<div class="content" style="max-width: 1000px; margin: 0 auto; padding: 40px 20px;">
+  <!-- Hero Section -->
+  <div style="text-align: center; margin-bottom: 50px;">
+    <h1 style="font-size: 3rem; font-weight: 800; background: linear-gradient(135deg, var(--primary) 0%, #06b6d4 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px;">
+      Reimagining Healthcare
+    </h1>
+    <p style="font-size: 1.2rem; color: var(--text-muted); max-width: 700px; margin: 0 auto; line-height: 1.6;">
+      HealthTech is dedicated to connecting patients with the best healthcare professionals seamlessly. We believe that accessing quality healthcare should be simple, transparent, and completely stress-free.
+    </p>
+  </div>
+
+  <!-- Mission & Vision Cards -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px;">
+    
+    <div class="card" style="padding: 40px; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: default;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-md)'">
+      <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); color: #0284c7; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 1.5rem; box-shadow: inset 2px 2px 5px rgba(255,255,255,0.7), inset -2px -2px 5px rgba(0,0,0,0.05);">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 30px; height: 30px;"><path fill-rule="evenodd" d="M14.615 1.595a.75.75 0 01.359.852L12.982 9.75h7.268a.75.75 0 01.548 1.262l-10.5 11.25a.75.75 0 01-1.272-.71l1.992-7.302H3.75a.75.75 0 01-.548-1.262l10.5-11.25a.75.75 0 01.913-.143z" clip-rule="evenodd" /></svg>
       </div>
-      <div>
-        <h3 style="color: var(--primary);">50,000+</h3>
-        <p style="color: var(--text-muted);">Happy Patients</p>
+      <h3 style="color: var(--text-dark); margin-bottom: 15px; font-weight: 700;">Our Mission</h3>
+      <p style="color: var(--text-muted); line-height: 1.6;">To empower patients and doctors by providing cutting-edge, AI-driven tools that eliminate friction in the modern medical ecosystem.</p>
+    </div>
+
+    <div class="card" style="padding: 40px; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: default;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-md)'">
+      <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); color: #16a34a; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 1.5rem; box-shadow: inset 2px 2px 5px rgba(255,255,255,0.7), inset -2px -2px 5px rgba(0,0,0,0.05);">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 30px; height: 30px;"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" /><path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clip-rule="evenodd" /></svg>
       </div>
+      <h3 style="color: var(--text-dark); margin-bottom: 15px; font-weight: 700;">Our Vision</h3>
+      <p style="color: var(--text-muted); line-height: 1.6;">A world where everyone has instant access to trusted medical advice, transparent data, and world-class care providers anywhere.</p>
+    </div>
+
+  </div>
+
+  <!-- Stats Section -->
+  <div class="card" style="background: linear-gradient(135deg, var(--primary) 0%, #0284c7 100%); color: white; padding: 50px 20px; border-radius: 16px; margin-bottom: 50px; text-align: center; border: none; box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.4);">
+    <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 40px; color: white;">Trust by the Numbers</h2>
+    <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 30px;">
+      
+      <div style="flex: 1; min-width: 150px;">
+        <h3 style="font-size: 3rem; font-weight: 800; margin-bottom: 5px; color: white;">10k+</h3>
+        <p style="font-size: 1.1rem; opacity: 0.9; margin: 0;">Verified Doctors</p>
+      </div>
+      
+      <div style="flex: 1; min-width: 150px;">
+        <h3 style="font-size: 3rem; font-weight: 800; margin-bottom: 5px; color: white;">50k+</h3>
+        <p style="font-size: 1.1rem; opacity: 0.9; margin: 0;">Happy Patients</p>
+      </div>
+      
+      <div style="flex: 1; min-width: 150px;">
+        <h3 style="font-size: 3rem; font-weight: 800; margin-bottom: 5px; color: white;">1M+</h3>
+        <p style="font-size: 1.1rem; opacity: 0.9; margin: 0;">Prescriptions Scanned</p>
+      </div>
+      
     </div>
   </div>
+
 </div>
 {% endblock %}

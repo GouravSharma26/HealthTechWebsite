@@ -4,18 +4,94 @@
 {% block title %}Help & Support - HealthTech{% endblock %}
 
 {% block content %}
-<div class="content mt-4 mb-4" style="max-width: 800px; margin: 0 auto;">
-  <h2 class="text-center" style="color: var(--primary); margin-bottom: 30px;">Help & Support</h2>
+<div class="content" style="max-width: 900px; margin: 0 auto; padding: 40px 20px;">
   
-  <div class="card">
-    <h3>Frequently Asked Questions</h3>
-    <div style="margin-top: 20px;">
-      <p><strong>Q: How do I book an appointment?</strong></p>
-      <p style="color: var(--text-muted); margin-bottom: 15px;">A: Simply navigate to the Doctors Directory, find your preferred doctor, and click "Book Appointment".</p>
-      
-      <p><strong>Q: How can I change my profile details?</strong></p>
-      <p style="color: var(--text-muted); margin-bottom: 15px;">A: Go to "My Profile" from the navigation menu and edit your details.</p>
+  <div style="text-align: center; margin-bottom: 50px;">
+    <h1 style="font-size: 3rem; font-weight: 800; background: linear-gradient(135deg, var(--primary) 0%, #06b6d4 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 15px;">
+      How can we help?
+    </h1>
+    <div style="max-width: 500px; margin: 0 auto; position: relative;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; position: absolute; left: 15px; top: 15px; color: #94a3b8;"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" clip-rule="evenodd" /></svg>
+      <input type="text" placeholder="Search for articles, guides, or questions..." style="width: 100%; padding: 14px 20px 14px 45px; border-radius: 30px; border: 1px solid var(--border-color); font-size: 1rem; box-shadow: var(--shadow-sm); outline: none; transition: border-color 0.2s, box-shadow 0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(14,165,233,0.1)'" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='var(--shadow-sm)'">
     </div>
   </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 50px;">
+    <a href="{% url 'contact' %}" style="text-decoration: none;">
+      <div class="card" style="padding: 25px; text-align: center; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border: 1px solid #e2e8f0;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='var(--shadow-md)'; this.style.borderColor='#bae6fd';" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-sm)'; this.style.borderColor='#e2e8f0';">
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: #f0f9ff; color: #0284c7; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px;"><path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.43 3.43 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clip-rule="evenodd" /></svg>
+        </div>
+        <h4 style="margin: 0 0 5px 0; color: var(--text-dark); font-weight: 600;">Contact Support</h4>
+        <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Send us a message and we'll reply ASAP.</p>
+      </div>
+    </a>
+    
+    <a href="#" style="text-decoration: none;" onclick="alert('Guides coming soon!'); return false;">
+      <div class="card" style="padding: 25px; text-align: center; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border: 1px solid #e2e8f0;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='var(--shadow-md)'; this.style.borderColor='#bbf7d0';" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-sm)'; this.style.borderColor='#e2e8f0';">
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: #f0fdf4; color: #16a34a; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px;"><path d="M11.25 4.533A9.707 9.707 0 006 3a9.735 9.735 0 00-3.25.555.75.75 0 00-.5.707v14.25a.75.75 0 001 .707A8.237 8.237 0 016 18.75c1.995 0 3.823.707 5.09 1.813a5.19 5.19 0 00.66.446 2.052 2.052 0 001.5 0c.223-.104.445-.25.66-.446A8.222 8.222 0 0118 18.75c1.645 0 3.167.481 4.5 1.282a.75.75 0 001-.707V4.262a.75.75 0 00-.5-.707A9.735 9.735 0 0018 3a9.707 9.707 0 00-5.25 1.533M12 21V5.25z" /></svg>
+        </div>
+        <h4 style="margin: 0 0 5px 0; color: var(--text-dark); font-weight: 600;">Getting Started</h4>
+        <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Learn the basics of booking and profiles.</p>
+      </div>
+    </a>
+  </div>
+
+  <h3 style="color: var(--text-dark); font-weight: 700; margin-bottom: 20px; font-size: 1.5rem;">Frequently Asked Questions</h3>
+  
+  <div class="card" style="padding: 0; overflow: hidden;">
+    
+    <details style="border-bottom: 1px solid var(--border-color); padding: 20px; cursor: pointer;">
+      <summary style="font-weight: 600; color: var(--text-dark); font-size: 1.05rem; outline: none; display: flex; justify-content: space-between; align-items: center;">
+        How do I book an appointment?
+        <span style="color: var(--primary);">▼</span>
+      </summary>
+      <div style="padding-top: 15px; color: var(--text-muted); line-height: 1.6;">
+        Simply navigate to the Doctors Directory from the main menu, find your preferred doctor based on their specialization or rating, and click the "Book Appointment" button. You will be able to choose from their available time slots.
+      </div>
+    </details>
+
+    <details style="border-bottom: 1px solid var(--border-color); padding: 20px; cursor: pointer;">
+      <summary style="font-weight: 600; color: var(--text-dark); font-size: 1.05rem; outline: none; display: flex; justify-content: space-between; align-items: center;">
+        How can I change my profile details?
+        <span style="color: var(--primary);">▼</span>
+      </summary>
+      <div style="padding-top: 15px; color: var(--text-muted); line-height: 1.6;">
+        Log into your account, click on your name or profile picture in the top right corner, and select "Dashboard". From there, you can edit your personal details, contact information, and upload documents.
+      </div>
+    </details>
+    
+    <details style="border-bottom: 1px solid var(--border-color); padding: 20px; cursor: pointer;">
+      <summary style="font-weight: 600; color: var(--text-dark); font-size: 1.05rem; outline: none; display: flex; justify-content: space-between; align-items: center;">
+        What happens if I miss my appointment?
+        <span style="color: var(--primary);">▼</span>
+      </summary>
+      <div style="padding-top: 15px; color: var(--text-muted); line-height: 1.6;">
+        If you know you will miss your appointment, please use the "Request Reschedule" or "Cancel" feature in your dashboard as soon as possible. Repeatedly missing appointments without notice may result in your account being flagged.
+      </div>
+    </details>
+
+    <details style="padding: 20px; cursor: pointer;">
+      <summary style="font-weight: 600; color: var(--text-dark); font-size: 1.05rem; outline: none; display: flex; justify-content: space-between; align-items: center;">
+        Is my medical data secure?
+        <span style="color: var(--primary);">▼</span>
+      </summary>
+      <div style="padding-top: 15px; color: var(--text-muted); line-height: 1.6;">
+        Yes. We use industry-standard encryption protocols to ensure that all your medical history, prescriptions, and personal details remain completely confidential and are only shared with the specific doctors you interact with.
+      </div>
+    </details>
+    
+  </div>
+
 </div>
+
+<style>
+  details > summary {
+    list-style: none;
+  }
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+</style>
 {% endblock %}
