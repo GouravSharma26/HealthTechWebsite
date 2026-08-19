@@ -184,6 +184,25 @@ def doctor_profile(request):
     
     if request.method == 'POST':
         action = request.POST.get('action')
+        
+        if action == 'update_profile':
+            profile.specialization = request.POST.get('specialization', profile.specialization)
+            profile.qualifications = request.POST.get('qualifications', profile.qualifications)
+            profile.about = request.POST.get('about', profile.about)
+            profile.experience_years = request.POST.get('experience_years', profile.experience_years)
+            fee = request.POST.get('consultation_fee')
+            profile.consultation_fee = fee if fee else profile.consultation_fee
+            profile.languages_spoken = request.POST.get('languages_spoken', profile.languages_spoken)
+            profile.contact = request.POST.get('contact', profile.contact)
+            profile.address = request.POST.get('address', profile.address)
+            
+            if 'profile_picture' in request.FILES:
+                profile.profile_picture = request.FILES['profile_picture']
+            
+            profile.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect('doctor_profile')
+            
         appt_id = request.POST.get('appointment_id')
         appt = get_object_or_404(Appointment, id=appt_id, doctor=profile)
         
@@ -251,23 +270,6 @@ def doctor_profile(request):
                 message=f"Dr. {profile.user.get_full_name() or profile.user.username} has completed your appointment and provided a prescription."
             )
             messages.success(request, "Appointment marked as completed with prescription.")
-            
-        elif action == 'update_profile':
-            profile.specialization = request.POST.get('specialization', profile.specialization)
-            profile.qualifications = request.POST.get('qualifications', profile.qualifications)
-            profile.about = request.POST.get('about', profile.about)
-            profile.experience_years = request.POST.get('experience_years', profile.experience_years)
-            fee = request.POST.get('consultation_fee')
-            profile.consultation_fee = fee if fee else profile.consultation_fee
-            profile.languages_spoken = request.POST.get('languages_spoken', profile.languages_spoken)
-            profile.contact = request.POST.get('contact', profile.contact)
-            profile.address = request.POST.get('address', profile.address)
-            
-            if 'profile_picture' in request.FILES:
-                profile.profile_picture = request.FILES['profile_picture']
-            
-            profile.save()
-            messages.success(request, "Profile updated successfully.")
             
         return redirect('doctor_profile')
 
