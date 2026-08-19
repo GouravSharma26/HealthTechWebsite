@@ -17,7 +17,7 @@
       <h2>HealthTech</h2>
     </a>
     <div class="nav-links">
-      <a href="{% url 'ai_chat' %}" class="btn btn-outline" style="border-color: #8b5cf6; color: #8b5cf6; margin-right: 10px;">✨ HealthBot AI</a>
+      <a href="javascript:void(0);" onclick="toggleHealthBot()" class="btn btn-outline" style="border-color: #8b5cf6; color: #8b5cf6; margin-right: 10px;">✨ HealthBot AI</a>
       <a href="{% url 'doctors' %}" class="btn btn-outline">Explore Doctors</a>
       {% if user.is_authenticated %}
         
@@ -220,9 +220,40 @@
     });
   </script>
   <!-- Floating HealthBot AI Button -->
-  <a href="{% url 'ai_chat' %}" class="floating-ai-btn" style="position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, #06b6d4 100%); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.5); z-index: 1000; text-decoration: none; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: pulse-float 3s infinite;">
+  <a href="javascript:void(0);" onclick="toggleHealthBot()" class="floating-ai-btn" style="position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, #06b6d4 100%); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.5); z-index: 1000; text-decoration: none; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: pulse-float 3s infinite;">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 32px; height: 32px;"><path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.43 3.43 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clip-rule="evenodd" /></svg>
   </a>
+
+  <!-- HealthBot Popup Window -->
+  <div id="healthbot-popup" style="display: none; position: fixed; bottom: 110px; right: 30px; width: 380px; height: 550px; background: white; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0; animation: slideUp 0.3s ease;">
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, var(--primary) 0%, #06b6d4 100%); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; color: white;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; height: 24px;"><path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.43 3.43 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clip-rule="evenodd" /></svg>
+        <div style="font-weight: 700; font-size: 1.1rem;">HealthBot Triage</div>
+      </div>
+      <button onclick="toggleHealthBot()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.5rem; line-height: 1;">&times;</button>
+    </div>
+    
+    <!-- Chat Area -->
+    <div id="bot-chat-window" style="flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 15px;">
+      <div class="bot-msg-container bot-ai-message">
+        <div class="bot-bubble">Hello! I am HealthBot, your AI triage assistant. Please describe your symptoms or medical concern, and I will recommend the best type of doctor for you to see on our platform.</div>
+      </div>
+    </div>
+    
+    <div id="bot-typing-indicator" style="display: none; padding: 10px 15px; font-style: italic; color: #64748b; font-size: 0.85rem; background: #f8fafc;">
+      HealthBot is typing...
+    </div>
+
+    <!-- Input Area -->
+    <div style="padding: 15px; background: white; border-top: 1px solid #e2e8f0; display: flex; gap: 10px;">
+      <input type="text" id="bot-chat-input" placeholder="Type your symptoms..." style="flex: 1; border-radius: 20px; padding: 10px 15px; border: 1px solid #cbd5e1; outline: none; font-size: 0.95rem;" onkeypress="handleBotKeyPress(event)">
+      <button id="bot-send-btn" onclick="sendBotMessage()" style="background: var(--primary); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px; margin-left: 2px;"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" /></svg>
+      </button>
+    </div>
+  </div>
   
   <style>
     @keyframes pulse-float {
@@ -230,12 +261,130 @@
       50% { transform: translateY(-8px) scale(1.05); box-shadow: 0 15px 35px -5px rgba(14, 165, 233, 0.6); }
       100% { transform: translateY(0px) scale(1); box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.4); }
     }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
     .floating-ai-btn:hover {
       transform: scale(1.1) !important;
       animation: none !important;
       box-shadow: 0 15px 35px -5px rgba(14, 165, 233, 0.7) !important;
     }
+    
+    .bot-msg-container {
+      display: flex;
+      max-width: 85%;
+    }
+    .bot-user-message {
+      align-self: flex-end;
+    }
+    .bot-ai-message {
+      align-self: flex-start;
+    }
+    .bot-bubble {
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .bot-user-message .bot-bubble {
+      background: var(--primary);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .bot-ai-message .bot-bubble {
+      background: white;
+      color: var(--text-dark);
+      border-bottom-left-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
   </style>
+
+  <script>
+    let botChatHistory = [];
+
+    function toggleHealthBot() {
+      const popup = document.getElementById('healthbot-popup');
+      if (popup.style.display === 'none') {
+        popup.style.display = 'flex';
+        document.getElementById('bot-chat-input').focus();
+      } else {
+        popup.style.display = 'none';
+      }
+    }
+
+    function addBotMessageToUI(role, content) {
+      const chatWindow = document.getElementById('bot-chat-window');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `bot-msg-container bot-${role}-message`;
+      
+      const bubbleDiv = document.createElement('div');
+      bubbleDiv.className = 'bot-bubble';
+      
+      let formattedContent = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      formattedContent = formattedContent.replace(/\n/g, '<br>');
+      formattedContent = formattedContent.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" style="color: var(--primary); text-decoration: underline;">$1</a>');
+      
+      bubbleDiv.innerHTML = formattedContent;
+      messageDiv.appendChild(bubbleDiv);
+      chatWindow.appendChild(messageDiv);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function handleBotKeyPress(e) {
+      if (e.key === 'Enter') {
+        sendBotMessage();
+      }
+    }
+
+    async function sendBotMessage() {
+      const inputEl = document.getElementById('bot-chat-input');
+      const text = inputEl.value.trim();
+      if (!text) return;
+
+      inputEl.value = '';
+      inputEl.disabled = true;
+      document.getElementById('bot-send-btn').style.transform = 'scale(0.9)';
+      document.getElementById('bot-send-btn').disabled = true;
+      
+      addBotMessageToUI('user', text);
+      botChatHistory.push({ role: 'user', content: text });
+      
+      document.getElementById('bot-typing-indicator').style.display = 'block';
+      const chatWindow = document.getElementById('bot-chat-window');
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      
+      try {
+        const response = await fetch('/ai-chat/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: JSON.stringify({ message: text, history: botChatHistory })
+        });
+        
+        const data = await response.json();
+        document.getElementById('bot-typing-indicator').style.display = 'none';
+        
+        if (response.ok) {
+          addBotMessageToUI('ai', data.reply);
+          botChatHistory.push({ role: 'assistant', content: data.reply });
+        } else {
+          addBotMessageToUI('ai', "Sorry, I'm having trouble connecting right now. (" + data.error + ")");
+        }
+      } catch (err) {
+        document.getElementById('bot-typing-indicator').style.display = 'none';
+        addBotMessageToUI('ai', "An error occurred while sending your message.");
+      } finally {
+        inputEl.disabled = false;
+        document.getElementById('bot-send-btn').disabled = false;
+        document.getElementById('bot-send-btn').style.transform = 'scale(1)';
+        inputEl.focus();
+      }
+    }
+  </script>
 
   {% block extra_js %}{% endblock %}
 </body>
