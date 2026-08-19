@@ -3,6 +3,15 @@
 
 {% block title %}Doctor Details{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+<style>
+  /* Ensure map tile images don't get distorted */
+  .leaflet-container img { max-width: none !important; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="content mt-4 mb-4">
   <div class="nav-buttons" style="margin-bottom: 20px;">
