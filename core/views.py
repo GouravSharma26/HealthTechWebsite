@@ -684,6 +684,7 @@ def scan_prescription(request):
         
         payload = {
             "model": "google/gemini-3.7-flash",
+            "max_tokens": 500,
             "messages": [
                 {
                     "role": "user",
