@@ -219,6 +219,24 @@
       });
     });
   </script>
+  <!-- Floating HealthBot AI Button -->
+  <a href="{% url 'ai_chat' %}" class="floating-ai-btn" style="position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, #06b6d4 100%); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.5); z-index: 1000; text-decoration: none; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: pulse-float 3s infinite;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 32px; height: 32px;"><path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.43 3.43 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clip-rule="evenodd" /></svg>
+  </a>
+  
+  <style>
+    @keyframes pulse-float {
+      0% { transform: translateY(0px) scale(1); box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.4); }
+      50% { transform: translateY(-8px) scale(1.05); box-shadow: 0 15px 35px -5px rgba(14, 165, 233, 0.6); }
+      100% { transform: translateY(0px) scale(1); box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.4); }
+    }
+    .floating-ai-btn:hover {
+      transform: scale(1.1) !important;
+      animation: none !important;
+      box-shadow: 0 15px 35px -5px rgba(14, 165, 233, 0.7) !important;
+    }
+  </style>
+
   {% block extra_js %}{% endblock %}
 </body>
 </html>
