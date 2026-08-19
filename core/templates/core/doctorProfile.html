@@ -309,9 +309,15 @@
                     
                     <div class="form-group" style="margin-bottom: 15px;">
                       <label style="font-weight: 600; font-size: 0.9rem;">Attach Document (Optional)</label>
-                      <input type="file" name="prescription_document" style="width: 100%; padding: 10px; border: 1px dashed var(--border-color); border-radius: 6px;">
+                      <input type="file" id="prescription-doc-{{ appt.id }}" name="prescription_document" style="width: 100%; padding: 10px; border: 1px dashed var(--border-color); border-radius: 6px;">
                       <small style="color: var(--text-muted);">Upload receipts, test results, or scanned files.</small>
                     </div>
+
+                    <div id="additional-docs-{{ appt.id }}"></div>
+
+                    <button type="button" class="btn btn-outline" style="margin-bottom: 15px; padding: 5px 10px; font-size: 0.8rem; border-color: #cbd5e1; color: #64748b;" onclick="addDocField('{{ appt.id }}')">
+                      + Add Another Document
+                    </button>
 
                     <div class="form-group" style="margin-bottom: 20px;">
                       <label style="font-weight: 600; font-size: 0.9rem;">Suggest Follow-up Date (Optional)</label>
@@ -451,6 +457,14 @@
         if (data.instructions) {
           instructionsInput.value = data.instructions;
         }
+        
+        // Auto-attach the scanned file to the prescription document input
+        const presDocInput = document.getElementById('prescription-doc-' + apptId);
+        if (presDocInput) {
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(file);
+          presDocInput.files = dataTransfer.files;
+        }
       } else {
         alert("Failed to scan prescription: " + (data.error || "Unknown error"));
       }
@@ -461,6 +475,26 @@
       loadingDiv.style.display = 'none';
       input.value = ''; // Reset file input
     }
+  }
+
+  function addDocField(apptId) {
+    const container = document.getElementById('additional-docs-' + apptId);
+    const div = document.createElement('div');
+    div.style.marginBottom = '15px';
+    div.style.padding = '10px';
+    div.style.background = '#f8fafc';
+    div.style.borderRadius = '6px';
+    div.style.border = '1px solid #e2e8f0';
+    
+    div.innerHTML = `
+      <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+        <label style="font-weight: 600; font-size: 0.85rem;">Document Name</label>
+        <button type="button" style="color: #ef4444; background: none; border: none; cursor: pointer; font-size: 0.8rem;" onclick="this.parentElement.parentElement.remove()">Remove</button>
+      </div>
+      <input type="text" name="doc_name[]" placeholder="e.g. Blood Test Report" style="width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid var(--border-color); border-radius: 4px;" required>
+      <input type="file" name="doc_file[]" style="width: 100%;" required>
+    `;
+    container.appendChild(div);
   }
 
   function switchTab(tab) {

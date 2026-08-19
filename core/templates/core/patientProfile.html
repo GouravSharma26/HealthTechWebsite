@@ -93,12 +93,12 @@
                 <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; margin-top: 10px;">
                   <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h5 style="color: #166534; margin: 0;">Appointment Completed</h5>
-                    {% if appt.prescription_medicines or appt.prescription_instructions or appt.prescription_document %}
+                    {% if appt.prescription_medicines or appt.prescription_instructions or appt.prescription_document or appt.documents.all %}
                       <button class="btn btn-primary" style="background: #16a34a; border-color: #16a34a; padding: 6px 12px; font-size: 0.85rem;" onclick="const el = document.getElementById('prescription-{{ appt.id }}'); el.style.display = el.style.display === 'none' ? 'block' : 'none';">View Prescription</button>
                     {% endif %}
                   </div>
                   
-                  {% if appt.prescription_medicines or appt.prescription_instructions or appt.prescription_document %}
+                  {% if appt.prescription_medicines or appt.prescription_instructions or appt.prescription_document or appt.documents.all %}
                     <div id="prescription-{{ appt.id }}" style="display: none; margin-top: 15px; background: white; padding: 20px; border-radius: 8px; border: 1px solid #dcfce7; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">
                       
                       {% if appt.prescription_medicines %}
@@ -153,12 +153,20 @@
                         </div>
                       {% endif %}
                       
-                      {% if appt.prescription_document %}
-                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color);">
-                          <a href="{{ appt.prescription_document.url }}" target="_blank" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px;"><path fill-rule="evenodd" d="M19.5 21a3 3 0 003-3V9a3 3 0 00-3-3h-5.379a.75.75 0 01-.53-.22L11.47 3.66A2.25 2.25 0 009.879 3H4.5a3 3 0 00-3 3v12a3 3 0 003 3h15zm-6.75-10.5a.75.75 0 00-1.5 0v4.19l-1.72-1.72a.75.75 0 00-1.06 1.06l3 3a.75.75 0 001.06 0l3-3a.75.75 0 10-1.06-1.06l-1.72 1.72V10.5z" clip-rule="evenodd" /></svg>
-                            Download Attachments
-                          </a>
+                      {% if appt.prescription_document or appt.documents.all %}
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
+                          {% if appt.prescription_document %}
+                            <a href="{{ appt.prescription_document.url }}" target="_blank" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; width: fit-content; background: #f8fafc;">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px;"><path fill-rule="evenodd" d="M19.5 21a3 3 0 003-3V9a3 3 0 00-3-3h-5.379a.75.75 0 01-.53-.22L11.47 3.66A2.25 2.25 0 009.879 3H4.5a3 3 0 00-3 3v12a3 3 0 003 3h15zm-6.75-10.5a.75.75 0 00-1.5 0v4.19l-1.72-1.72a.75.75 0 00-1.06 1.06l3 3a.75.75 0 001.06 0l3-3a.75.75 0 10-1.06-1.06l-1.72 1.72V10.5z" clip-rule="evenodd" /></svg>
+                              Prescription Document
+                            </a>
+                          {% endif %}
+                          {% for doc in appt.documents.all %}
+                            <a href="{{ doc.document.url }}" target="_blank" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; width: fit-content; background: #f8fafc;">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px;"><path fill-rule="evenodd" d="M19.5 21a3 3 0 003-3V9a3 3 0 00-3-3h-5.379a.75.75 0 01-.53-.22L11.47 3.66A2.25 2.25 0 009.879 3H4.5a3 3 0 00-3 3v12a3 3 0 003 3h15zm-6.75-10.5a.75.75 0 00-1.5 0v4.19l-1.72-1.72a.75.75 0 00-1.06 1.06l3 3a.75.75 0 001.06 0l3-3a.75.75 0 10-1.06-1.06l-1.72 1.72V10.5z" clip-rule="evenodd" /></svg>
+                              {{ doc.name }}
+                            </a>
+                          {% endfor %}
                         </div>
                       {% endif %}
                       

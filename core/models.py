@@ -91,6 +91,14 @@ class Appointment(models.Model):
     def __str__(self):
         return f"Appointment: {self.patient.user.username} with Dr. {self.doctor.user.username} on {self.date}"
 
+class AppointmentDocument(models.Model):
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='documents')
+    name = models.CharField(max_length=100, default="Document")
+    document = models.FileField(upload_to='appointment_docs/')
+
+    def __str__(self):
+        return f"{self.name} for {self.appointment}"
+
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     message = models.TextField()

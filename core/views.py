@@ -234,6 +234,18 @@ def doctor_profile(request):
                 
             appt.save()
             
+            doc_names = request.POST.getlist('doc_name[]')
+            doc_files = request.FILES.getlist('doc_file[]')
+            
+            from .models import AppointmentDocument
+            for name, doc_file in zip(doc_names, doc_files):
+                if name and doc_file:
+                    AppointmentDocument.objects.create(
+                        appointment=appt,
+                        name=name,
+                        document=doc_file
+                    )
+            
             Notification.objects.create(
                 user=appt.patient.user,
                 message=f"Dr. {profile.user.get_full_name() or profile.user.username} has completed your appointment and provided a prescription."
