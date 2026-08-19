@@ -633,3 +633,73 @@ Keep your responses concise, friendly, and formatted nicely."""
             return JsonResponse({'error': str(e)}, status=500)
             
     return render(request, 'core/ai_chat.html')
+
+import requests
+
+def scan_prescription(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+        
+    if not request.user.is_authenticated or not request.user.is_doctor:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+    try:
+        data = json.loads(request.body)
+        image_base64 = data.get('image', '')
+        
+        if not image_base64:
+            return JsonResponse({'error': 'No image provided'}, status=400)
+            
+        if not getattr(settings, 'OPENROUTER_API_KEY', None):
+            return JsonResponse({'error': 'OPENROUTER_API_KEY is not configured.'}, status=500)
+        
+        headers = {
+            "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": "google/gemini-flash-1.5",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Extract the handwritten prescription from this image. Return ONLY a valid JSON object with exactly two keys: 'medicines' (a comma-separated string of the medicines with their dosages) and 'instructions' (a string of the usage instructions). Do not include any markdown formatting, backticks, or other text."
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": image_base64
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+        
+        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+        
+        if not response.ok:
+            return JsonResponse({'error': f"Vision API Error: {response.text}"}, status=response.status_code)
+            
+        result = response.json()
+        content = result['choices'][0]['message']['content']
+        
+        # Attempt to clean potential markdown formatting
+        content = content.replace('```json', '').replace('```', '').strip()
+        
+        try:
+            parsed_content = json.loads(content)
+        except json.JSONDecodeError:
+            parsed_content = {
+                "medicines": content,
+                "instructions": "Could not separate instructions. Review extracted text."
+            }
+            
+        return JsonResponse(parsed_content)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+

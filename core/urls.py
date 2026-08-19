@@ -28,8 +28,9 @@ urlpatterns = [
     path('chat/', views.chat_list, name='chat_list'),
     path('chat/<int:user_id>/', views.chat_detail, name='chat_detail'),
     
-    # AI Assistant
+    # AI Assistant & Features
     path('ai-chat/', views.ai_chat, name='ai_chat'),
+    path('api/scan-prescription/', views.scan_prescription, name='scan_prescription'),
     
     # Static pages
     path('about/', views.about_view, name='about'),

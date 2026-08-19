@@ -173,3 +173,6 @@ EMAIL_TIMEOUT = 10  # seconds - prevents SMTP from hanging forever
 
 # Groq API for LLM Features
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+
+# OpenRouter API for Vision LLM (Prescription Scanner)
+OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '')
