@@ -683,7 +683,7 @@ def scan_prescription(request):
         }
         
         payload = {
-            "model": "google/gemini-1.5-flash",
+            "model": "google/gemini-3.7-flash",
             "messages": [
                 {
                     "role": "user",
