@@ -703,7 +703,7 @@ def scan_prescription(request):
                     "content": [
                         {
                             "type": "text",
-                            "text": "Extract the handwritten prescription from this image. Return ONLY a valid JSON object with exactly two keys: 'medicines' (an array of strings, each string being one medicine and its dosage) and 'instructions' (an array of strings for the usage instructions). Do not include any markdown formatting or other text."
+                            "text": "Extract the handwritten prescription from this image. Act as a professional pharmacist: intelligently read the handwriting, fix any minor spelling errors in drug names, and format the output into clear, structured text. Return ONLY a valid JSON object with exactly two keys: 'medicines' (an array of strings, where each string clearly states the medicine name, dosage, and frequency/duration) and 'instructions' (an array of strings for general advice, tests, or usage instructions translated into proper, easy-to-read sentences). Do not include any markdown formatting or other text."
                         },
                         {
                             "type": "image_url",
