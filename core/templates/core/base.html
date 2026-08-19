@@ -385,6 +385,36 @@
     }
   </script>
 
+  <!-- Global Double-Submit Prevention -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('form').forEach(function(form) {
+        form.addEventListener('submit', function() {
+          const submitBtns = form.querySelectorAll('button[type="submit"]');
+          if (form.checkValidity()) {
+            submitBtns.forEach(function(btn) {
+              if (!btn.disabled) {
+                // If it has the bypass class, don't disable (e.g. for some dynamic forms that might fail silently)
+                if (!btn.classList.contains('no-disable')) {
+                    btn.disabled = true;
+                    btn.dataset.originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<span style="display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,0.3); border-radius:50%; border-top-color:#fff; animation:spin 1s ease-in-out infinite; margin-right:5px;"></span> Processing...';
+                }
+              }
+            });
+            // Inject spin animation if missing
+            if (!document.getElementById('spin-keyframes')) {
+              const style = document.createElement('style');
+              style.id = 'spin-keyframes';
+              style.innerHTML = '@keyframes spin { to { transform: rotate(360deg); } }';
+              document.head.appendChild(style);
+            }
+          }
+        });
+      });
+    });
+  </script>
+  
   {% block extra_js %}{% endblock %}
 </body>
 </html>
