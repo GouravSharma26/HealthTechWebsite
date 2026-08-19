@@ -500,27 +500,36 @@ def doctor_detail(request, id):
                 messages.error(request, "Please select a time slot.")
                 return redirect('doctor_detail', id=id)
                 
-            slot = get_object_or_404(DoctorTimeSlot, id=time_slot_id, doctor=doctor)
+            from django.db import transaction
             
-            # Check capacity again
-            booked_count = Appointment.objects.filter(
-                time_slot=slot, 
-                date=date
-            ).exclude(status__in=['Cancelled', 'Cancel Requested']).count()
-            
-            if booked_count >= slot.capacity:
-                messages.error(request, "This time slot is already full. Please select another.")
+            try:
+                with transaction.atomic():
+                    # select_for_update() locks the row until the transaction completes
+                    slot = get_object_or_404(DoctorTimeSlot.objects.select_for_update(), id=time_slot_id, doctor=doctor)
+                    
+                    # Check capacity again
+                    booked_count = Appointment.objects.filter(
+                        time_slot=slot, 
+                        date=date
+                    ).exclude(status__in=['Cancelled', 'Cancel Requested']).count()
+                    
+                    if booked_count >= slot.capacity:
+                        messages.error(request, "This time slot is already full. Please select another.")
+                        return redirect('doctor_detail', id=id)
+                        
+                    Appointment.objects.create(
+                        doctor=doctor,
+                        patient=patient,
+                        date=date,
+                        time=slot.start_time,
+                        time_slot=slot,
+                        status='Pending'
+                    )
+                messages.success(request, "Appointment booked successfully!")
+            except Exception:
+                messages.error(request, "Unable to book this slot due to high traffic. Please try again.")
                 return redirect('doctor_detail', id=id)
                 
-            Appointment.objects.create(
-                doctor=doctor,
-                patient=patient,
-                date=date,
-                time=slot.start_time,
-                time_slot=slot,
-                status='Pending'
-            )
-            messages.success(request, "Appointment booked successfully!")
             return redirect('patient_profile')
             
         elif action == 'review':
