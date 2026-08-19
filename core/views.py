@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.utils import timezone
 from .models import User, DoctorProfile, PatientProfile, Appointment, Review, Notification, DoctorTimeSlot, ChatMessage
 import datetime
+from django.conf import settings
 
 def home(request):
     return render(request, 'core/index.html')
