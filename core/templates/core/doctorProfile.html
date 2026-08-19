@@ -76,8 +76,70 @@
         </div>
       </div>
       
-      <a href="{% url 'doctor_setup' %}" class="btn btn-outline" style="width: 100%; margin-bottom: 10px; font-weight: 600;">Edit Clinic Profile</a>
+      <button type="button" class="btn btn-outline" style="width: 100%; margin-bottom: 10px; font-weight: 600;" onclick="document.getElementById('editProfileModal').style.display='flex';">Edit Clinic Profile</button>
     </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+      <div class="card" style="width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative;">
+        <button type="button" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);" onclick="document.getElementById('editProfileModal').style.display='none';">&times;</button>
+        <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">Edit Clinic Profile</h3>
+        
+        <form method="POST" action="" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 15px;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update_profile">
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+              <label>Specialization</label>
+              <input type="text" name="specialization" value="{{ profile.specialization }}" required style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+            </div>
+            <div class="form-group">
+              <label>Qualifications</label>
+              <input type="text" name="qualifications" value="{{ profile.qualifications }}" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+              <label>Experience (Years)</label>
+              <input type="number" name="experience_years" value="{{ profile.experience_years }}" required style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+            </div>
+            <div class="form-group">
+              <label>Consultation Fee (₹)</label>
+              <input type="number" name="consultation_fee" value="{{ profile.consultation_fee }}" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+              <label>Contact Phone</label>
+              <input type="text" name="contact" value="{{ profile.contact }}" required style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+            </div>
+            <div class="form-group">
+              <label>Languages Spoken</label>
+              <input type="text" name="languages_spoken" value="{{ profile.languages_spoken }}" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Clinic Address</label>
+            <input type="text" name="address" value="{{ profile.address }}" required style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+          </div>
+          
+          <div class="form-group">
+            <label>About Me</label>
+            <textarea name="about" rows="3" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">{{ profile.about }}</textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>Update Profile Picture</label>
+            <input type="file" name="profile_picture" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+          </div>
+          
+          <button type="submit" class="btn btn-primary" style="margin-top: 10px; padding: 10px; font-size: 1rem;">Save Changes</button>
+        </form>
+      </div>
 
     <div style="display: flex; flex-direction: column; gap: 20px;">
       
