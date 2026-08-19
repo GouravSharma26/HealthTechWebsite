@@ -589,3 +589,46 @@ def chat_detail(request, user_id):
         'slots': slots,
         'has_active_appointment': has_active_appointment
     })
+
+import json
+from django.http import JsonResponse
+from groq import Groq
+
+def ai_chat(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user_message = data.get('message', '')
+            history = data.get('history', [])
+            
+            if not settings.GROQ_API_KEY:
+                return JsonResponse({'error': 'GROQ_API_KEY is not configured in environment variables.'}, status=500)
+                
+            client = Groq(api_key=settings.GROQ_API_KEY)
+            
+            system_prompt = """You are HealthBot, an AI triage assistant for the HealthTech platform.
+Your job is to listen to the user's symptoms and recommend the best type of doctor specialization they should see on our platform.
+Do NOT provide definitive medical diagnoses. Emphasize that you are an AI and they must consult a real doctor.
+At the end of your advice, suggest they search our directory for a specific specialist (e.g. **Cardiologist**, **Dermatologist**, **General Physician**).
+Keep your responses concise, friendly, and formatted nicely."""
+
+            messages = [{"role": "system", "content": system_prompt}]
+            for msg in history:
+                if msg.get('role') in ['user', 'assistant']:
+                    messages.append({"role": msg['role'], "content": msg['content']})
+            
+            if not messages or messages[-1]['content'] != user_message:
+                messages.append({"role": "user", "content": user_message})
+
+            chat_completion = client.chat.completions.create(
+                messages=messages,
+                model="llama3-8b-8192",
+            )
+            
+            reply = chat_completion.choices[0].message.content
+            return JsonResponse({'reply': reply})
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+            
+    return render(request, 'core/ai_chat.html')

@@ -1,0 +1,178 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}HealthBot - AI Assistant{% endblock %}
+
+{% block content %}
+<style>
+  .chat-window {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+  }
+  
+  .message {
+    display: flex;
+    max-width: 80%;
+  }
+  
+  .message.user-message {
+    align-self: flex-end;
+  }
+  
+  .message.ai-message {
+    align-self: flex-start;
+  }
+  
+  .message-bubble {
+    padding: 12px 18px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.05), -2px -2px 5px rgba(255,255,255,0.8);
+  }
+  
+  .user-message .message-bubble {
+    background: var(--primary);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+  
+  .ai-message .message-bubble {
+    background: white;
+    color: var(--text-dark);
+    border-bottom-left-radius: 4px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .typing-indicator {
+    display: none;
+    align-self: flex-start;
+    background: white;
+    padding: 10px 15px;
+    border-radius: 20px;
+    border-bottom-left-radius: 4px;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    font-size: 0.9rem;
+    font-style: italic;
+  }
+</style>
+
+<div class="content mt-4 mb-4">
+  <div class="card" style="max-width: 800px; margin: 0 auto; height: 75vh; display: flex; flex-direction: column; padding: 25px;">
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+      <h2 style="color: var(--primary); margin-bottom: 5px; font-weight: 700;">HealthBot Triage</h2>
+      <p class="text-muted" style="margin: 0; font-size: 0.95rem;">Describe your symptoms to get a recommended specialist.</p>
+    </div>
+    
+    <div class="chat-window" id="chat-window">
+      <div class="message ai-message">
+        <div class="message-bubble">Hello! I am HealthBot, your AI triage assistant. Please describe your symptoms or medical concern, and I will recommend the best type of doctor for you to see on our platform.</div>
+      </div>
+    </div>
+    
+    <div class="typing-indicator" id="typing-indicator">
+      HealthBot is thinking...
+    </div>
+    
+    <div class="chat-input-area" style="display: flex; gap: 10px; margin-top: 15px;">
+      <input type="text" id="chat-input" class="form-control" placeholder="E.g., I have a sharp headache and a slight fever..." style="flex: 1; border-radius: 25px; padding: 12px 20px; border: 2px solid #e2e8f0; outline: none; transition: all 0.3s;" onkeypress="handleKeyPress(event)">
+      <button id="send-btn" class="btn btn-primary" onclick="sendMessage()" style="border-radius: 25px; padding: 10px 30px; font-weight: 600;">Send</button>
+    </div>
+    
+    <div style="text-align: center; margin-top: 10px;">
+      <small style="color: #94a3b8; font-size: 0.75rem;">Disclaimer: HealthBot provides general triage recommendations and is not a substitute for professional medical diagnosis or emergency care.</small>
+    </div>
+  </div>
+</div>
+
+<script>
+  let chatHistory = [];
+
+  function addMessageToUI(role, content) {
+    const chatWindow = document.getElementById('chat-window');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${role}-message`;
+    
+    const bubbleDiv = document.createElement('div');
+    bubbleDiv.className = 'message-bubble';
+    
+    // Parse basic markdown-like bold text (e.g. **Cardiologist**)
+    let formattedContent = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Convert newlines to br
+    formattedContent = formattedContent.replace(/\n/g, '<br>');
+    
+    // Convert links if any (e.g. recommended doctors link)
+    formattedContent = formattedContent.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" style="color: var(--primary); text-decoration: underline;">$1</a>');
+    
+    bubbleDiv.innerHTML = formattedContent;
+    
+    messageDiv.appendChild(bubbleDiv);
+    chatWindow.appendChild(messageDiv);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+
+  function handleKeyPress(e) {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  }
+
+  async function sendMessage() {
+    const inputEl = document.getElementById('chat-input');
+    const text = inputEl.value.trim();
+    if (!text) return;
+
+    // Disable input while waiting
+    inputEl.value = '';
+    inputEl.disabled = true;
+    document.getElementById('send-btn').disabled = true;
+    
+    // Show user message
+    addMessageToUI('user', text);
+    chatHistory.push({ role: 'user', content: text });
+    
+    // Show typing indicator
+    document.getElementById('typing-indicator').style.display = 'block';
+    
+    try {
+      const response = await fetch('{% url "ai_chat" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ message: text, history: chatHistory })
+      });
+      
+      const data = await response.json();
+      
+      document.getElementById('typing-indicator').style.display = 'none';
+      
+      if (response.ok) {
+        const aiReply = data.reply;
+        addMessageToUI('ai', aiReply);
+        chatHistory.push({ role: 'assistant', content: aiReply });
+      } else {
+        addMessageToUI('ai', "Sorry, I am having trouble connecting right now. Please try again later. (" + data.error + ")");
+      }
+    } catch (err) {
+      document.getElementById('typing-indicator').style.display = 'none';
+      addMessageToUI('ai', "An error occurred while sending your message.");
+    } finally {
+      inputEl.disabled = false;
+      document.getElementById('send-btn').disabled = false;
+      inputEl.focus();
+    }
+  }
+</script>
+{% endblock %}
