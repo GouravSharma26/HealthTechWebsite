@@ -114,7 +114,7 @@
     // Convert links if any (e.g. recommended doctors link)
     formattedContent = formattedContent.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" style="color: var(--primary); text-decoration: underline;">$1</a>');
     
-    bubbleDiv.innerHTML = formattedContent;
+    bubbleDiv.innerHTML = DOMPurify.sanitize(formattedContent);
     
     messageDiv.appendChild(bubbleDiv);
     chatWindow.appendChild(messageDiv);
@@ -143,7 +143,7 @@
     });
     html += '</div>';
     
-    bubbleDiv.innerHTML = html;
+    bubbleDiv.innerHTML = DOMPurify.sanitize(html);
     messageDiv.appendChild(bubbleDiv);
     chatWindow.appendChild(messageDiv);
     chatWindow.scrollTop = chatWindow.scrollHeight;

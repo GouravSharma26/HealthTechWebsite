@@ -119,7 +119,7 @@
         let content = data.summary;
         // Basic markdown bolding parser since we're using pre-wrap
         content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        summaryContent.innerHTML = content;
+        summaryContent.innerHTML = DOMPurify.sanitize(content);
         resultContainer.style.display = 'block';
       } else {
         errorContainer.innerText = data.error || "An error occurred while scanning.";
