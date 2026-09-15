@@ -9,7 +9,7 @@ python-dotenv==1.0.1
 requests==2.32.3
 cloudinary==1.41.0
 django-cloudinary-storage==0.3.0
-pytest==9.1.1
+pytest==8.3.4
 pytest-django==4.14.0
 freezegun==1.5.5
 django-redis==5.4.0
