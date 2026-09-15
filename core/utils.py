@@ -48,7 +48,7 @@ _MODEL_LOADED = False
 def get_model():
     global _MODEL, _MODEL_LOADED
     if not _MODEL_LOADED:
-        model_path = os.path.join(settings.BASE_DIR, 'core', 'ml_models', 'noshow_model.joblib')
+        model_path = settings.NOSHOW_MODEL_PATH
         if os.path.exists(model_path):
             try:
                 _MODEL = joblib.load(model_path)

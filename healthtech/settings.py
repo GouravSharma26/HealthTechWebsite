@@ -239,3 +239,7 @@ else:
             },
         },
     }
+
+# ML Model Configuration
+NOSHOW_MODEL_PATH = os.path.join(BASE_DIR, 'core', 'ml_models', 'noshow_model.joblib')
+NOSHOW_MIN_SAMPLES = 20

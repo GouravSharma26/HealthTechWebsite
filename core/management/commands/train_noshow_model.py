@@ -56,12 +56,15 @@ class Command(BaseCommand):
             
         # Handle sparse data scenario
         unique_classes = set(y)
-        if len(unique_classes) < 2:
-            self.stdout.write(self.style.WARNING('Not enough variance in target (need both Completed and Cancelled). Using dummy data to bootstrap.'))
-            # Bootstrap with dummy data to ensure the pipeline can be trained and saved
-            X.extend([[0, 0.0, 0, 12], [14, 1.0, 5, 15]])
-            if 0 not in unique_classes: y.append(0)
-            if 1 not in unique_classes: y.append(1)
+        real_sample_count = len(y)
+        min_samples = getattr(settings, 'NOSHOW_MIN_SAMPLES', 20)
+        
+        if real_sample_count < min_samples or len(unique_classes) < 2:
+            self.stdout.write(self.style.WARNING(
+                f'Only {real_sample_count} real samples with {len(unique_classes)} class(es) — '
+                f'not enough to train a trustworthy model. Skipping save.'
+            ))
+            return  # do NOT train/save anything — no bootstrap fallback at all
             
         self.stdout.write('Training model...')
         # Train a Logistic Regression model
@@ -69,15 +72,10 @@ class Command(BaseCommand):
         model.fit(X, y)
         
         # Ensure directory exists
-        model_dir = os.path.join(settings.BASE_DIR, 'core', 'ml_models')
+        model_path = settings.NOSHOW_MODEL_PATH
+        model_dir = os.path.dirname(model_path)
         os.makedirs(model_dir, exist_ok=True)
         
-        # Make __init__.py if it doesn't exist to make it a package (optional but good practice)
-        init_file = os.path.join(model_dir, '__init__.py')
-        if not os.path.exists(init_file):
-            open(init_file, 'a').close()
-        
-        model_path = os.path.join(model_dir, 'noshow_model.joblib')
         joblib.dump(model, model_path)
         
         self.stdout.write(self.style.SUCCESS(f'Successfully trained and saved model to {model_path}'))

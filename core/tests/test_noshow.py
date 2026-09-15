@@ -3,11 +3,25 @@ from django.core.management import call_command
 from django.utils import timezone
 from datetime import timedelta
 import datetime
+import os
 from core.models import Appointment, PatientProfile, DoctorProfile, User, DoctorTimeSlot
 from core.utils import predict_risk
 
+@pytest.fixture(autouse=True)
+def reset_model_cache():
+    import core.utils as utils
+    utils._MODEL = None
+    utils._MODEL_LOADED = False
+    yield
+    utils._MODEL = None
+    utils._MODEL_LOADED = False
+
 @pytest.mark.django_db
-def test_noshow_model_training_and_prediction():
+def test_noshow_model_training_and_prediction(settings, tmp_path):
+    # Mock settings so we write to tmp_path and lower the min samples requirement
+    settings.NOSHOW_MODEL_PATH = str(tmp_path / "test_model.joblib")
+    settings.NOSHOW_MIN_SAMPLES = 2
+    
     # 1. Create test data
     user_p = User.objects.create_user(username='patient1', password='pw')
     patient = PatientProfile.objects.create(user=user_p)
@@ -63,8 +77,17 @@ def test_noshow_model_training_and_prediction():
     assert risk in ['Low', 'Medium', 'High', 'Insufficient Data']
     
 @pytest.mark.django_db
-def test_noshow_insufficient_data():
+def test_noshow_insufficient_data(settings, tmp_path):
     # Test fallback when patient has no past history
+    settings.NOSHOW_MODEL_PATH = str(tmp_path / "test_model.joblib")
+    settings.NOSHOW_MIN_SAMPLES = 20 # Real world setting
+    
+    # Run the command with only a few samples, verifying it skips save
+    call_command('train_noshow_model')
+    
+    # Confirm it was not saved
+    assert not os.path.exists(settings.NOSHOW_MODEL_PATH)
+    
     user_p = User.objects.create_user(username='patient2', password='pw')
     patient = PatientProfile.objects.create(user=user_p)
     
@@ -78,6 +101,6 @@ def test_noshow_insufficient_data():
         status='Confirmed'
     )
     
-    # Patient2 has no past history
+    # Patient2 has no past history, and model was not trained
     risk = predict_risk(appt)
     assert risk == 'Insufficient Data'
