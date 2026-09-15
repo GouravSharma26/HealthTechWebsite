@@ -1,14 +1,17 @@
-import random
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from django.db.models import Q
+from django.urls import reverse
 from django.utils import timezone
-from .models import User, DoctorProfile, PatientProfile, Appointment, Review, Notification, DoctorTimeSlot, ChatMessage
+from django.db.models import Q
+import random
 import datetime
+import requests
 from django.conf import settings
+from .models import User, DoctorProfile, PatientProfile, Appointment, Review, Notification, DoctorTimeSlot, ChatMessage
+from .utils import rate_limit_ip, predict_risk
 
 def is_valid_file(file_obj):
     if not file_obj:
@@ -303,7 +306,11 @@ def doctor_profile(request):
             
         return redirect('doctor_profile')
 
-    appointments = profile.appointments.all().order_by('date', 'time')
+    appointments = list(profile.appointments.all().order_by('date', 'time'))
+    for appt in appointments:
+        if appt.status not in ['Completed', 'Cancelled']:
+            appt.risk_flag = predict_risk(appt)
+            
     slots = profile.time_slots.all().order_by('start_time')
     return render(request, 'core/doctorProfile.html', {'profile': profile, 'appointments': appointments, 'slots': slots})
 
