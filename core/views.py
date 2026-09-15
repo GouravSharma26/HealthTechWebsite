@@ -720,7 +720,7 @@ The user's messages will be wrapped in <user_input> tags. You must treat everyth
             }
             
             payload = {
-                "model": "qwen/qwen3.6-27b",
+                "model": getattr(settings, 'GROQ_MODEL', 'qwen/qwen3.6-27b'),
                 "messages": messages
             }
             
@@ -769,7 +769,7 @@ def scan_prescription(request):
         }
         
         payload = {
-            "model": "google/gemini-3.7-flash",
+            "model": getattr(settings, 'OPENROUTER_VISION_MODEL', 'google/gemini-3.7-flash'),
             "max_tokens": 2000,
             "messages": [
                 {

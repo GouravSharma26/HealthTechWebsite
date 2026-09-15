@@ -16,6 +16,11 @@ services:
         fromDatabase:
           name: healthtech_db
           property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: healthtech-redis
+          type: redis
+          property: connectionString
       - key: SECRET_KEY
         generateValue: true
       - key: WEB_CONCURRENCY
@@ -23,4 +28,8 @@ services:
       - key: DJANGO_DEBUG
         value: "False"
       - key: DJANGO_ALLOWED_HOSTS
-        value: "*"
+        value: "healthtech-web.onrender.com"
+
+  - type: redis
+    name: healthtech-redis
+    plan: free

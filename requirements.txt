@@ -12,3 +12,4 @@ django-cloudinary-storage==0.3.0
 pytest
 pytest-django
 freezegun
+django-redis

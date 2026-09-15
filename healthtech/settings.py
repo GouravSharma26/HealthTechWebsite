@@ -194,6 +194,28 @@ EMAIL_TIMEOUT = 10  # seconds - prevents SMTP from hanging forever
 
 # Groq API for LLM Features
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+GROQ_MODEL = os.environ.get('GROQ_MODEL', 'qwen/qwen3.6-27b')
 
 # OpenRouter API for Vision LLM (Prescription Scanner)
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '')
+OPENROUTER_VISION_MODEL = os.environ.get('OPENROUTER_VISION_MODEL', 'google/gemini-3.7-flash')
+
+# Caching
+REDIS_URL = os.environ.get('REDIS_URL')
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    }
