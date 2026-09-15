@@ -253,3 +253,57 @@ def test_ai_chat_rate_limit(mock_post, client, settings):
     response = client.post(url, json.dumps({'message': 'hello'}), content_type='application/json')
     assert response.status_code == 429
     assert 'Rate limit exceeded' in response.json().get('error', '')
+
+@pytest.mark.django_db
+@patch('requests.post')
+def test_scan_report_success(mock_post, client, users_data, settings):
+    settings.OPENROUTER_API_KEY = 'test-key'
+    patient1, patient2, doctor1, doctor2 = users_data
+    client.force_login(patient1)
+    
+    mock_response = MagicMock()
+    mock_response.ok = True
+    mock_response.json.return_value = {
+        'choices': [{'message': {'content': 'Your glucose is high.'}}]
+    }
+    mock_post.return_value = mock_response
+    
+    url = reverse('scan_report_api')
+    response = client.post(url, json.dumps({'image': 'data:image/jpeg;base64,123'}), content_type='application/json')
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert 'summary' in data
+    assert data['summary'] == 'Your glucose is high.'
+    
+    # Verify the defense string is in the prompt
+    called_json = mock_post.call_args.kwargs['json']
+    defense_str_found = any('CRITICAL SECURITY WARNING' in item['text'] for item in called_json['messages'][0]['content'] if item['type'] == 'text')
+    assert defense_str_found == True
+
+@pytest.mark.django_db
+def test_scan_report_auth_gating(client, users_data):
+    patient1, patient2, doctor1, doctor2 = users_data
+    
+    url = reverse('scan_report_api')
+    
+    # Unauthenticated
+    response = client.post(url, json.dumps({'image': '123'}), content_type='application/json')
+    assert response.status_code == 403
+    
+    # Doctor (not patient)
+    client.force_login(doctor1)
+    response = client.post(url, json.dumps({'image': '123'}), content_type='application/json')
+    assert response.status_code == 403
+
+@pytest.mark.django_db
+def test_scan_report_missing_api_key(client, users_data, settings):
+    settings.OPENROUTER_API_KEY = None
+    patient1, patient2, doctor1, doctor2 = users_data
+    client.force_login(patient1)
+    
+    url = reverse('scan_report_api')
+    response = client.post(url, json.dumps({'image': '123'}), content_type='application/json')
+    
+    assert response.status_code == 500
+    assert 'not configured' in response.json()['error']

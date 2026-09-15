@@ -1,0 +1,137 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Scan Lab Report - HealthTech{% endblock %}
+
+{% block content %}
+<div class="content mt-4 mb-4">
+  <div class="card" style="max-width: 800px; margin: 0 auto; padding: 30px;">
+    
+    <div style="text-align: center; margin-bottom: 30px;">
+      <h2 style="color: var(--primary); font-weight: 700; margin-bottom: 10px;">Lab Report Scanner</h2>
+      <p class="text-muted">Upload a photo of your lab report. Our AI will extract flagged/out-of-range values and summarize them for you.</p>
+      
+      <div style="background: #fffbeb; border: 1px solid #fef3c7; color: #b45309; padding: 15px; border-radius: 8px; font-size: 0.9rem; margin-top: 15px; text-align: left;">
+        <strong><i class="fas fa-exclamation-triangle"></i> Disclaimer:</strong> This tool is NOT a substitute for professional medical advice. It does not provide medical diagnoses. Always discuss your lab results with a qualified healthcare provider.
+      </div>
+    </div>
+
+    <div style="border: 2px dashed var(--border-color); border-radius: 12px; padding: 40px 20px; text-align: center; background: #f8fafc; margin-bottom: 25px;">
+      <input type="file" id="reportImage" accept="image/*" style="display: none;" onchange="previewImage(this)">
+      
+      <div id="upload-prompt">
+        <div style="font-size: 3rem; color: #94a3b8; margin-bottom: 15px;">📄</div>
+        <button class="btn btn-outline" onclick="document.getElementById('reportImage').click()">Select Lab Report Image</button>
+        <p style="color: #64748b; font-size: 0.85rem; margin-top: 10px;">Supports JPG, PNG, WEBP</p>
+      </div>
+      
+      <div id="image-preview-container" style="display: none;">
+        <img id="image-preview" style="max-width: 100%; max-height: 300px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 15px;">
+        <br>
+        <button class="btn btn-outline" style="font-size: 0.85rem;" onclick="document.getElementById('reportImage').click()">Change Image</button>
+      </div>
+    </div>
+
+    <div style="text-align: center;">
+      <button id="scan-btn" class="btn btn-primary" style="padding: 12px 30px; font-size: 1.1rem; width: 100%; max-width: 300px;" onclick="scanReport()" disabled>
+        Scan Report
+      </button>
+    </div>
+
+    <div id="scan-loading" style="display: none; text-align: center; margin-top: 30px;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p style="color: var(--text-muted); margin-top: 10px;">Analyzing report... this may take a few moments.</p>
+    </div>
+
+    <div id="error-container" style="display: none; margin-top: 30px; background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; padding: 15px; border-radius: 8px;">
+    </div>
+
+    <div id="result-container" style="display: none; margin-top: 30px; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 25px; border-radius: 12px;">
+      <h4 style="color: #166534; margin-bottom: 15px; font-weight: 700;">Analysis Summary</h4>
+      <div id="summary-content" style="color: var(--text-dark); line-height: 1.6; white-space: pre-wrap;">
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function getBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  }
+
+  function previewImage(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('image-preview').src = e.target.result;
+        document.getElementById('upload-prompt').style.display = 'none';
+        document.getElementById('image-preview-container').style.display = 'block';
+        document.getElementById('scan-btn').disabled = false;
+      }
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  async function scanReport() {
+    const input = document.getElementById('reportImage');
+    if (!input.files || input.files.length === 0) return;
+    
+    const file = input.files[0];
+    const loadingDiv = document.getElementById('scan-loading');
+    const resultContainer = document.getElementById('result-container');
+    const errorContainer = document.getElementById('error-container');
+    const summaryContent = document.getElementById('summary-content');
+    const scanBtn = document.getElementById('scan-btn');
+    
+    loadingDiv.style.display = 'block';
+    resultContainer.style.display = 'none';
+    errorContainer.style.display = 'none';
+    scanBtn.disabled = true;
+    
+    try {
+      const base64Data = await getBase64(file);
+      
+      const response = await fetch('/api/scan-report/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ image: base64Data })
+      });
+      
+      const data = await response.json();
+      
+      loadingDiv.style.display = 'none';
+      scanBtn.disabled = false;
+      
+      if (response.ok) {
+        let content = data.summary;
+        // Basic markdown bolding parser since we're using pre-wrap
+        content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        summaryContent.innerHTML = content;
+        resultContainer.style.display = 'block';
+      } else {
+        errorContainer.innerText = data.error || "An error occurred while scanning.";
+        errorContainer.style.display = 'block';
+      }
+      
+    } catch (err) {
+      loadingDiv.style.display = 'none';
+      scanBtn.disabled = false;
+      errorContainer.innerText = "Network error. Please try again.";
+      errorContainer.style.display = 'block';
+    }
+  }
+</script>
+{% endblock %}

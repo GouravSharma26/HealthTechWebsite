@@ -31,6 +31,8 @@ urlpatterns = [
     # AI Assistant & Features
     path('ai-chat/', views.ai_chat, name='ai_chat'),
     path('api/scan-prescription/', views.scan_prescription, name='scan_prescription'),
+    path('scan-report/', views.scan_report_page, name='scan_report_page'),
+    path('api/scan-report/', views.scan_report_api, name='scan_report_api'),
     
     # Static pages
     path('about/', views.about_view, name='about'),
