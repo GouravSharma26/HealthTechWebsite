@@ -121,6 +121,34 @@
     chatWindow.scrollTop = chatWindow.scrollHeight;
   }
 
+  function addDoctorsToUI(doctors) {
+    if (!doctors || doctors.length === 0) return;
+    
+    const chatWindow = document.getElementById('chat-window');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message ai-message';
+    messageDiv.style.width = '100%';
+    
+    const bubbleDiv = document.createElement('div');
+    bubbleDiv.className = 'message-bubble';
+    bubbleDiv.style.width = '100%';
+    
+    let html = '<strong>Recommended Doctors:</strong><div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">';
+    doctors.forEach(doc => {
+      let picHtml = doc.profile_picture 
+        ? `<img src="${doc.profile_picture}" alt="${doc.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 15px;">`
+        : `<div style="width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; margin-right: 15px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user-md" style="color: #64748b;"></i></div>`;
+        
+      html += `<div style="display: flex; align-items: center; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc;">${picHtml}<div style="flex: 1;"><h6 style="margin: 0; color: var(--primary);">${doc.name}</h6><small style="color: #64748b;">${doc.specialization} &bull; ${doc.experience} yrs exp</small></div><a href="/doctor/${doc.id}/" class="btn btn-sm btn-outline-primary" style="border-radius: 20px;">Book</a></div>`;
+    });
+    html += '</div>';
+    
+    bubbleDiv.innerHTML = html;
+    messageDiv.appendChild(bubbleDiv);
+    chatWindow.appendChild(messageDiv);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+
   function handleKeyPress(e) {
     if (e.key === 'Enter') {
       sendMessage();
@@ -162,6 +190,10 @@
         const aiReply = data.reply;
         addMessageToUI('ai', aiReply);
         chatHistory.push({ role: 'assistant', content: aiReply });
+        
+        if (data.doctors && data.doctors.length > 0) {
+          addDoctorsToUI(data.doctors);
+        }
       } else {
         addMessageToUI('ai', "Sorry, I am having trouble connecting right now. Please try again later. (" + data.error + ")");
       }
