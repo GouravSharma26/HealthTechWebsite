@@ -53,7 +53,7 @@
       
       <!-- Message Input -->
       <div style="padding: 15px 20px; background: white; border-top: 1px solid var(--border-color);">
-        <form method="POST" style="display: flex; gap: 10px; margin: 0; padding: 0; background: none; box-shadow: none; border: none; border-radius: 0; overflow: visible;">
+        <form id="chat-form" method="POST" style="display: flex; gap: 10px; margin: 0; padding: 0; background: none; box-shadow: none; border: none; border-radius: 0; overflow: visible;">
           {% csrf_token %}
           <input type="hidden" name="action" value="send_message">
           <textarea name="message" rows="1" placeholder="Type a message..." required style="flex: 1; padding: 12px 15px; border-radius: 20px; border: 1px solid var(--border-color); resize: none; font-family: inherit; font-size: 0.95rem; outline: none;"></textarea>
@@ -205,22 +205,99 @@
     });
   }
   
-  // Auto-refresh chat messages every 3 seconds
-  setInterval(function() {
-    fetch(window.location.href)
-      .then(response => response.text())
-      .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const newMessages = doc.getElementById('messages-container').innerHTML;
-        const currentMessages = document.getElementById('messages-container');
-        
-        if (currentMessages.innerHTML !== newMessages) {
-          currentMessages.innerHTML = newMessages;
-          currentMessages.scrollTop = currentMessages.scrollHeight;
-        }
-      })
-      .catch(err => console.error('Error fetching new messages:', err));
-  }, 3000);
+  // WebSocket logic
+  const otherUserId = '{{ other_user.id }}';
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const chatSocket = new WebSocket(
+      protocol + '//' + window.location.host + '/ws/chat/' + otherUserId + '/'
+  );
+  const currentUserId = '{{ request.user.id }}';
+
+  chatSocket.onmessage = function(e) {
+      const data = JSON.parse(e.data);
+      const messagesContainer = document.getElementById('messages-container');
+      
+      // Remove empty message placeholder if present
+      if (messagesContainer.innerText.includes("No messages yet.")) {
+          messagesContainer.innerHTML = '';
+      }
+      
+      const isSender = (data.sender_id.toString() === currentUserId.toString());
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.style.display = 'flex';
+      messageDiv.style.flexDirection = 'column';
+      messageDiv.style.maxWidth = '75%';
+      messageDiv.style.alignSelf = isSender ? 'flex-end' : 'flex-start';
+      
+      const bubble = document.createElement('div');
+      bubble.style.padding = '12px 16px';
+      bubble.style.borderRadius = '18px';
+      bubble.style.lineHeight = '1.4';
+      bubble.style.fontSize = '0.95rem';
+      
+      if (isSender) {
+          bubble.style.background = 'var(--primary)';
+          bubble.style.color = 'white';
+          bubble.style.borderBottomRightRadius = '4px';
+      } else {
+          bubble.style.background = 'white';
+          bubble.style.color = 'var(--text-dark)';
+          bubble.style.border = '1px solid var(--border-color)';
+          bubble.style.borderBottomLeftRadius = '4px';
+      }
+      
+      // sanitize message to prevent XSS
+      bubble.innerHTML = DOMPurify.sanitize(data.message.replace(/\n/g, '<br>'));
+      
+      const timeSpan = document.createElement('span');
+      timeSpan.style.fontSize = '0.75rem';
+      timeSpan.style.color = 'var(--text-muted)';
+      timeSpan.style.marginTop = '4px';
+      if (isSender) {
+          timeSpan.style.textAlign = 'right';
+      }
+      timeSpan.innerText = data.timestamp;
+      
+      messageDiv.appendChild(bubble);
+      messageDiv.appendChild(timeSpan);
+      messagesContainer.appendChild(messageDiv);
+      
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  };
+
+  chatSocket.onclose = function(e) {
+      console.error('Chat socket closed unexpectedly');
+  };
+
+  const chatForm = document.getElementById('chat-form');
+  if (chatForm) {
+      const chatInput = chatForm.querySelector('textarea[name="message"]');
+      chatForm.addEventListener('submit', function(e) {
+          if (chatSocket.readyState === WebSocket.OPEN) {
+              e.preventDefault();
+              const message = chatInput.value;
+              chatSocket.send(JSON.stringify({
+                  'message': message
+              }));
+              chatInput.value = '';
+          }
+          // If WebSocket is not OPEN, let the form submit normally
+      });
+      
+      // Handle enter key to submit
+      chatInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              if(chatInput.value.trim() !== '') {
+                  if (chatSocket.readyState === WebSocket.OPEN) {
+                      chatForm.dispatchEvent(new Event('submit', { cancelable: true }));
+                  } else {
+                      chatForm.submit();
+                  }
+              }
+          }
+      });
+  }
 </script>
 {% endblock %}

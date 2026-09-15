@@ -41,6 +41,7 @@ if not DEBUG:
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -83,6 +84,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'healthtech.wsgi.application'
+ASGI_APPLICATION = 'healthtech.asgi.application'
 
 
 # Database
@@ -218,4 +220,22 @@ else:
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
             'LOCATION': 'unique-snowflake',
         }
+    }
+
+import sys
+# Channels Configuration
+if 'pytest' in sys.modules or 'pytest' in sys.argv[0]:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer'
+        }
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                'hosts': [REDIS_URL or 'redis://127.0.0.1:6379'],
+            },
+        },
     }

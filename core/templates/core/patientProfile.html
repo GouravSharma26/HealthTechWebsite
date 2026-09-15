@@ -6,189 +6,249 @@
 {% block content %}
 <div class="content mt-4 mb-4">
   <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
-    
+
     <!-- Profile Info -->
     <div class="card text-center" style="align-self: start;">
       <div style="font-size: 4rem; margin-bottom: 20px;">👤</div>
       <h3 style="color: var(--primary);">{{ profile.user.username }}</h3>
       <p style="color: var(--text-muted); margin-bottom: 20px;">Patient</p>
-      
-      <div style="text-align: left; background: var(--bg-color); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+
+      <div
+        style="text-align: left; background: var(--bg-color); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
         <p><strong>Email:</strong> {{ profile.user.email }}</p>
         <p><strong>Contact:</strong> {{ profile.contact }}</p>
       </div>
-      
+
       <div style="display: flex; gap: 10px; flex-direction: column;">
         <a href="{% url 'patient_setup' %}" class="btn btn-outline" style="width: 100%;">Edit Profile</a>
-        <a href="{% url 'scan_report_page' %}" class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px;"><path fill-rule="evenodd" d="M3 4.875C3 3.839 3.84 3 4.875 3h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0 1 3 9.375v-4.5ZM4.875 4.5a.375.375 0 0 0-.375.375v4.5c0 .207.168.375.375.375h4.5a.375.375 0 0 0 .375-.375v-4.5a.375.375 0 0 0-.375-.375h-4.5Zm7.875.375c0-1.036.84-1.875 1.875-1.875h4.5C20.16 3 21 3.84 21 4.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5Zm1.875-.375a.375.375 0 0 0-.375.375v4.5c0 .207.168.375.375.375h4.5a.375.375 0 0 0 .375-.375v-4.5a.375.375 0 0 0-.375-.375h-4.5ZM6 6.75A.75.75 0 0 1 6.75 6h.5a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.75.75h-.5A.75.75 0 0 1 6 7.25v-.5Zm9 0A.75.75 0 0 1 15.75 6h.5a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.75.75h-.5A.75.75 0 0 1 15 7.25v-.5ZM3 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0 1 3 19.125v-4.5Zm1.875-.375a.375.375 0 0 0-.375.375v4.5c0 .207.168.375.375.375h4.5a.375.375 0 0 0 .375-.375v-4.5a.375.375 0 0 0-.375-.375h-4.5Zm1.125 2.5a.75.75 0 0 1 .75-.75h.5a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.75.75h-.5a.75.75 0 0 1-.75-.75v-.5Zm7.5-3.375c0-.414.336-.75.75-.75h4.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-.75.75h-4.5a.75.75 0 0 1-.75-.75v-4.5Z" clip-rule="evenodd" /></svg>
+        <a href="{% url 'scan_report_page' %}" class="btn btn-primary"
+          style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px;">
+            <path fill-rule="evenodd"
+              d="M3 4.875C3 3.839 3.84 3 4.875 3h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0 1 3 9.375v-4.5ZM4.875 4.5a.375.375 0 0 0-.375.375v4.5c0 .207.168.375.375.375h4.5a.375.375 0 0 0 .375-.375v-4.5a.375.375 0 0 0-.375-.375h-4.5Zm7.875.375c0-1.036.84-1.875 1.875-1.875h4.5C20.16 3 21 3.84 21 4.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5Zm1.875-.375a.375.375 0 0 0-.375.375v4.5c0 .207.168.375.375.375h4.5a.375.375 0 0 0 .375-.375v-4.5a.375.375 0 0 0-.375-.375h-4.5ZM6 6.75A.75.75 0 0 1 6.75 6h.5a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.75.75h-.5A.75.75 0 0 1 6 7.25v-.5Zm9 0A.75.75 0 0 1 15.75 6h.5a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.75.75h-.5A.75.75 0 0 1 15 7.25v-.5ZM3 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0 1 3 19.125v-4.5Zm1.875-.375a.375.375 0 0 0-.375.375v4.5c0 .207.168.375.375.375h4.5a.375.375 0 0 0 .375-.375v-4.5a.375.375 0 0 0-.375-.375h-4.5Zm1.125 2.5a.75.75 0 0 1 .75-.75h.5a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.75.75h-.5a.75.75 0 0 1-.75-.75v-.5Zm7.5-3.375c0-.414.336-.75.75-.75h4.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-.75.75h-4.5a.75.75 0 0 1-.75-.75v-4.5Z"
+              clip-rule="evenodd" />
+          </svg>
           Scan Lab Report (AI)
         </a>
       </div>
-      
+
     </div>
 
     <!-- Appointments -->
     <div class="card">
-      <h3 style="color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">My Appointments</h3>
-      
+      <h3
+        style="color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
+        My Appointments</h3>
+
       {% if appointments %}
-        <div style="display: flex; flex-direction: column; gap: 15px;">
-          {% for appt in appointments %}
-          <div style="display: flex; flex-direction: column; background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-              <div>
-                <h4 style="color: var(--text-dark);">Dr. {{ appt.doctor.user.get_full_name|default:appt.doctor.user.username }}</h4>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">{{ appt.doctor.specialization }}</p>
-              </div>
-              <div class="text-center">
-                <p style="font-weight: 600;">{{ appt.date }} at {{ appt.time }}</p>
-                <span class="badge {% if appt.status == 'Confirmed' %}badge-success{% elif 'Requested' in appt.status %}badge-pending{% else %}badge-pending{% endif %}">{{ appt.status }}</span>
+      <div style="display: flex; flex-direction: column; gap: 15px;">
+        {% for appt in appointments %}
+        <div
+          style="display: flex; flex-direction: column; background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div>
+              <h4 style="color: var(--text-dark);">Dr. {{
+                appt.doctor.user.get_full_name|default:appt.doctor.user.username }}</h4>
+              <p style="color: var(--text-muted); font-size: 0.9rem;">{{ appt.doctor.specialization }}</p>
+            </div>
+            <div class="text-center">
+              <p style="font-weight: 600;">{{ appt.date }} at {{ appt.time }}</p>
+              <span
+                class="badge {% if appt.status == 'Confirmed' %}badge-success{% elif 'Requested' in appt.status %}badge-pending{% else %}badge-pending{% endif %}">{{
+                appt.status }}</span>
+            </div>
+          </div>
+
+          {% if appt.status == 'Cancelled' and appt.doctor_reason %}
+          <div style="background: #fee2e2; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem;">
+            <strong style="color: #b91c1c;">Doctor's Reason:</strong> {{ appt.doctor_reason }}
+          </div>
+          {% endif %}
+
+          {% if appt.status == 'Pending' or appt.status == 'Confirmed' %}
+          <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;"
+              onclick="document.getElementById('reschedule-{{ appt.id }}').style.display='block'; document.getElementById('cancel-{{ appt.id }}').style.display='none';">Request
+              Reschedule</button>
+            <button class="btn btn-outline"
+              style="padding: 6px 12px; font-size: 0.8rem; color: #ef4444; border-color: #ef4444;"
+              onclick="document.getElementById('cancel-{{ appt.id }}').style.display='block'; document.getElementById('reschedule-{{ appt.id }}').style.display='none';">Request
+              Cancel</button>
+          </div>
+
+          <!-- Reschedule Form -->
+          <form id="reschedule-{{ appt.id }}" method="POST"
+            style="display: none; margin-top: 15px; background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: none;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reschedule_request">
+            <input type="hidden" name="appointment_id" value="{{ appt.id }}">
+            <h5 style="margin-bottom: 10px; color: var(--primary);">Reschedule Request</h5>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+              <div style="flex: 1;"><label style="font-size: 0.8rem;">New Date</label><input type="date"
+                  name="reschedule_date" id="reschedule_date_{{ appt.id }}"
+                  onchange="loadRescheduleSlots('{{ appt.id }}', '{{ appt.doctor.id }}', this.value)" required
+                  style="padding: 8px; width: 100%; box-sizing: border-box;"></div>
+            </div>
+            <div style="margin-bottom: 10px;">
+              <label style="font-size: 0.8rem;">New Time</label>
+              <input type="hidden" name="reschedule_time" id="reschedule_time_{{ appt.id }}" required>
+              <div id="reschedule_slots_{{ appt.id }}"
+                style="display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; max-height: 150px; overflow-y: auto;">
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Please select a date first.</p>
               </div>
             </div>
-            
-            {% if appt.status == 'Cancelled' and appt.doctor_reason %}
-              <div style="background: #fee2e2; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem;">
-                <strong style="color: #b91c1c;">Doctor's Reason:</strong> {{ appt.doctor_reason }}
+            <div style="margin-bottom: 10px;"><label style="font-size: 0.8rem;">Reason</label><input type="text"
+                name="reason" placeholder="Why do you need to reschedule?" required
+                style="padding: 8px; width: 100%; box-sizing: border-box;"></div>
+            <div style="display: flex; gap: 10px;">
+              <button type="submit" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem;">Submit
+                Request</button>
+              <button type="button" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.85rem;"
+                onclick="document.getElementById('reschedule-{{ appt.id }}').style.display='none';">Cancel</button>
+            </div>
+          </form>
+
+          <!-- Cancel Form -->
+          <form id="cancel-{{ appt.id }}" method="POST"
+            style="display: none; margin-top: 15px; background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: none;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="cancel_request">
+            <input type="hidden" name="appointment_id" value="{{ appt.id }}">
+            <h5 style="margin-bottom: 10px; color: #ef4444;">Cancel Request</h5>
+            <div style="margin-bottom: 10px;"><label style="font-size: 0.8rem;">Reason</label><input type="text"
+                name="reason" placeholder="Why do you need to cancel?" required style="padding: 8px;"></div>
+            <div style="display: flex; gap: 10px;">
+              <button type="submit" class="btn btn-primary"
+                style="background: #ef4444; padding: 8px 16px; font-size: 0.85rem;">Submit Request</button>
+              <button type="button" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.85rem;"
+                onclick="document.getElementById('cancel-{{ appt.id }}').style.display='none';">Nevermind</button>
+            </div>
+          </form>
+          {% endif %}
+          {% if appt.status == 'Completed' %}
+          <div
+            style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h5 style="color: #166534; margin: 0;">Appointment Completed</h5>
+              {% if appt.prescription_medicines or appt.prescription_instructions or appt.prescription_document or
+              appt.documents.all %}
+              <button class="btn btn-primary"
+                style="background: #16a34a; border-color: #16a34a; padding: 6px 12px; font-size: 0.85rem;"
+                onclick="const el = document.getElementById('prescription-{{ appt.id }}'); el.style.display = el.style.display === 'none' ? 'block' : 'none';">View
+                Prescription</button>
+              {% endif %}
+            </div>
+
+            {% if appt.prescription_medicines or appt.prescription_instructions or appt.prescription_document or
+            appt.documents.all %}
+            <div id="prescription-{{ appt.id }}"
+              style="display: none; margin-top: 15px; background: white; padding: 20px; border-radius: 8px; border: 1px solid #dcfce7; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">
+
+              {% if appt.prescription_medicines %}
+              <div style="margin-bottom: 15px;">
+                <h6 style="color: #166534; margin-bottom: 5px; font-weight: 700;">Prescribed Medicines</h6>
+                <p style="color: var(--text-dark); margin: 0; line-height: 1.5; white-space: pre-line;">{{
+                  appt.prescription_medicines }}</p>
               </div>
-            {% endif %}
+              {% endif %}
 
-            {% if appt.status == 'Pending' or appt.status == 'Confirmed' %}
-              <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;" onclick="document.getElementById('reschedule-{{ appt.id }}').style.display='block'; document.getElementById('cancel-{{ appt.id }}').style.display='none';">Request Reschedule</button>
-                <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem; color: #ef4444; border-color: #ef4444;" onclick="document.getElementById('cancel-{{ appt.id }}').style.display='block'; document.getElementById('reschedule-{{ appt.id }}').style.display='none';">Request Cancel</button>
+              {% if appt.prescription_instructions %}
+              <div style="margin-bottom: 15px;">
+                <h6 style="color: #166534; margin-bottom: 5px; font-weight: 700;">Doctor's Instructions</h6>
+                <p style="color: var(--text-dark); margin: 0; line-height: 1.5; white-space: pre-line;">{{
+                  appt.prescription_instructions }}</p>
               </div>
+              {% endif %}
 
-              <!-- Reschedule Form -->
-              <form id="reschedule-{{ appt.id }}" method="POST" style="display: none; margin-top: 15px; background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: none;">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="reschedule_request">
-                <input type="hidden" name="appointment_id" value="{{ appt.id }}">
-                <h5 style="margin-bottom: 10px; color: var(--primary);">Reschedule Request</h5>
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                  <div style="flex: 1;"><label style="font-size: 0.8rem;">New Date</label><input type="date" name="reschedule_date" id="reschedule_date_{{ appt.id }}" onchange="loadRescheduleSlots('{{ appt.id }}', '{{ appt.doctor.id }}', this.value)" required style="padding: 8px; width: 100%; box-sizing: border-box;"></div>
-                </div>
-                <div style="margin-bottom: 10px;">
-                  <label style="font-size: 0.8rem;">New Time</label>
-                  <input type="hidden" name="reschedule_time" id="reschedule_time_{{ appt.id }}" required>
-                  <div id="reschedule_slots_{{ appt.id }}" style="display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; max-height: 150px; overflow-y: auto;">
-                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Please select a date first.</p>
+              {% if appt.follow_up_date %}
+              <div
+                style="margin-bottom: 15px; background: #e0f2fe; padding: 10px; border-radius: 6px; border-left: 4px solid #0284c7;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <h6 style="color: #0369a1; margin-bottom: 2px; font-weight: 700;">Suggested Follow-up</h6>
+                    <p style="color: #075985; margin: 0; font-weight: 600;">{{ appt.follow_up_date }}</p>
                   </div>
+                  <button type="button" class="btn btn-primary"
+                    style="padding: 6px 12px; font-size: 0.85rem; background: #0284c7; border-color: #0284c7;"
+                    onclick="openFollowUpModal('{{ appt.id }}', '{{ appt.doctor.id }}', '{{ appt.follow_up_date|date:'Y-m-d' }}')">Book
+                    Follow-up</button>
                 </div>
-                <div style="margin-bottom: 10px;"><label style="font-size: 0.8rem;">Reason</label><input type="text" name="reason" placeholder="Why do you need to reschedule?" required style="padding: 8px; width: 100%; box-sizing: border-box;"></div>
-                <div style="display: flex; gap: 10px;">
-                  <button type="submit" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem;">Submit Request</button>
-                  <button type="button" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.85rem;" onclick="document.getElementById('reschedule-{{ appt.id }}').style.display='none';">Cancel</button>
-                </div>
-              </form>
 
-              <!-- Cancel Form -->
-              <form id="cancel-{{ appt.id }}" method="POST" style="display: none; margin-top: 15px; background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: none;">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="cancel_request">
-                <input type="hidden" name="appointment_id" value="{{ appt.id }}">
-                <h5 style="margin-bottom: 10px; color: #ef4444;">Cancel Request</h5>
-                <div style="margin-bottom: 10px;"><label style="font-size: 0.8rem;">Reason</label><input type="text" name="reason" placeholder="Why do you need to cancel?" required style="padding: 8px;"></div>
-                <div style="display: flex; gap: 10px;">
-                  <button type="submit" class="btn btn-primary" style="background: #ef4444; padding: 8px 16px; font-size: 0.85rem;">Submit Request</button>
-                  <button type="button" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.85rem;" onclick="document.getElementById('cancel-{{ appt.id }}').style.display='none';">Nevermind</button>
-                </div>
-              </form>
-            {% endif %}
-              {% if appt.status == 'Completed' %}
-                <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; margin-top: 10px;">
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h5 style="color: #166534; margin: 0;">Appointment Completed</h5>
-                    {% if appt.prescription_medicines or appt.prescription_instructions or appt.prescription_document or appt.documents.all %}
-                      <button class="btn btn-primary" style="background: #16a34a; border-color: #16a34a; padding: 6px 12px; font-size: 0.85rem;" onclick="const el = document.getElementById('prescription-{{ appt.id }}'); el.style.display = el.style.display === 'none' ? 'block' : 'none';">View Prescription</button>
-                    {% endif %}
+                <!-- Inline Follow-up Booking Form -->
+                <form id="followUpModal_{{ appt.id }}" action="{% url 'doctor_detail' appt.doctor.id %}" method="POST"
+                  style="display: none; margin-top: 15px; background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="book">
+
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 style="color: var(--primary); margin: 0; font-size: 1.1rem;">Book Follow-up</h4>
+                    <button type="button"
+                      onclick="document.getElementById('followUpModal_{{ appt.id }}').style.display = 'none';"
+                      style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
                   </div>
-                  
-                  {% if appt.prescription_medicines or appt.prescription_instructions or appt.prescription_document or appt.documents.all %}
-                    <div id="prescription-{{ appt.id }}" style="display: none; margin-top: 15px; background: white; padding: 20px; border-radius: 8px; border: 1px solid #dcfce7; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">
-                      
-                      {% if appt.prescription_medicines %}
-                        <div style="margin-bottom: 15px;">
-                          <h6 style="color: #166534; margin-bottom: 5px; font-weight: 700;">Prescribed Medicines</h6>
-                          <p style="color: var(--text-dark); margin: 0; line-height: 1.5; white-space: pre-line;">{{ appt.prescription_medicines }}</p>
-                        </div>
-                      {% endif %}
-                      
-                      {% if appt.prescription_instructions %}
-                        <div style="margin-bottom: 15px;">
-                          <h6 style="color: #166534; margin-bottom: 5px; font-weight: 700;">Doctor's Instructions</h6>
-                          <p style="color: var(--text-dark); margin: 0; line-height: 1.5; white-space: pre-line;">{{ appt.prescription_instructions }}</p>
-                        </div>
-                      {% endif %}
-                      
-                      {% if appt.follow_up_date %}
-                        <div style="margin-bottom: 15px; background: #e0f2fe; padding: 10px; border-radius: 6px; border-left: 4px solid #0284c7;">
-                          <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                              <h6 style="color: #0369a1; margin-bottom: 2px; font-weight: 700;">Suggested Follow-up</h6>
-                              <p style="color: #075985; margin: 0; font-weight: 600;">{{ appt.follow_up_date }}</p>
-                            </div>
-                            <button type="button" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem; background: #0284c7; border-color: #0284c7;" onclick="openFollowUpModal('{{ appt.id }}', '{{ appt.doctor.id }}', '{{ appt.follow_up_date|date:'Y-m-d' }}')">Book Follow-up</button>
-                          </div>
-                          
-                          <!-- Inline Follow-up Booking Form -->
-                          <form id="followUpModal_{{ appt.id }}" action="{% url 'doctor_detail' appt.doctor.id %}" method="POST" style="display: none; margin-top: 15px; background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="book">
-                            
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                              <h4 style="color: var(--primary); margin: 0; font-size: 1.1rem;">Book Follow-up</h4>
-                              <button type="button" onclick="document.getElementById('followUpModal_{{ appt.id }}').style.display = 'none';" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
-                            </div>
 
-                            <div class="form-group">
-                              <label>Date</label>
-                              <input type="date" name="date" value="{{ appt.follow_up_date|date:'Y-m-d' }}" readonly style="width: 100%; box-sizing: border-box; background: #f8fafc; cursor: not-allowed; padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px;">
-                            </div>
-                            
-                            <div class="form-group">
-                              <label>Select Time Slot</label>
-                              <input type="hidden" name="time_slot_id" id="time_slot_id_{{ appt.id }}" required>
-                              <div id="slots-container_{{ appt.id }}" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto;">
-                                <p style="color: var(--text-muted); font-size: 0.9rem;">Loading slots...</p>
-                              </div>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 10px; font-size: 1rem;">Confirm Booking</button>
-                          </form>
-                        </div>
-                      {% endif %}
-                      
-                      {% if appt.prescription_document or appt.documents.all %}
-                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
-                          {% if appt.prescription_document %}
-                            <a href="{{ appt.prescription_document.url }}" target="_blank" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; width: fit-content; background: #f8fafc;">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px;"><path fill-rule="evenodd" d="M19.5 21a3 3 0 003-3V9a3 3 0 00-3-3h-5.379a.75.75 0 01-.53-.22L11.47 3.66A2.25 2.25 0 009.879 3H4.5a3 3 0 00-3 3v12a3 3 0 003 3h15zm-6.75-10.5a.75.75 0 00-1.5 0v4.19l-1.72-1.72a.75.75 0 00-1.06 1.06l3 3a.75.75 0 001.06 0l3-3a.75.75 0 10-1.06-1.06l-1.72 1.72V10.5z" clip-rule="evenodd" /></svg>
-                              Prescription Document
-                            </a>
-                          {% endif %}
-                          {% for doc in appt.documents.all %}
-                            <a href="{{ doc.document.url }}" target="_blank" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; width: fit-content; background: #f8fafc;">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px;"><path fill-rule="evenodd" d="M19.5 21a3 3 0 003-3V9a3 3 0 00-3-3h-5.379a.75.75 0 01-.53-.22L11.47 3.66A2.25 2.25 0 009.879 3H4.5a3 3 0 00-3 3v12a3 3 0 003 3h15zm-6.75-10.5a.75.75 0 00-1.5 0v4.19l-1.72-1.72a.75.75 0 00-1.06 1.06l3 3a.75.75 0 001.06 0l3-3a.75.75 0 10-1.06-1.06l-1.72 1.72V10.5z" clip-rule="evenodd" /></svg>
-                              {{ doc.name }}
-                            </a>
-                          {% endfor %}
-                        </div>
-                      {% endif %}
-                      
+                  <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" name="date" value="{{ appt.follow_up_date|date:'Y-m-d' }}" readonly
+                      style="width: 100%; box-sizing: border-box; background: #f8fafc; cursor: not-allowed; padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                  </div>
+
+                  <div class="form-group">
+                    <label>Select Time Slot</label>
+                    <input type="hidden" name="time_slot_id" id="time_slot_id_{{ appt.id }}" required>
+                    <div id="slots-container_{{ appt.id }}"
+                      style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto;">
+                      <p style="color: var(--text-muted); font-size: 0.9rem;">Loading slots...</p>
                     </div>
-                  {% endif %}
-                </div>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary"
+                    style="width: 100%; margin-top: 10px; padding: 10px; font-size: 1rem;">Confirm Booking</button>
+                </form>
+              </div>
+              {% endif %}
+
+              {% if appt.prescription_document or appt.documents.all %}
+              <div
+                style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
+                {% if appt.prescription_document %}
+                <a href="{{ appt.prescription_document.url }}" target="_blank" class="btn btn-outline"
+                  style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; width: fit-content; background: #f8fafc;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px;">
+                    <path fill-rule="evenodd"
+                      d="M19.5 21a3 3 0 003-3V9a3 3 0 00-3-3h-5.379a.75.75 0 01-.53-.22L11.47 3.66A2.25 2.25 0 009.879 3H4.5a3 3 0 00-3 3v12a3 3 0 003 3h15zm-6.75-10.5a.75.75 0 00-1.5 0v4.19l-1.72-1.72a.75.75 0 00-1.06 1.06l3 3a.75.75 0 001.06 0l3-3a.75.75 0 10-1.06-1.06l-1.72 1.72V10.5z"
+                      clip-rule="evenodd" />
+                  </svg>
+                  Prescription Document
+                </a>
+                {% endif %}
+                {% for doc in appt.documents.all %}
+                <a href="{{ doc.document.url }}" target="_blank" class="btn btn-outline"
+                  style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; width: fit-content; background: #f8fafc;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px;">
+                    <path fill-rule="evenodd"
+                      d="M19.5 21a3 3 0 003-3V9a3 3 0 00-3-3h-5.379a.75.75 0 01-.53-.22L11.47 3.66A2.25 2.25 0 009.879 3H4.5a3 3 0 00-3 3v12a3 3 0 003 3h15zm-6.75-10.5a.75.75 0 00-1.5 0v4.19l-1.72-1.72a.75.75 0 00-1.06 1.06l3 3a.75.75 0 001.06 0l3-3a.75.75 0 10-1.06-1.06l-1.72 1.72V10.5z"
+                      clip-rule="evenodd" />
+                  </svg>
+                  {{ doc.name }}
+                </a>
+                {% endfor %}
+              </div>
               {% endif %}
 
             </div>
-          {% endfor %}
+            {% endif %}
+          </div>
+          {% endif %}
+
         </div>
+        {% endfor %}
+      </div>
       {% else %}
-        <p style="color: var(--text-muted); text-align: center; padding: 20px;">You have no upcoming appointments.</p>
-        <div class="text-center">
-          <a href="{% url 'doctors' %}" class="btn btn-primary">Find a Doctor</a>
-        </div>
+      <p style="color: var(--text-muted); text-align: center; padding: 20px;">You have no upcoming appointments.</p>
+      <div class="text-center">
+        <a href="{% url 'doctors' %}" class="btn btn-primary">Find a Doctor</a>
+      </div>
       {% endif %}
     </div>
 
@@ -198,128 +258,128 @@
 
 {% block extra_js %}
 <script>
-function openFollowUpModal(apptId, doctorId, dateStr) {
-  var modal = document.getElementById('followUpModal_' + apptId);
-  if (modal.style.display === 'block') {
-    modal.style.display = 'none';
-    return;
-  }
-  modal.style.display = 'block';
-  var slotsContainer = document.getElementById('slots-container_' + apptId);
-  var timeSlotInput = document.getElementById('time_slot_id_' + apptId);
-  
-  slotsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Loading slots...</p>';
-  timeSlotInput.value = '';
-  
-  fetch(`/api/doctor/${doctorId}/slots/?date=${dateStr}`)
-    .then(res => res.json())
-    .then(data => {
-      slotsContainer.innerHTML = '';
-      if (data.slots && data.slots.length > 0) {
-        data.slots.forEach(slot => {
-          var btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'btn btn-outline';
-          btn.style.padding = '8px 12px';
-          btn.style.fontSize = '0.9rem';
-          
-          if (slot.is_full || slot.is_passed) {
-            btn.innerHTML = `${slot.start_time} - ${slot.end_time}<br><small>${slot.is_passed ? 'Time Passed' : 'Full'}</small>`;
-            btn.style.backgroundColor = '#e2e8f0';
-            btn.style.color = '#94a3b8';
-            btn.style.borderColor = '#cbd5e1';
-            btn.style.cursor = 'not-allowed';
-            btn.disabled = true;
-          } else {
-            btn.innerHTML = `${slot.start_time} - ${slot.end_time}<br><small>Available (${slot.capacity - slot.booked} left)</small>`;
-            
-            btn.addEventListener('click', function() {
-              // Deselect all
-              Array.from(slotsContainer.children).forEach(c => {
-                if(!c.disabled) {
-                  c.style.backgroundColor = 'transparent';
-                  c.style.color = 'var(--primary)';
-                }
-              });
-              
-              // Select this
-              this.style.backgroundColor = 'var(--primary)';
-              this.style.color = 'white';
-              timeSlotInput.value = slot.id;
-            });
-          }
-          slotsContainer.appendChild(btn);
-        });
-      } else {
-        slotsContainer.innerHTML = '<p style="color: #ef4444; font-size: 0.9rem;">No slots available for this date.</p>';
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      slotsContainer.innerHTML = '<p style="color: #ef4444; font-size: 0.9rem;">Error loading slots.</p>';
-    });
-}
+  function openFollowUpModal(apptId, doctorId, dateStr) {
+    var modal = document.getElementById('followUpModal_' + apptId);
+    if (modal.style.display === 'block') {
+      modal.style.display = 'none';
+      return;
+    }
+    modal.style.display = 'block';
+    var slotsContainer = document.getElementById('slots-container_' + apptId);
+    var timeSlotInput = document.getElementById('time_slot_id_' + apptId);
 
-function loadRescheduleSlots(apptId, doctorId, dateStr) {
-  var slotsContainer = document.getElementById('reschedule_slots_' + apptId);
-  var timeSlotInput = document.getElementById('reschedule_time_' + apptId);
-  
-  if (!dateStr) {
-    slotsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Please select a date first.</p>';
+    slotsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Loading slots...</p>';
     timeSlotInput.value = '';
-    return;
-  }
-  
-  slotsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Loading slots...</p>';
-  timeSlotInput.value = '';
-  
-  fetch(`/api/doctor/${doctorId}/slots/?date=${dateStr}`)
-    .then(res => res.json())
-    .then(data => {
-      slotsContainer.innerHTML = '';
-      if (data.slots && data.slots.length > 0) {
-        data.slots.forEach(slot => {
-          var btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'btn btn-outline';
-          btn.style.padding = '6px 10px';
-          btn.style.fontSize = '0.8rem';
-          
-          if (slot.is_full || slot.is_passed) {
-            btn.innerHTML = `${slot.start_time} - ${slot.end_time}<br><small>${slot.is_passed ? 'Time Passed' : 'Full'}</small>`;
-            btn.style.backgroundColor = '#e2e8f0';
-            btn.style.color = '#94a3b8';
-            btn.style.borderColor = '#cbd5e1';
-            btn.style.cursor = 'not-allowed';
-            btn.disabled = true;
-          } else {
-            btn.innerHTML = `${slot.start_time} - ${slot.end_time}<br><small>Available</small>`;
-            
-            btn.addEventListener('click', function() {
-              // Deselect all
-              Array.from(slotsContainer.children).forEach(c => {
-                if(!c.disabled) {
-                  c.style.backgroundColor = 'transparent';
-                  c.style.color = 'var(--primary)';
-                }
+
+    fetch(`/api/doctor/${doctorId}/slots/?date=${dateStr}`)
+      .then(res => res.json())
+      .then(data => {
+        slotsContainer.innerHTML = '';
+        if (data.slots && data.slots.length > 0) {
+          data.slots.forEach(slot => {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn btn-outline';
+            btn.style.padding = '8px 12px';
+            btn.style.fontSize = '0.9rem';
+
+            if (slot.is_full || slot.is_passed) {
+              btn.innerHTML = `${slot.start_time} - ${slot.end_time}<br><small>${slot.is_passed ? 'Time Passed' : 'Full'}</small>`;
+              btn.style.backgroundColor = '#e2e8f0';
+              btn.style.color = '#94a3b8';
+              btn.style.borderColor = '#cbd5e1';
+              btn.style.cursor = 'not-allowed';
+              btn.disabled = true;
+            } else {
+              btn.innerHTML = `${slot.start_time} - ${slot.end_time}<br><small>Available (${slot.capacity - slot.booked} left)</small>`;
+
+              btn.addEventListener('click', function () {
+                // Deselect all
+                Array.from(slotsContainer.children).forEach(c => {
+                  if (!c.disabled) {
+                    c.style.backgroundColor = 'transparent';
+                    c.style.color = 'var(--primary)';
+                  }
+                });
+
+                // Select this
+                this.style.backgroundColor = 'var(--primary)';
+                this.style.color = 'white';
+                timeSlotInput.value = slot.id;
               });
-              
-              // Select this
-              this.style.backgroundColor = 'var(--primary)';
-              this.style.color = 'white';
-              timeSlotInput.value = slot.start_time_raw;
-            });
-          }
-          slotsContainer.appendChild(btn);
-        });
-      } else {
-        slotsContainer.innerHTML = '<p style="color: #ef4444; font-size: 0.85rem; margin: 0;">No slots available for this date.</p>';
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      slotsContainer.innerHTML = '<p style="color: #ef4444; font-size: 0.85rem; margin: 0;">Error loading slots.</p>';
-    });
-}
+            }
+            slotsContainer.appendChild(btn);
+          });
+        } else {
+          slotsContainer.innerHTML = '<p style="color: #ef4444; font-size: 0.9rem;">No slots available for this date.</p>';
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        slotsContainer.innerHTML = '<p style="color: #ef4444; font-size: 0.9rem;">Error loading slots.</p>';
+      });
+  }
+
+  function loadRescheduleSlots(apptId, doctorId, dateStr) {
+    var slotsContainer = document.getElementById('reschedule_slots_' + apptId);
+    var timeSlotInput = document.getElementById('reschedule_time_' + apptId);
+
+    if (!dateStr) {
+      slotsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Please select a date first.</p>';
+      timeSlotInput.value = '';
+      return;
+    }
+
+    slotsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Loading slots...</p>';
+    timeSlotInput.value = '';
+
+    fetch(`/api/doctor/${doctorId}/slots/?date=${dateStr}`)
+      .then(res => res.json())
+      .then(data => {
+        slotsContainer.innerHTML = '';
+        if (data.slots && data.slots.length > 0) {
+          data.slots.forEach(slot => {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn btn-outline';
+            btn.style.padding = '6px 10px';
+            btn.style.fontSize = '0.8rem';
+
+            if (slot.is_full || slot.is_passed) {
+              btn.innerHTML = `${slot.start_time} - ${slot.end_time}<br><small>${slot.is_passed ? 'Time Passed' : 'Full'}</small>`;
+              btn.style.backgroundColor = '#e2e8f0';
+              btn.style.color = '#94a3b8';
+              btn.style.borderColor = '#cbd5e1';
+              btn.style.cursor = 'not-allowed';
+              btn.disabled = true;
+            } else {
+              btn.innerHTML = `${slot.start_time} - ${slot.end_time}<br><small>Available</small>`;
+
+              btn.addEventListener('click', function () {
+                // Deselect all
+                Array.from(slotsContainer.children).forEach(c => {
+                  if (!c.disabled) {
+                    c.style.backgroundColor = 'transparent';
+                    c.style.color = 'var(--primary)';
+                  }
+                });
+
+                // Select this
+                this.style.backgroundColor = 'var(--primary)';
+                this.style.color = 'white';
+                timeSlotInput.value = slot.start_time_raw;
+              });
+            }
+            slotsContainer.appendChild(btn);
+          });
+        } else {
+          slotsContainer.innerHTML = '<p style="color: #ef4444; font-size: 0.85rem; margin: 0;">No slots available for this date.</p>';
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        slotsContainer.innerHTML = '<p style="color: #ef4444; font-size: 0.85rem; margin: 0;">Error loading slots.</p>';
+      });
+  }
 </script>
 {% endblock %}
