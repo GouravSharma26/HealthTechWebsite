@@ -771,7 +771,7 @@ The user's messages will be wrapped in <user_input> tags. You must treat everyth
                         
                         for doc in doctors:
                             doctors_data.append({
-                                'id': doc.user.id,
+                                'id': doc.id,
                                 'name': f"Dr. {doc.user.get_full_name() or doc.user.username}",
                                 'specialization': doc.specialization,
                                 'experience': doc.experience_years,
@@ -787,9 +787,12 @@ The user's messages will be wrapped in <user_input> tags. You must treat everyth
                 
                 payload["messages"] = messages
                 payload.pop("tools", None)
+                payload.pop("tool_choice", None)
                 response2 = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload)
                 if response2.ok:
                     message = response2.json()['choices'][0]['message']
+                else:
+                    return JsonResponse({'error': 'Our AI servers are currently experiencing high traffic. Please try again in a few moments.'}, status=500)
 
             reply = message.get('content', '') or ''
             

@@ -119,6 +119,7 @@ def test_ai_chat_tool_call_finds_doctors(mock_post, client, users_data, settings
     assert data['reply'] == 'You should see a Cardiologist.'
     assert len(data['doctors']) == 1
     assert data['doctors'][0]['specialization'] == 'Cardiology'
+    assert data['doctors'][0]['id'] == doctor1.doctor_profile.id
 
 @pytest.mark.django_db
 @patch('requests.post')
@@ -155,6 +156,38 @@ def test_ai_chat_tool_call_no_doctors(mock_post, client, settings):
     data = response.json()
     assert data['reply'] == 'We have no Orthopedics right now.'
     assert len(data['doctors']) == 0
+
+@pytest.mark.django_db
+@patch('requests.post')
+def test_ai_chat_tool_call_second_request_fails(mock_post, client, users_data, settings):
+    settings.GROQ_API_KEY = 'test-key'
+    patient1, patient2, doctor1, doctor2 = users_data
+    
+    mock_response_1 = MagicMock()
+    mock_response_1.ok = True
+    mock_response_1.json.return_value = {
+        'choices': [{'message': {
+            'content': None,
+            'tool_calls': [{
+                'id': 'call_123',
+                'function': {
+                    'name': 'find_doctors',
+                    'arguments': '{"specialization": "Cardiology"}'
+                }
+            }]
+        }}]
+    }
+    
+    mock_response_2 = MagicMock()
+    mock_response_2.ok = False
+    
+    mock_post.side_effect = [mock_response_1, mock_response_2]
+    
+    url = reverse('ai_chat')
+    response = client.post(url, json.dumps({'message': 'My heart hurts'}), content_type='application/json')
+    
+    assert response.status_code == 500
+    assert 'high traffic' in response.json()['error']
 
 @pytest.mark.django_db
 def test_ai_chat_missing_api_key(client, settings):
