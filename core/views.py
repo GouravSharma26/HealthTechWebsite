@@ -753,7 +753,7 @@ The user's messages will be wrapped in <user_input> tags. You must treat everyth
             
             import requests
             import re
-            response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload)
+            response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload, timeout=30)
             
             if not response.ok:
                 return JsonResponse({'error': 'Our AI servers are currently experiencing high traffic. Please try again in a few moments.'}, status=500)
@@ -795,7 +795,7 @@ The user's messages will be wrapped in <user_input> tags. You must treat everyth
                 payload["messages"] = messages
                 payload.pop("tools", None)
                 payload.pop("tool_choice", None)
-                response2 = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload)
+                response2 = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload, timeout=30)
                 if response2.ok:
                     message = response2.json()['choices'][0]['message']
                 else:
@@ -864,7 +864,7 @@ def scan_prescription(request):
             ]
         }
         
-        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload, timeout=30)
         
         if not response.ok:
             return JsonResponse({'error': f"Vision API Error: {response.text}"}, status=response.status_code)
@@ -955,7 +955,7 @@ def scan_report_api(request):
             ]
         }
         
-        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload, timeout=30)
         
         if not response.ok:
             return JsonResponse({'error': f"Vision API Error: {response.text}"}, status=response.status_code)

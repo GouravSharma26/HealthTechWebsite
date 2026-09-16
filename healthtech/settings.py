@@ -23,11 +23,24 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-sd=arb240y44qew+u)rr*p(-h6cx=z+l0ey=&6g9sr9^r@cg+i')
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+
+# SECURITY WARNING: keep the secret key used in production secret!
+# The old fallback key below was committed to a public repo for months and must
+# never be reused. In production (DEBUG=False) we now fail loudly instead of
+# silently falling back to any hardcoded value if DJANGO_SECRET_KEY isn't set,
+# so a misconfigured env var is caught at boot, not discovered as a live exploit.
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        # Local-dev-only fallback. Fine to keep in git: never used when DEBUG=False.
+        SECRET_KEY = 'django-insecure-local-dev-only-r%!ai0j!)rz+h0i7+o5$x+dzv5*ow=d$)ko6(&6e13&*$!r5nh'
+    else:
+        raise RuntimeError(
+            'DJANGO_SECRET_KEY environment variable is not set. '
+            'Refusing to start in production (DEBUG=False) without it.'
+        )
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if os.environ.get('DJANGO_ALLOWED_HOSTS') else []
 
