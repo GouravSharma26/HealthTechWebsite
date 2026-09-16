@@ -26,8 +26,8 @@ test.describe('AI triage assistant', () => {
                 id: process.env.E2E_DOCTOR_PROFILE_ID ? Number(process.env.E2E_DOCTOR_PROFILE_ID) : 1,
                 name: 'Dr. seeded_doctor_username',
                 specialization: 'General Physician',
-                profile_picture_url: null,
-                experience_years: 10,
+                profile_picture: null,
+                experience: 10,
                 consultation_fee: 50
               }
             ]
@@ -48,11 +48,7 @@ test.describe('AI triage assistant', () => {
 
     // Regression test for the doc.user.id vs doc.id bug fixed earlier:
     // the Book link must resolve to a real doctor profile, not a 404.
-    const [detailPage] = await Promise.all([
-      page.waitForEvent('popup').catch(() => null),
-      doctorCard.getByRole('link', { name: /book|view profile/i }).click(),
-    ]);
-    const target = detailPage ?? page;
+    await doctorCard.getByRole('link', { name: /book|view profile/i }).click();
     await expect(page).toHaveURL(/\/doctor\/\d+\/?/, { timeout: 15000 });
   });
 

@@ -143,7 +143,7 @@
     });
     html += '</div>';
     
-    bubbleDiv.innerHTML = DOMPurify.sanitize(html);
+    bubbleDiv.innerHTML = DOMPurify.sanitize(html, { ADD_ATTR: ['data-testid'] });
     messageDiv.appendChild(bubbleDiv);
     chatWindow.appendChild(messageDiv);
     chatWindow.scrollTop = chatWindow.scrollHeight;
