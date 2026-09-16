@@ -87,7 +87,7 @@
     {% if messages %}
     <div id="flash-messages" style="position: fixed; top: 80px; right: 20px; z-index: 1050; display: flex; flex-direction: column; gap: 10px;">
       {% for message in messages %}
-      <div class="card flash-msg" style="padding: 15px 25px; border-left: 5px solid {% if message.tags == 'error' %}#ef4444{% else %}var(--primary){% endif %}; animation: fadeUp 0.3s ease-out; background: white; box-shadow: var(--shadow-lg);">
+      <div class="card flash-msg {% if message.tags %}flash-{{ message.tags }}{% endif %}" style="padding: 15px 25px; border-left: 5px solid var(--flash-border, var(--primary)); animation: fadeUp 0.3s ease-out; background: white; box-shadow: var(--shadow-lg);">
         {{ message }}
       </div>
       {% endfor %}

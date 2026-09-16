@@ -461,6 +461,9 @@ ul.errorlist {
   border-radius: 8px;
   border-left: 4px solid #ef4444;
 }
+.flash-error {
+  --flash-border: #ef4444;
+}
 
 /* Responsive Grids */
 .responsive-grid {
