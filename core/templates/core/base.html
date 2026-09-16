@@ -17,7 +17,10 @@
       <img src="{% static 'core/images/logo.png' %}" alt="HealthTech Logo" height="40" onerror="this.style.display='none'">
       <h2>HealthTech</h2>
     </a>
-    <div class="nav-links">
+    <button class="menu-toggle" onclick="toggleNav()" aria-label="Toggle navigation" aria-expanded="false">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 28px; height: 28px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+    </button>
+    <div class="nav-links" id="nav-links">
       <a href="{% url 'doctors' %}" class="btn btn-outline">Explore Doctors</a>
       {% if user.is_authenticated %}
         
@@ -29,7 +32,7 @@
         </a>
 
         <div class="menu" style="margin-right: 15px;">
-          <button class="btn btn-outline" onclick="document.getElementById('notifDropdown').classList.toggle('show')" style="padding: 8px 12px; position: relative; border: none; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;">
+          <button class="btn btn-outline" id="notif-btn" aria-haspopup="true" aria-expanded="false" aria-controls="notifDropdown" onclick="toggleDropdown('notifDropdown', 'notif-btn')" style="padding: 8px 12px; position: relative; border: none; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
             {% if unread_notifications %}
             <span style="position: absolute; top: 0; right: 0; background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; font-weight: bold;">{{ unread_notifications|length }}</span>
@@ -53,7 +56,7 @@
         </div>
 
         <div class="menu">
-          <button class="btn btn-primary" onclick="toggleMenu()" style="display: flex; align-items: center;">
+          <button class="btn btn-primary" id="user-btn" aria-haspopup="true" aria-expanded="false" aria-controls="menuDropdown" onclick="toggleDropdown('menuDropdown', 'user-btn')" style="display: flex; align-items: center;">
             {{ user.username }} 
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 16px; height: 16px; margin-left: 6px;"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
           </button>
@@ -84,7 +87,7 @@
     {% if messages %}
     <div id="flash-messages" style="position: fixed; top: 80px; right: 20px; z-index: 1050; display: flex; flex-direction: column; gap: 10px;">
       {% for message in messages %}
-      <div class="card flash-msg" style="padding: 15px 25px; border-left: 5px solid var(--primary); animation: fadeUp 0.3s ease-out; background: white; box-shadow: var(--shadow-lg);">
+      <div class="card flash-msg" style="padding: 15px 25px; border-left: 5px solid {% if message.tags == 'error' %}#ef4444{% else %}var(--primary){% endif %}; animation: fadeUp 0.3s ease-out; background: white; box-shadow: var(--shadow-lg);">
         {{ message }}
       </div>
       {% endfor %}
@@ -114,22 +117,51 @@
 
   <script src="{% static 'core/js/script.js' %}"></script>
   <script>
-    function toggleMenu() {
-      document.getElementById("menuDropdown").classList.toggle("show");
+    function toggleNav() {
+      const nav = document.getElementById('nav-links');
+      const toggle = document.querySelector('.menu-toggle');
+      nav.classList.toggle('active');
+      toggle.setAttribute('aria-expanded', nav.classList.contains('active'));
+    }
+
+    function toggleDropdown(dropdownId, btnId) {
+      const dropdown = document.getElementById(dropdownId);
+      const btn = document.getElementById(btnId);
+      const isShowing = dropdown.classList.contains('show');
+      
+      // Close all first
+      closeAllDropdowns();
+      
+      if (!isShowing) {
+        dropdown.classList.add('show');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    }
+    
+    function closeAllDropdowns() {
+      const dropdowns = document.getElementsByClassName("dropdown");
+      const btns = document.querySelectorAll('[aria-haspopup="true"]');
+      for (let i = 0; i < dropdowns.length; i++) {
+        dropdowns[i].classList.remove('show');
+      }
+      for (let i = 0; i < btns.length; i++) {
+        btns[i].setAttribute('aria-expanded', 'false');
+      }
     }
     
     // Close dropdown if clicked outside
     window.onclick = function(event) {
-      if (!event.target.matches('.btn-primary') && !event.target.closest('.menu')) {
-        var dropdowns = document.getElementsByClassName("dropdown");
-        for (var i = 0; i < dropdowns.length; i++) {
-          var openDropdown = dropdowns[i];
-          if (openDropdown.classList.contains('show')) {
-            openDropdown.classList.remove('show');
-          }
-        }
+      if (!event.target.closest('.menu')) {
+        closeAllDropdowns();
       }
     }
+    
+    // Keyboard accessibility: Escape key closes menus
+    window.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeAllDropdowns();
+      }
+    });
 
     // Prevent selecting past dates globally
     document.addEventListener('DOMContentLoaded', function() {

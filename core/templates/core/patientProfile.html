@@ -4,10 +4,9 @@
 {% block title %}My Profile - Patient{% endblock %}
 
 {% block content %}
-<div class="content mt-4 mb-4">
-  <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
-
-    <!-- Profile Info -->
+<div class="content mt-4">
+  <div class="responsive-grid grid-1-2">
+    <!-- Left Column: Profile Info -->
     <div class="card text-center" style="align-self: start;">
       <div style="font-size: 4rem; margin-bottom: 20px;">👤</div>
       <h3 style="color: var(--primary);">{{ profile.user.username }}</h3>

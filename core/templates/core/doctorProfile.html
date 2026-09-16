@@ -4,10 +4,9 @@
 {% block title %}Doctor Dashboard{% endblock %}
 
 {% block content %}
-<div class="content mt-4 mb-4">
-  <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
-    
-    <!-- Profile Info -->
+<div class="content mt-4">
+  <div class="responsive-grid grid-1-2">
+    <!-- Left Column: Profile Info -->
     <div class="card text-center" style="align-self: start;">
       <div style="margin-bottom: 20px;">
         {% if profile.profile_picture %}
