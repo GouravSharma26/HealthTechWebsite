@@ -442,7 +442,7 @@
     var defaultLat = 20.5937;
     var defaultLng = 78.9629;
     map = L.map('map-picker').setView([defaultLat, defaultLng], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO' }).addTo(map);
     marker = L.marker([defaultLat, defaultLng], {draggable: true}).addTo(map);
 
     if (navigator.geolocation) {

@@ -281,9 +281,9 @@
   function showDoctorLocation() {
     let map = L.map('map').setView([28.7041, 77.1025], 13); // Doctor Location (Delhi)
   
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '© OpenStreetMap contributors'
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
     }).addTo(map);
   
     let doctorMarker = L.marker([28.7041, 77.1025]).addTo(map)

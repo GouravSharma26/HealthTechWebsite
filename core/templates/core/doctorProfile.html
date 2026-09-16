@@ -278,7 +278,7 @@
                     {% elif appt.risk_flag == 'Medium' %}background: #fef3c7; color: #b45309; border: 1px solid #fbbf24;
                     {% elif appt.risk_flag == 'Low' %}background: #dcfce3; color: #166534; border: 1px solid #4ade80;
                     {% else %}background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;{% endif %}">
-                    No-Show Risk: {{ appt.risk_flag }}
+                    Cancellation Risk: {{ appt.risk_flag }}
                   </div>
                   {% endif %}
                 </div>
@@ -368,6 +368,7 @@
                     <div id="scan-loading-{{ appt.id }}" style="display: none; color: #8b5cf6; font-size: 0.85rem; margin-bottom: 15px; font-style: italic;">
                       HealthBot is reading the prescription... please wait...
                     </div>
+                    <div id="prescription-error-container-{{ appt.id }}" style="display: none; margin-bottom: 15px; background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; padding: 10px; border-radius: 8px; font-size: 0.9rem;"></div>
                     <div class="form-group" style="margin-bottom: 15px;">
                       <label style="font-weight: 600; font-size: 0.9rem;">Medicines</label>
                       <textarea id="medicines-{{ appt.id }}" name="medicines" rows="3" placeholder="e.g. Paracetamol 500mg, Amoxicillin 250mg" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px;" required></textarea>
@@ -502,10 +503,15 @@
     
     const file = input.files[0];
     const loadingDiv = document.getElementById('scan-loading-' + apptId);
+    const errorContainer = document.getElementById('prescription-error-container-' + apptId);
     const medicinesInput = document.getElementById('medicines-' + apptId);
     const instructionsInput = document.getElementById('instructions-' + apptId);
     
     loadingDiv.style.display = 'block';
+    if (errorContainer) {
+      errorContainer.style.display = 'none';
+      errorContainer.innerText = '';
+    }
     
     try {
       const base64Data = await getBase64(file);
@@ -537,10 +543,12 @@
           presDocInput.files = dataTransfer.files;
         }
       } else {
-        alert("Failed to scan prescription: " + (data.error || "Unknown error"));
+        errorContainer.innerText = "Failed to scan prescription: " + (data.error || "Unknown error");
+        errorContainer.style.display = 'block';
       }
     } catch (err) {
-      alert("Error uploading image for scan.");
+      errorContainer.innerText = "Error uploading image for scan.";
+      errorContainer.style.display = 'block';
       console.error(err);
     } finally {
       loadingDiv.style.display = 'none';
