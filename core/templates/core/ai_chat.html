@@ -139,7 +139,7 @@
         ? `<img src="${doc.profile_picture}" alt="${doc.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 15px;">`
         : `<div style="width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; margin-right: 15px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user-md" style="color: #64748b;"></i></div>`;
         
-      html += `<div style="display: flex; align-items: center; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc;">${picHtml}<div style="flex: 1;"><h6 style="margin: 0; color: var(--primary);">${doc.name}</h6><small style="color: #64748b;">${doc.specialization} &bull; ${doc.experience} yrs exp</small></div><a href="/doctor/${doc.id}/" class="btn btn-sm btn-outline-primary" style="border-radius: 20px;">Book</a></div>`;
+      html += `<div data-testid="doctor-card" style="display: flex; align-items: center; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc;">${picHtml}<div style="flex: 1;"><h6 style="margin: 0; color: var(--primary);">${doc.name}</h6><small style="color: #64748b;">${doc.specialization} &bull; ${doc.experience} yrs exp</small></div><a href="/doctor/${doc.id}/" class="btn btn-sm btn-outline-primary" style="border-radius: 20px;">Book</a></div>`;
     });
     html += '</div>';
     

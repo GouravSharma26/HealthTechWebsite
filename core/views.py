@@ -491,7 +491,7 @@ def doctor_detail(request, id):
     reviews = doctor.reviews.all().order_by('-created_at')
     
     has_active_appointment = False
-    if request.user.is_authenticated and getattr(request.user, 'is_patient', False):
+    if request.user.is_authenticated and hasattr(request.user, 'patient_profile'):
         patient = request.user.patient_profile
         has_active_appointment = Appointment.objects.filter(
             doctor=doctor,
@@ -499,7 +499,7 @@ def doctor_detail(request, id):
             status__in=['Pending', 'Confirmed', 'Reschedule Requested']
         ).exists()
     
-    if request.method == 'POST' and request.user.is_authenticated and getattr(request.user, 'is_patient', False):
+    if request.method == 'POST' and request.user.is_authenticated and hasattr(request.user, 'patient_profile'):
         # Check if booking appointment or review
         action = request.POST.get('action')
         patient = request.user.patient_profile

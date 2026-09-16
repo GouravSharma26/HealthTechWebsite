@@ -1,0 +1,66 @@
+# Save as .github/workflows/e2e.yml in the main repo.
+# Runs alongside the existing pytest CI (ci.yml) — this covers the browser
+# layer that pytest structurally cannot (real DOM, real WebSocket handshake,
+# real multi-tab concurrency), so keep both; this doesn't replace ci.yml.
+name: E2E (Playwright)
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: healthtech
+          POSTGRES_PASSWORD: healthtech
+          POSTGRES_DB: healthtech_e2e
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+
+    env:
+      DJANGO_SECRET_KEY: e2e-ci-only-not-for-production
+      DJANGO_DEBUG: "True"
+      DATABASE_URL: postgres://healthtech:healthtech@localhost:5432/healthtech_e2e
+      REDIS_URL: redis://localhost:6379/0
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python manage.py migrate
+      - run: python manage.py loaddata e2e_fixtures.json  # seeded doctor + slots, see README
+      - name: Start ASGI server
+        run: |
+          python -m daphne -b 0.0.0.0 -p 8000 healthtech.asgi:application &
+          npx wait-on http://127.0.0.1:8000
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - working-directory: e2e
+        run: npm ci
+      - working-directory: e2e
+        run: npx playwright install --with-deps chromium
+      - working-directory: e2e
+        run: npm test
+        env:
+          BASE_URL: http://127.0.0.1:8000
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 14
