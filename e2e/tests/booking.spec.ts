@@ -20,6 +20,7 @@ test.describe('Appointment booking', () => {
       role: 'patient',
     });
     await page.getByRole('button', { name: /save profile/i }).click();
+    await page.waitForURL(/profile/);
 
     const booking = new BookingPage(page);
     await booking.open(DOCTOR_ID);
@@ -39,6 +40,7 @@ test.describe('Appointment booking', () => {
       role: 'patient',
     });
     await page.getByRole('button', { name: /save profile/i }).click();
+    await page.waitForURL(/profile/);
 
     const booking = new BookingPage(page);
     await booking.open(DOCTOR_ID);
@@ -56,6 +58,7 @@ test.describe('Appointment booking', () => {
   // should result in exactly one success and one rejection, never two
   // successful bookings of the same seat.
   test('two concurrent patients cannot both book the last seat in a slot', async ({ browser }) => {
+    test.setTimeout(90000);
     const makePatientContext = async (b: Browser, label: string) => {
       const ctx = await b.newContext();
       const p = await ctx.newPage();
@@ -69,6 +72,7 @@ test.describe('Appointment booking', () => {
         role: 'patient',
       });
       await p.getByRole('button', { name: /save profile/i }).click();
+      await p.waitForURL(/profile/);
       return { ctx, page: p };
     };
 
@@ -83,8 +87,8 @@ test.describe('Appointment booking', () => {
     await bookingB.open(DOCTOR_ID);
 
     const [resultA, resultB] = await Promise.allSettled([
-      bookingA.bookSlot(/\d{1,2}:\d{2}/),
-      bookingB.bookSlot(/\d{1,2}:\d{2}/),
+      bookingA.bookSlot(/\d{1,2}:\d{2}/, true),
+      bookingB.bookSlot(/\d{1,2}:\d{2}/, true),
     ]);
 
     const results = await Promise.all([

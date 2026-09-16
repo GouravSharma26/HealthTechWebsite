@@ -129,8 +129,7 @@
             style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; margin-top: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <h5 style="color: #166534; margin: 0;">Appointment Completed</h5>
-              {% if appt.prescription_medicines or appt.prescription_instructions or appt.prescription_document or
-              appt.documents.all %}
+              {% if appt.prescription_medicines or appt.prescription_instructions or appt.prescription_document or appt.documents.all %}
               <button class="btn btn-primary"
                 style="background: #16a34a; border-color: #16a34a; padding: 6px 12px; font-size: 0.85rem;"
                 onclick="const el = document.getElementById('prescription-{{ appt.id }}'); el.style.display = el.style.display === 'none' ? 'block' : 'none';">View
@@ -138,8 +137,7 @@
               {% endif %}
             </div>
 
-            {% if appt.prescription_medicines or appt.prescription_instructions or appt.prescription_document or
-            appt.documents.all %}
+            {% if appt.prescription_medicines or appt.prescription_instructions or appt.prescription_document or appt.documents.all %}
             <div id="prescription-{{ appt.id }}"
               style="display: none; margin-top: 15px; background: white; padding: 20px; border-radius: 8px; border: 1px solid #dcfce7; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">
 

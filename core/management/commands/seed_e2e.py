@@ -49,22 +49,60 @@ class Command(BaseCommand):
             profile.is_verified = True
             profile.save()
 
+        # Slots for booking tests (Future)
         from datetime import timedelta
         now = datetime.now()
-        start_time = now + timedelta(hours=2)
-        start_time = start_time.replace(minute=0, second=0, microsecond=0)
-        end_time = start_time + timedelta(hours=1)
+        
+        start_time_future1 = now + timedelta(hours=2)
+        start_time_future1 = start_time_future1.replace(minute=0, second=0, microsecond=0)
+        end_time_future1 = start_time_future1 + timedelta(hours=1)
+        
+        start_time_future2 = start_time_future1 + timedelta(hours=1)
+        end_time_future2 = start_time_future2 + timedelta(hours=1)
 
-        slot, s_created = DoctorTimeSlot.objects.get_or_create(
+        DoctorTimeSlot.objects.get_or_create(
             doctor=profile,
-            start_time=start_time,
-            defaults={'end_time': end_time, 'capacity': 1}
+            start_time=start_time_future1,
+            defaults={'end_time': end_time_future1, 'capacity': 100}
         )
-        if s_created:
-            self.stdout.write(f"Created open time slot for {username} today at {start_time}")
-        else:
-            slot.capacity = 1
-            slot.save()
+        DoctorTimeSlot.objects.get_or_create(
+            doctor=profile,
+            start_time=start_time_future2,
+            defaults={'end_time': end_time_future2, 'capacity': 1}
+        )
+
+        # Slot for prescription test (Past)
+        start_time_past = now - timedelta(days=1)
+        start_time_past = start_time_past.replace(minute=0, second=0, microsecond=0)
+        end_time_past = start_time_past + timedelta(hours=1)
+
+        slot_past, _ = DoctorTimeSlot.objects.get_or_create(
+            doctor=profile,
+            start_time=start_time_past,
+            defaults={'end_time': end_time_past, 'capacity': 1}
+        )
+
+        from core.models import Appointment, PatientProfile
+        # Create a patient for the appointment
+        patient_user, _ = User.objects.get_or_create(
+            username="seeded_patient_for_scan",
+            defaults={'email': 'scan_patient@example.com', 'is_doctor': False}
+        )
+        patient_user.set_password('password123')
+        patient_user.save()
+
+        patient_profile, _ = PatientProfile.objects.get_or_create(
+            user=patient_user,
+            defaults={'contact': '555-1234'}
+        )
+
+        Appointment.objects.get_or_create(
+            doctor=profile,
+            patient=patient_profile,
+            date=start_time_past.date(),
+            time_slot=slot_past,
+            defaults={'status': 'Confirmed'}
+        )
 
         self.stdout.write(self.style.SUCCESS("E2E data seeded successfully!"))
         self.stdout.write(self.style.SUCCESS(f'E2E_DOCTOR_PROFILE_ID={profile.id}'))

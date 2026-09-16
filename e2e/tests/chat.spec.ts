@@ -22,6 +22,7 @@ test.describe('Real-time chat', () => {
       role: 'patient',
     });
     await patientPage.getByRole('button', { name: /save profile/i }).click();
+    await patientPage.waitForURL(/profile/);
 
     // Doctor side assumes a seeded doctor login; swap for your fixture's credentials.
     await new AuthPage(doctorPage).login('seeded_doctor_username', 'seeded_doctor_password');
@@ -56,6 +57,7 @@ test.describe('Real-time chat', () => {
       role: 'patient',
     });
     await page.getByRole('button', { name: /save profile/i }).click();
+    await page.waitForURL(/profile/);
 
     await page.goto(`/chat/${DOCTOR_ID}/`);
     const message = `Fallback message ${unique}`;

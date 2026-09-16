@@ -6,6 +6,9 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.db.models import Q
+from django.core.cache import cache
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 import random
 import datetime
 import requests
@@ -41,7 +44,14 @@ def signup_view(request):
         if phone_number and User.objects.filter(phone_number=phone_number).exists():
             messages.error(request, "Phone number already in use")
             return redirect('signup')
-            
+
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            for err in e.messages:
+                messages.error(request, err)
+            return redirect('signup')
+
         user = User.objects.create_user(username=username, email=email, password=password)
         user.phone_number = phone_number
         if role == 'doctor':
@@ -64,10 +74,24 @@ def signup_view(request):
 
 def login_view(request):
     if request.method == 'POST':
+        # Brute-force guard: track failed attempts per-IP separately from the
+        # generic AI-endpoint rate limiter, since this view must keep
+        # rendering the normal login page (not a JSON error) and must not
+        # penalize GET requests (just viewing the page) at all.
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else request.META.get('REMOTE_ADDR')
+        cache_key = f"login_attempts_{ip}"
+        attempts = cache.get(cache_key, 0)
+
+        if attempts >= 10:
+            messages.error(request, "Too many failed login attempts. Please wait a few minutes and try again.")
+            return render(request, 'core/login.html')
+
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            cache.delete(cache_key)  # reset on success
             login(request, user)
             if user.is_doctor:
                 # If they haven't setup profile, go to setup
@@ -79,6 +103,7 @@ def login_view(request):
                     return redirect('patient_setup')
                 return redirect('patient_profile')
         else:
+            cache.set(cache_key, attempts + 1, 300)  # 5-minute window
             messages.error(request, "Invalid username or password.")
             
     return render(request, 'core/login.html')

@@ -40,11 +40,17 @@ test.describe('Authentication', () => {
   // Regression test for the login brute-force gap fixed in the security
   // audit: repeated failed attempts from the same client must eventually
   // be throttled, independent of whether the credentials are ever correct.
-  test('repeated failed logins trigger a lockout message', async ({ page }) => {
+  test('repeated failed logins trigger a lockout message', async ({ browser }) => {
+    test.setTimeout(60000); // 10 sequential network requests can take a while
+    const context = await browser.newContext({
+      extraHTTPHeaders: { 'X-Forwarded-For': `192.168.1.${Math.floor(Math.random() * 255)}` }
+    });
+    const page = await context.newPage();
     const auth = new AuthPage(page);
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 11; i++) {
       await auth.login('lockout_target_user', 'wrong-password');
     }
     await auth.expectLoginError(/too many failed login attempts/i);
+    await context.close();
   });
 });
