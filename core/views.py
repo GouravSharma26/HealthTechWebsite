@@ -16,11 +16,45 @@ from django.conf import settings
 from .models import User, DoctorProfile, PatientProfile, Appointment, Review, Notification, DoctorTimeSlot, ChatMessage
 from .utils import rate_limit_ip, predict_risk
 
+import filetype
+
+# MIME types we accept for uploads (profile pictures, documents, prescriptions)
+ALLOWED_MIME_TYPES = {
+    'application/pdf',
+    'image/png',
+    'image/jpeg',
+}
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
+
+
 def is_valid_file(file_obj):
+    """Validate uploads by inspecting magic bytes, not just the extension.
+
+    Uses the ``filetype`` library to read the first few bytes and determine
+    the real MIME type of the uploaded file.  This prevents trivial bypasses
+    such as renaming ``malware.exe`` → ``malware.pdf``.
+
+    The file pointer is rewound after reading so Django can still persist the
+    file normally.
+    """
     if not file_obj:
         return True
-    ext = file_obj.name.split('.')[-1].lower()
-    return ext in ['pdf', 'png', 'jpg', 'jpeg']
+
+    # 1. Quick extension sanity-check (cheap, runs first)
+    ext = file_obj.name.rsplit('.', 1)[-1].lower() if '.' in file_obj.name else ''
+    if ext not in ALLOWED_EXTENSIONS:
+        return False
+
+    # 2. Magic-byte content inspection (the real check)
+    header = file_obj.read(8192)  # filetype needs at most ~262 bytes
+    file_obj.seek(0)              # rewind so Django can save the file later
+
+    kind = filetype.guess(header)
+    if kind is None:
+        # filetype couldn't identify the content — reject
+        return False
+
+    return kind.mime in ALLOWED_MIME_TYPES
 
 def home(request):
     return render(request, 'core/index.html')
