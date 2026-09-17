@@ -329,7 +329,7 @@
           return;
         }
         
-        slotsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Loading slots...</p>';
+        slotsContainer.innerHTML = '<div class="skeleton skeleton-slot" style="width: 120px; height: 50px;"></div><div class="skeleton skeleton-slot" style="width: 120px; height: 50px;"></div><div class="skeleton skeleton-slot" style="width: 120px; height: 50px;"></div>';
         timeSlotInput.value = '';
         
         fetch(`/api/doctor/{{ doctor.id }}/slots/?date=${date}`)
@@ -358,7 +358,7 @@
                     // Deselect all
                     Array.from(slotsContainer.children).forEach(c => {
                       if(!c.disabled) {
-                        c.style.backgroundColor = 'transparent';
+                        c.style.backgroundColor = '';
                         c.style.color = 'var(--primary)';
                       }
                     });

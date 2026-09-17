@@ -55,14 +55,8 @@
   .typing-indicator {
     display: none;
     align-self: flex-start;
-    background: white;
-    padding: 10px 15px;
-    border-radius: 20px;
-    border-bottom-left-radius: 4px;
-    border: 1px solid #e2e8f0;
-    color: #64748b;
-    font-size: 0.9rem;
-    font-style: italic;
+    width: 100%;
+    margin-top: 10px;
   }
 </style>
 
@@ -81,7 +75,13 @@
     </div>
     
     <div class="typing-indicator" id="typing-indicator">
-      HealthBot is thinking...
+      <div class="skeleton-card" style="margin-bottom: 10px;">
+        <div class="skeleton skeleton-avatar"></div>
+        <div style="flex: 1;">
+          <div class="skeleton skeleton-text short"></div>
+          <div class="skeleton skeleton-text medium"></div>
+        </div>
+      </div>
     </div>
     
     <div class="chat-input-area" style="display: flex; gap: 10px; margin-top: 15px;">

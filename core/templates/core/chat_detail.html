@@ -34,7 +34,7 @@
       </div>
       
       <!-- Messages Container -->
-      <div id="messages-container" style="flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background: #f8fafc;">
+      <div id="messages-container" role="log" aria-live="polite" style="flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background: #f8fafc;">
         {% for msg in messages_history %}
           <div style="display: flex; flex-direction: column; max-width: 75%; {% if msg.sender == request.user %}align-self: flex-end;{% else %}align-self: flex-start;{% endif %}">
             <div style="padding: 12px 16px; border-radius: 18px; line-height: 1.4; font-size: 0.95rem; {% if msg.sender == request.user %}background: var(--primary); color: white; border-bottom-right-radius: 4px;{% else %}background: white; color: var(--text-dark); border: 1px solid var(--border-color); border-bottom-left-radius: 4px;{% endif %}">
@@ -56,7 +56,7 @@
         <form id="chat-form" method="POST" style="display: flex; gap: 10px; margin: 0; padding: 0; background: none; box-shadow: none; border: none; border-radius: 0; overflow: visible;">
           {% csrf_token %}
           <input type="hidden" name="action" value="send_message">
-          <textarea name="message" rows="1" placeholder="Type a message..." required style="flex: 1; padding: 12px 15px; border-radius: 20px; border: 1px solid var(--border-color); resize: none; font-family: inherit; font-size: 0.95rem; outline: none;"></textarea>
+          <textarea name="message" aria-label="Chat message input" rows="1" placeholder="Type a message..." required style="flex: 1; padding: 12px 15px; border-radius: 20px; border: 1px solid var(--border-color); resize: none; font-family: inherit; font-size: 0.95rem; outline: none;"></textarea>
           <button type="submit" data-testid="send-button" class="btn btn-primary" aria-label="Send" style="border-radius: 50%; width: 45px; height: 45px; padding: 0; display: flex; align-items: center; justify-content: center;">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; transform: rotate(-45deg); margin-left: 4px; margin-top: -2px;"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" /></svg>
           </button>
