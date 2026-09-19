@@ -30,6 +30,7 @@ class DoctorProfile(models.Model):
     license_document = models.FileField(upload_to='doctor_docs/', null=True, blank=True)
     degree_document = models.FileField(upload_to='doctor_docs/', null=True, blank=True)
     is_verified = models.BooleanField(default=False)
+    search_embedding = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return f"Dr. {self.user.get_full_name() or self.user.username} - {self.specialization}"
@@ -117,3 +118,49 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"From {self.sender.username} to {self.receiver.username} at {self.timestamp}"
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+import threading
+
+@receiver(post_save, sender=DoctorProfile)
+def doctor_profile_post_save(sender, instance, created, **kwargs):
+    # Run embedding generation in a background thread to avoid blocking the request
+    # Only run if we are not already generating it (to avoid infinite recursion)
+    # The search_embedding field is updated using .update() in search.py, which doesn't trigger post_save
+    
+    # We delay the import of search to avoid circular dependencies
+    try:
+        from core.search import update_doctor_embedding
+        threading.Thread(target=update_doctor_embedding, args=(instance,)).start()
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Failed to start embedding thread: {e}")
+
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
+@receiver(post_save, sender=Notification)
+def notification_post_save(sender, instance, created, **kwargs):
+    if created:
+        channel_layer = get_channel_layer()
+        group_name = f"notifications_{instance.user.id}"
+        
+        # Determine type based on message content or default to info
+        notif_type = 'info'
+        if 'cancelled' in instance.message.lower() or 'rejected' in instance.message.lower():
+            notif_type = 'error'
+        elif 'approved' in instance.message.lower() or 'success' in instance.message.lower():
+            notif_type = 'success'
+        elif 'requested' in instance.message.lower():
+            notif_type = 'warning'
+            
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            {
+                'type': 'notification_message',
+                'message': instance.message,
+                'notification_type': notif_type,
+                'title': 'New Notification'
+            }
+        )

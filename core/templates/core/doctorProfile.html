@@ -3,6 +3,24 @@
 
 {% block title %}Doctor Dashboard{% endblock %}
 
+{% block extra_head %}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+<style>
+  #calendar {
+    max-width: 900px;
+    margin: 0 auto;
+    font-family: inherit;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+  }
+  .fc-event {
+    cursor: pointer;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="content mt-4">
   <div class="responsive-grid grid-1-2">
@@ -250,6 +268,8 @@
       <!-- Appointments Dashboard -->
       <div id="section-appointments" class="card">
         <h3 style="color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">Upcoming Appointments</h3>
+        
+        <div id="calendar" style="margin-bottom: 30px;"></div>
         
         {% if appointments %}
           <div style="display: flex; flex-direction: column; gap: 15px;">
@@ -592,6 +612,7 @@
       document.getElementById('section-manage').style.display = 'none';
       document.getElementById('tab-appointments').className = 'btn btn-primary';
       document.getElementById('tab-manage').className = 'btn btn-outline';
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 50); // Fix FullCalendar rendering
     } else {
       document.getElementById('section-appointments').style.display = 'none';
       document.getElementById('section-manage').style.display = 'block';
@@ -797,6 +818,30 @@
     {% for slot in slots %}
       selectedSlots.add("{{ slot.start_time|time:'H:i' }}-{{ slot.end_time|time:'H:i' }}");
     {% endfor %}
+    
+    // Initialize FullCalendar
+    const calendarEl = document.getElementById('calendar');
+    if (calendarEl) {
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: '/api/doctor/appointments/',
+        eventClick: function(info) {
+          // Could open a modal or scroll to the appointment in the list below
+          alert('Event: ' + info.event.title + '\nStatus: ' + info.event.extendedProps.status);
+        }
+      });
+      calendar.render();
+      
+      // We want to force render when tab switches to 'appointments' if it wasn't visible initially
+      window.addEventListener('resize', () => {
+        calendar.updateSize();
+      });
+    }
   });
 </script>
 

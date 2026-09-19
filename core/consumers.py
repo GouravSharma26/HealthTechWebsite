@@ -75,17 +75,52 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
     @database_sync_to_async
-    def verify_roles(self, user_id, other_user_id):
+    def verify_roles(self, user1_id, user2_id):
         try:
-            other_user = User.objects.get(id=other_user_id)
-            user = User.objects.get(id=user_id)
-            if user.is_patient and getattr(other_user, 'is_doctor', False):
-                return True
-            if user.is_doctor and getattr(other_user, 'is_patient', False):
-                return True
-            return False
+            u1 = User.objects.get(id=user1_id)
+            u2 = User.objects.get(id=user2_id)
+            # Must be different roles (one doctor, one patient)
+            return u1.is_doctor != u2.is_doctor
         except User.DoesNotExist:
             return False
+
+class NotificationConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.user = self.scope['user']
+        if not self.user.is_authenticated:
+            await self.close()
+            return
+
+        self.room_group_name = f"notifications_{self.user.id}"
+
+        # Join room group
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        if hasattr(self, 'room_group_name'):
+            # Leave room group
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
+
+    # Receive message from room group
+    async def notification_message(self, event):
+        message = event['message']
+        notification_type = event.get('notification_type', 'info')
+        title = event.get('title', 'New Notification')
+
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
+            'message': message,
+            'type': notification_type,
+            'title': title
+        }))
 
     @database_sync_to_async
     def save_message(self, sender_id, receiver_id, message_text):

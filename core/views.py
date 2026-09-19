@@ -491,6 +491,48 @@ def api_doctor_slots(request, id):
     return JsonResponse({'slots': slots_data})
 
 @login_required
+def api_doctor_appointments(request):
+    """
+    Returns appointments formatted as events for FullCalendar.js
+    """
+    if not hasattr(request.user, 'doctor_profile'):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+    profile = request.user.doctor_profile
+    appointments = profile.appointments.exclude(status__in=['Cancelled', 'Cancel Requested'])
+    
+    events = []
+    for appt in appointments:
+        if not appt.time_slot:
+            continue
+            
+        start_datetime = f"{appt.date.isoformat()}T{appt.time_slot.start_time.strftime('%H:%M:%S')}"
+        end_datetime = f"{appt.date.isoformat()}T{appt.time_slot.end_time.strftime('%H:%M:%S')}"
+        
+        color = '#3b82f6' # Primary blue
+        if appt.status == 'Pending':
+            color = '#f59e0b' # Warning yellow
+        elif appt.status == 'Completed':
+            color = '#10b981' # Success green
+        elif 'Requested' in appt.status:
+            color = '#ef4444' # Danger red
+            
+        events.append({
+            'id': appt.id,
+            'title': f"{appt.patient.user.get_full_name() or appt.patient.user.username} - {appt.status}",
+            'start': start_datetime,
+            'end': end_datetime,
+            'backgroundColor': color,
+            'borderColor': color,
+            'extendedProps': {
+                'status': appt.status,
+                'patient': appt.patient.user.get_full_name() or appt.patient.user.username
+            }
+        })
+        
+    return JsonResponse(events, safe=False)
+
+@login_required
 def mark_notifications_read(request):
     if request.method == 'POST':
         Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
@@ -535,11 +577,19 @@ def patient_profile(request):
 def doctors(request):
     query = request.GET.get('q', '')
     if query:
-        doctors_list = DoctorProfile.objects.filter(
-            user__username__icontains=query
-        ) | DoctorProfile.objects.filter(
-            specialization__icontains=query
-        )
+        try:
+            from .search import search_doctors
+            # Get semantic search results
+            doctors_list = search_doctors(query, top_k=20)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Semantic search failed: {e}")
+            # Fallback to basic text search
+            doctors_list = DoctorProfile.objects.filter(
+                user__username__icontains=query
+            ) | DoctorProfile.objects.filter(
+                specialization__icontains=query
+            )
     else:
         doctors_list = DoctorProfile.objects.all()
         
@@ -639,6 +689,30 @@ def help_view(request):
 
 def contact_view(request):
     return render(request, 'core/contact.html')
+
+def api_search_doctors(request):
+    query = request.GET.get('q', '')
+    if not query:
+        return JsonResponse({'results': []})
+    
+    try:
+        from .search import search_doctors
+        matched_doctors = search_doctors(query, top_k=5)
+        results = []
+        for doctor in matched_doctors:
+            results.append({
+                'id': doctor.id,
+                'name': doctor.user.get_full_name() or doctor.user.username,
+                'specialization': doctor.specialization,
+                'experience_years': doctor.experience_years,
+                'about': doctor.about[:100] + '...' if doctor.about else '',
+                'url': reverse('doctor_detail', args=[doctor.id])
+            })
+        return JsonResponse({'results': results})
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Search API error: {e}")
+        return JsonResponse({'error': 'An error occurred during search'}, status=500)
 
 @login_required
 def chat_list(request):
