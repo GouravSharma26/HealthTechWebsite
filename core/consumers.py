@@ -84,6 +84,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except User.DoesNotExist:
             return False
 
+    @database_sync_to_async
+    def save_message(self, sender_id, receiver_id, message_text):
+        return ChatMessage.objects.create(
+            sender_id=sender_id,
+            receiver_id=receiver_id,
+            message=message_text
+        )
+
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.user = self.scope['user']
@@ -121,11 +129,3 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             'type': notification_type,
             'title': title
         }))
-
-    @database_sync_to_async
-    def save_message(self, sender_id, receiver_id, message_text):
-        return ChatMessage.objects.create(
-            sender_id=sender_id,
-            receiver_id=receiver_id,
-            message=message_text
-        )
