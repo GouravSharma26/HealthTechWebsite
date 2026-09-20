@@ -39,3 +39,8 @@ Thumbs.db
 # Leftover patch-reject files from re-applying a diff with 'patch' instead of 'git apply'
 *.rej
 *.orig
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+blob-report/

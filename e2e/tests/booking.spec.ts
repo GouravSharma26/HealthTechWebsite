@@ -6,7 +6,7 @@ import { BookingPage } from '../pages/booking.page';
 // loader) with id DOCTOR_ID and at least one open time slot for `today`.
 // Wire this to your actual seed command, e.g.:
 //   python manage.py seed_e2e
-const DOCTOR_ID = process.env.E2E_DOCTOR_PROFILE_ID ? Number(process.env.E2E_DOCTOR_PROFILE_ID) : 1;
+const DOCTOR_ID = process.env.E2E_DOCTOR_PROFILE_ID ? Number(process.env.E2E_DOCTOR_PROFILE_ID) : 9999;
 
 test.describe('Appointment booking', () => {
   test('a patient can book an available slot', async ({ page }) => {
@@ -48,8 +48,7 @@ test.describe('Appointment booking', () => {
     await booking.expectBookingConfirmed();
 
     // Try to book the same doctor again immediately
-    await booking.open(DOCTOR_ID);
-    await booking.bookSlot(/\d{1,2}:\d{2}/);
+    await page.goto(`/doctor/${DOCTOR_ID}/?_t=${Date.now()}`);
     await booking.expectAlreadyBookedWarning();
   });
 

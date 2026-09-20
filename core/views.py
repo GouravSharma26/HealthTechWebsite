@@ -589,13 +589,13 @@ def doctors(request):
             import logging
             logging.getLogger(__name__).error(f"Semantic search failed: {e}")
             # Fallback to basic text search
-            doctors_list = DoctorProfile.objects.filter(
+            doctors_list = DoctorProfile.objects.select_related('user').filter(
                 user__username__icontains=query
-            ) | DoctorProfile.objects.filter(
+            ) | DoctorProfile.objects.select_related('user').filter(
                 specialization__icontains=query
             )
     else:
-        doctors_list = DoctorProfile.objects.all()
+        doctors_list = DoctorProfile.objects.select_related('user').all()
         
     return render(request, 'core/doctors.html', {'doctors': doctors_list, 'query': query})
 
@@ -682,8 +682,7 @@ def doctor_detail(request, id):
     can_review = False
     if request.user.is_authenticated and hasattr(request.user, 'patient_profile'):
         can_review = Appointment.objects.filter(doctor=doctor, patient=request.user.patient_profile, status='Completed').exists()
-            
-    return render(request, 'core/doctorDetails.html', {'doctor': doctor, 'reviews': reviews, 'can_review': can_review})
+    return render(request, 'core/doctorDetails.html', {'doctor': doctor, 'reviews': reviews, 'can_review': can_review, 'has_active_appointment': has_active_appointment})
 
 def about_view(request):
     return render(request, 'core/about.html')

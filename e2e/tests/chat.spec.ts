@@ -4,7 +4,7 @@ import { AuthPage } from '../pages/auth.page';
 // Requires the app running under Daphne/ASGI (not plain `runserver` on an
 // old Django version) since this exercises the real Channels WebSocket path,
 //   python manage.py seed_e2e
-const DOCTOR_ID = process.env.E2E_DOCTOR_USER_ID ? Number(process.env.E2E_DOCTOR_USER_ID) : 1;
+const DOCTOR_ID = process.env.E2E_DOCTOR_USER_ID ? Number(process.env.E2E_DOCTOR_USER_ID) : 9999;
 
 test.describe('Real-time chat', () => {
   test('a message sent by the patient appears live in the doctor\'s browser without a reload', async ({ browser }) => {
