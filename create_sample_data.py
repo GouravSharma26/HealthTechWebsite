@@ -77,11 +77,14 @@ def create_sample_doctors():
                 contact=data['contact'],
                 address=data['address'],
                 latitude=data['latitude'],
-                longitude=data['longitude']
+                longitude=data['longitude'],
+                is_verified=True,   # the chatbot only recommends verified doctors
             )
             print(f"Created Doctor: {data['username']} ({data['specialization']})")
         else:
-            print(f"Doctor {data['username']} already exists.")
+            # Re-running also repairs sample doctors that were seeded before they were marked verified
+            fixed = DoctorProfile.objects.filter(user__username=data['username'], is_verified=False).update(is_verified=True)
+            print(f"Doctor {data['username']} already exists." + (" Marked as verified." if fixed else ""))
 
 if __name__ == '__main__':
     create_sample_doctors()

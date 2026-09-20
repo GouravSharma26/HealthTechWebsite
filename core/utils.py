@@ -6,9 +6,49 @@ from django.http import JsonResponse
 import os
 import joblib
 from django.conf import settings
-from .models import Appointment
+from django.db.models import Q
+from .models import Appointment, DoctorProfile
 
 logger = logging.getLogger(__name__)
+
+# Suffixes that differ between how a specialty is named vs. how its doctor is titled
+# (Cardiology / Cardiologist, Pediatrics / Pediatrician, Psychiatry / Psychiatrist ...).
+_SPECIALTY_SUFFIXES = sorted(['ologist', 'iatrist', 'ology', 'iatry', 'ician', 'ics', 'ist', 'ic', 'y'],
+                             key=len, reverse=True)
+
+
+def specialization_stem(term):
+    """Reduce a specialty or doctor title to a shared stem: Cardiology / Cardiologist -> 'cardi'."""
+    words = (term or '').strip().lower().split()
+    if not words:
+        return ''
+    word = words[0]
+    for suffix in _SPECIALTY_SUFFIXES:
+        if word.endswith(suffix) and len(word) - len(suffix) >= 3:
+            return word[:-len(suffix)]
+    return word
+
+
+def doctors_matching_specialization(term, limit=5):
+    """Verified doctors whose specialization matches `term`, tolerant of Cardiology/Cardiologist mismatches."""
+    term = (term or '').strip()
+    if not term:
+        return DoctorProfile.objects.none()
+    query = Q(specialization__icontains=term)
+    stem = specialization_stem(term)
+    if stem and stem != term.lower():
+        query |= Q(specialization__icontains=stem)
+    return (DoctorProfile.objects.filter(query, is_verified=True)
+            .select_related('user').order_by('-experience_years')[:limit])
+
+
+def available_specializations(limit=25):
+    """Distinct specializations of verified doctors, so the chatbot can pick a real one."""
+    names = (DoctorProfile.objects.filter(is_verified=True).exclude(specialization='')
+             .order_by('specialization').values_list('specialization', flat=True).distinct())
+    return sorted({n.strip() for n in names if n and n.strip()})[:limit]
+
+
 
 def get_client_ip(request):
     """Best-effort client IP behind a reverse proxy.
