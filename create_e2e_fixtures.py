@@ -1,6 +1,7 @@
 import os
+import sys
 import django
-from django.core.management import call_command
+from django.core import serializers
 from django.utils import timezone
 from datetime import timedelta
 
@@ -10,6 +11,13 @@ django.setup()
 from core.models import User, DoctorProfile, DoctorTimeSlot
 
 def create_fixtures():
+    # This script deletes/creates users with hard-coded passwords (including a verified
+    # doctor). Never let it touch a real database by accident: settings.py switches to
+    # DATABASE_URL (e.g. production Postgres) whenever that variable is set.
+    if os.environ.get('DATABASE_URL') and os.environ.get('E2E_ALLOW_DATABASE_URL') != '1':
+        sys.exit("Refusing to run: DATABASE_URL is set, so this would seed that database. "
+                 "Unset it to use local SQLite, or set E2E_ALLOW_DATABASE_URL=1 if you really mean it.")
+
     # Clear existing e2e specific data just in case
     User.objects.filter(username='seeded_doctor_username').delete()
     User.objects.filter(username='seeded_patient_username').delete()
@@ -74,9 +82,19 @@ def create_fixtures():
         status='Confirmed'
     )
 
-    print("Dumping data to e2e_fixtures.json...")
+    print("Dumping seeded data to e2e_fixtures.json...")
+    # Dump ONLY the objects created above. `dumpdata core` would also export every other
+    # row in the local database (leftover test accounts and their password hashes).
+    from core.models import PatientProfile, Appointment
+    seeded = [
+        *User.objects.filter(pk__in=[9998, 9999]).order_by('pk'),
+        *DoctorProfile.objects.filter(pk=9999),
+        *PatientProfile.objects.filter(pk=9998),
+        *DoctorTimeSlot.objects.filter(doctor=doc_profile).order_by('pk'),
+        *Appointment.objects.filter(pk=9999),
+    ]
     with open('e2e_fixtures.json', 'w') as f:
-        call_command('dumpdata', 'core', stdout=f, indent=2)
+        serializers.serialize('json', seeded, indent=2, stream=f)
     
     print("Done!")
 
