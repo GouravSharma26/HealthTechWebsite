@@ -45,6 +45,10 @@ def is_valid_file(file_obj):
     if ext not in ALLOWED_EXTENSIONS:
         return False
 
+    # 2. File size limit check (e.g. 5MB max)
+    if file_obj.size > 5 * 1024 * 1024:
+        return False
+
     # 2. Magic-byte content inspection (the real check)
     header = file_obj.read(8192)  # filetype needs at most ~262 bytes
     file_obj.seek(0)              # rewind so Django can save the file later
