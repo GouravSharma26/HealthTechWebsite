@@ -1,4 +1,5 @@
 import os
+import secrets
 import django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'healthtech.settings')
@@ -6,12 +7,17 @@ django.setup()
 
 from core.models import User, DoctorProfile
 
+# These accounts are created on whatever database DATABASE_URL points at, and this repo is
+# public, so never use a fixed password. Set SAMPLE_DATA_PASSWORD, or one is generated
+# and printed once at the end.
+SAMPLE_PASSWORD = os.environ.get('SAMPLE_DATA_PASSWORD') or secrets.token_urlsafe(12)
+
 def create_sample_doctors():
     doctors_data = [
         {
             'username': 'dr_rajesh',
             'email': 'rajesh@example.com',
-            'password': 'password123',
+            'password': SAMPLE_PASSWORD,
             'specialization': 'Cardiologist',
             'experience_years': 12,
             'contact': '9876543210',
@@ -22,7 +28,7 @@ def create_sample_doctors():
         {
             'username': 'dr_priya',
             'email': 'priya@example.com',
-            'password': 'password123',
+            'password': SAMPLE_PASSWORD,
             'specialization': 'Dermatologist',
             'experience_years': 8,
             'contact': '9876543211',
@@ -33,7 +39,7 @@ def create_sample_doctors():
         {
             'username': 'dr_amit',
             'email': 'amit@example.com',
-            'password': 'password123',
+            'password': SAMPLE_PASSWORD,
             'specialization': 'Neurologist',
             'experience_years': 15,
             'contact': '9876543212',
@@ -44,7 +50,7 @@ def create_sample_doctors():
         {
             'username': 'dr_sneha',
             'email': 'sneha@example.com',
-            'password': 'password123',
+            'password': SAMPLE_PASSWORD,
             'specialization': 'Pediatrician',
             'experience_years': 5,
             'contact': '9876543213',
@@ -79,3 +85,5 @@ def create_sample_doctors():
 
 if __name__ == '__main__':
     create_sample_doctors()
+    if not os.environ.get('SAMPLE_DATA_PASSWORD'):
+        print(f"\nGenerated password (only for accounts created in this run): {SAMPLE_PASSWORD}")

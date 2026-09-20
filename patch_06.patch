@@ -1,0 +1,141 @@
+diff --git a/core/tests/test_production_settings.py b/core/tests/test_production_settings.py
+new file mode 100644
+index 0000000..6e12868
+--- /dev/null
++++ b/core/tests/test_production_settings.py
+@@ -0,0 +1,30 @@
++import os
++import subprocess
++import sys
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[2]
++
++
++def load_settings(**env):
++    """Import healthtech.settings in a clean subprocess with the given environment."""
++    base = {k: v for k, v in os.environ.items()
++            if not k.startswith('DJANGO_') and k not in ('DEBUG', 'DATABASE_URL', 'REDIS_URL')}
++    code = ("import healthtech.settings as s; "
++            "print(s.DEBUG, s.SECURE_SSL_REDIRECT, getattr(s, 'SECURE_PROXY_SSL_HEADER', None))")
++    return subprocess.run([sys.executable, '-c', code], cwd=ROOT, capture_output=True,
++                          text=True, env={**base, **env})
++
++
++def test_production_trusts_render_proxy_header_when_redirecting_to_https():
++    # Render terminates TLS and sends X-Forwarded-Proto. If Django isn't told to trust it,
++    # SECURE_SSL_REDIRECT redirects https -> https in an endless loop.
++    r = load_settings(DJANGO_DEBUG='False', DJANGO_SECRET_KEY='x')
++    assert r.returncode == 0, r.stderr
++    assert r.stdout.strip() == "False True ('HTTP_X_FORWARDED_PROTO', 'https')"
++
++
++def test_production_refuses_to_boot_without_secret_key():
++    r = load_settings(DJANGO_DEBUG='False')
++    assert r.returncode != 0
++    assert 'DJANGO_SECRET_KEY' in r.stderr
+diff --git a/create_sample_data.py b/create_sample_data.py
+index 688312c..e2999bf 100644
+--- a/create_sample_data.py
++++ b/create_sample_data.py
+@@ -1,4 +1,5 @@
+ import os
++import secrets
+ import django
+ 
+ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'healthtech.settings')
+@@ -6,12 +7,17 @@ django.setup()
+ 
+ from core.models import User, DoctorProfile
+ 
++# These accounts are created on whatever database DATABASE_URL points at, and this repo is
++# public, so never use a fixed password. Set SAMPLE_DATA_PASSWORD, or one is generated
++# and printed once at the end.
++SAMPLE_PASSWORD = os.environ.get('SAMPLE_DATA_PASSWORD') or secrets.token_urlsafe(12)
++
+ def create_sample_doctors():
+     doctors_data = [
+         {
+             'username': 'dr_rajesh',
+             'email': 'rajesh@example.com',
+-            'password': 'password123',
++            'password': SAMPLE_PASSWORD,
+             'specialization': 'Cardiologist',
+             'experience_years': 12,
+             'contact': '9876543210',
+@@ -22,7 +28,7 @@ def create_sample_doctors():
+         {
+             'username': 'dr_priya',
+             'email': 'priya@example.com',
+-            'password': 'password123',
++            'password': SAMPLE_PASSWORD,
+             'specialization': 'Dermatologist',
+             'experience_years': 8,
+             'contact': '9876543211',
+@@ -33,7 +39,7 @@ def create_sample_doctors():
+         {
+             'username': 'dr_amit',
+             'email': 'amit@example.com',
+-            'password': 'password123',
++            'password': SAMPLE_PASSWORD,
+             'specialization': 'Neurologist',
+             'experience_years': 15,
+             'contact': '9876543212',
+@@ -44,7 +50,7 @@ def create_sample_doctors():
+         {
+             'username': 'dr_sneha',
+             'email': 'sneha@example.com',
+-            'password': 'password123',
++            'password': SAMPLE_PASSWORD,
+             'specialization': 'Pediatrician',
+             'experience_years': 5,
+             'contact': '9876543213',
+@@ -79,3 +85,5 @@ def create_sample_doctors():
+ 
+ if __name__ == '__main__':
+     create_sample_doctors()
++    if not os.environ.get('SAMPLE_DATA_PASSWORD'):
++        print(f"\nGenerated password (only for accounts created in this run): {SAMPLE_PASSWORD}")
+diff --git a/healthtech/settings.py b/healthtech/settings.py
+index 6a57547..c58daea 100644
+--- a/healthtech/settings.py
++++ b/healthtech/settings.py
+@@ -47,6 +47,10 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if os.envi
+ CSRF_TRUSTED_ORIGINS = ['https://healthtech-web.onrender.com']
+ 
+ if not DEBUG:
++    # Render terminates TLS at its proxy and forwards plain HTTP with X-Forwarded-Proto.
++    # Without this header mapping Django thinks every request is insecure, and
++    # SECURE_SSL_REDIRECT then redirects https -> https forever.
++    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+     SECURE_SSL_REDIRECT = True
+     SESSION_COOKIE_SECURE = True
+     CSRF_COOKIE_SECURE = True
+diff --git a/render.yaml b/render.yaml
+index 1831d30..9167c77 100644
+--- a/render.yaml
++++ b/render.yaml
+@@ -1,8 +1,5 @@
+-databases:
+-  - name: healthtech_db
+-    databaseName: healthtech
+-    user: healthtech_user
+-    plan: free
++# The database lives on Neon (external Postgres): Render's free Postgres expires after 30 days.
++# Set DATABASE_URL in the Render dashboard (Environment tab) to the Neon connection string.
+ 
+ services:
+   - type: web
+@@ -13,9 +10,9 @@ services:
+     startCommand: "gunicorn healthtech.asgi:application -k uvicorn.workers.UvicornWorker --timeout 120"
+     envVars:
+       - key: DATABASE_URL
+-        fromDatabase:
+-          name: healthtech_db
+-          property: connectionString
++        sync: false   # secret: set by hand in the dashboard (Neon connection string)
++      - key: PYTHON_VERSION
++        value: 3.12.11   # match CI (3.12); Render's default is now 3.14
+       - key: REDIS_URL
+         fromService:
+           name: healthtech-redis

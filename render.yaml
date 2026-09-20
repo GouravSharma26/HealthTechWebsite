@@ -1,8 +1,5 @@
-databases:
-  - name: healthtech_db
-    databaseName: healthtech
-    user: healthtech_user
-    plan: free
+# The database lives on Neon (external Postgres): Render's free Postgres expires after 30 days.
+# Set DATABASE_URL in the Render dashboard (Environment tab) to the Neon connection string.
 
 services:
   - type: web
@@ -13,9 +10,9 @@ services:
     startCommand: "gunicorn healthtech.asgi:application -k uvicorn.workers.UvicornWorker --timeout 120"
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: healthtech_db
-          property: connectionString
+        sync: false   # secret: set by hand in the dashboard (Neon connection string)
+      - key: PYTHON_VERSION
+        value: 3.12.11   # match CI (3.12); Render's default is now 3.14
       - key: REDIS_URL
         fromService:
           name: healthtech-redis

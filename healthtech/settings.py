@@ -47,6 +47,10 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if os.envi
 CSRF_TRUSTED_ORIGINS = ['https://healthtech-web.onrender.com']
 
 if not DEBUG:
+    # Render terminates TLS at its proxy and forwards plain HTTP with X-Forwarded-Proto.
+    # Without this header mapping Django thinks every request is insecure, and
+    # SECURE_SSL_REDIRECT then redirects https -> https forever.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
