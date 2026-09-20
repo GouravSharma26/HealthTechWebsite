@@ -76,6 +76,8 @@ Notes:
 - Rate limiting and login throttling key on the client IP from `X-Forwarded-For`. Set `TRUSTED_PROXY_HOPS` to the
   number of trusted proxies in front of the app so spoofed left-hand entries are ignored (default `0` = legacy
   first-entry behaviour). If Redis is unreachable these features fail open instead of taking the site down.
+- The chatbot follows a triage workflow (intake, one-at-a-time follow-up questions, emergency screen, specialist
+  matching, session-only memory): see [docs/triage-framework.md](docs/triage-framework.md).
 - The chatbot uses Groq's function calling. A key can only use the models enabled for its account: a 404
   `model_not_found` in the Render log means the model is retired or not available to that key. List the models a
   key can use with `GET https://api.groq.com/openai/v1/models` (Bearer token) and set `GROQ_MODEL` accordingly.

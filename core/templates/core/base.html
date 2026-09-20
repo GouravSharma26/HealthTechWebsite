@@ -265,14 +265,15 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; height: 24px;"><path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.43 3.43 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clip-rule="evenodd" /></svg>
         <div style="font-weight: 700; font-size: 1.1rem;">HealthBot Triage</div>
       </div>
-      <button onclick="toggleHealthBot()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.5rem; line-height: 1;">&times;</button>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button onclick="botNewChat()" title="Erase this conversation and start again" aria-label="Start a new conversation" class="bot-newchat-btn">&#8635; New chat</button>
+        <button onclick="toggleHealthBot()" aria-label="Close chat" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.5rem; line-height: 1;">&times;</button>
+      </div>
     </div>
     
     <!-- Chat Area -->
-    <div id="bot-chat-window" style="flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 15px;">
-      <div class="bot-msg-container bot-ai-message">
-        <div class="bot-bubble">Hello! I am HealthBot, your AI triage assistant. Please describe your symptoms or medical concern, and I will recommend the best type of doctor for you to see on our platform.</div>
-      </div>
+    <div id="bot-chat-window" role="log" aria-live="polite" style="flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 15px;">
+      <!-- greeting and conversation are rendered by the HealthBot script below -->
     </div>
     
     <div id="bot-typing-indicator" style="display: none; padding: 10px 15px; font-style: italic; color: #64748b; font-size: 0.85rem; background: #f8fafc;">
@@ -332,38 +333,386 @@
       border-bottom-left-radius: 4px;
       border: 1px solid #e2e8f0;
     }
+    .bot-cards-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-self: stretch;
+    }
+    .bot-cards-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding-left: 4px;
+    }
+    .bot-doctor-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      text-decoration: none;
+      color: var(--text-dark);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    }
+    .bot-doctor-card:hover, .bot-doctor-card:focus-visible {
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.18);
+      transform: translateY(-1px);
+    }
+    .bot-doctor-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      object-fit: cover;
+      background: #e0f2fe;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    .bot-doctor-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .bot-doctor-name {
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .bot-doctor-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .bot-doctor-cta {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+    .bot-newchat-btn {
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.45);
+      color: white;
+      border-radius: 14px;
+      padding: 3px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .bot-newchat-btn:hover { background: rgba(255,255,255,0.3); }
+    .bot-alert {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-left: 4px solid #dc2626;
+      color: #7f1d1d;
+      border-radius: 12px;
+      padding: 10px 12px;
+      align-self: stretch;
+    }
+    .bot-alert-title { font-weight: 700; font-size: 0.92rem; margin-bottom: 4px; }
+    .bot-alert-text { font-size: 0.85rem; line-height: 1.4; }
+    .bot-alert-call {
+      display: inline-block;
+      margin-top: 8px;
+      background: #dc2626;
+      color: white;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-decoration: none;
+      border-radius: 20px;
+      padding: 6px 14px;
+    }
+    .bot-alert-call:hover { background: #b91c1c; }
+    .bot-status {
+      align-self: flex-start;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border-radius: 14px;
+      padding: 4px 12px;
+    }
+    .bot-status-emergency { background: #dc2626; color: white; }
+    .bot-status-urgent { background: #ffedd5; color: #9a3412; }
+    .bot-status-routine { background: #dcfce7; color: #166534; }
+    .bot-status-self_care { background: #dbeafe; color: #1e40af; }
+    .bot-nodocs {
+      align-self: stretch;
+      background: white;
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .bot-nodocs a { color: var(--primary); font-weight: 600; text-decoration: none; display: inline-block; margin-top: 4px; }
   </style>
 
   <script>
-    let botChatHistory = [];
+    // ---- HealthBot: session-only memory ------------------------------------------------------------
+    // The conversation lives in this browser TAB only (sessionStorage). It survives clicking through to a
+    // doctor's profile and back, and is erased when the tab is closed or "New chat" is pressed. Nothing is
+    // stored on the server and nothing is kept between visits.
+    const BOT_STORAGE_KEY = 'healthbot_session_v1';
+    const BOT_DOCTORS_URL = "{% url 'doctors' %}";
+    const BOT_GREETING = "Hello, I'm HealthBot, an AI triage assistant. I'm not a doctor. If you think this is an emergency, call 112 (or your local emergency number) right now.\n\nTo start, please tell me:\n\u2022 what symptoms you have and when they began\n\u2022 anything relevant, such as your age, existing conditions, allergies or current medicines\n\nI'll ask a few short questions, then suggest the right kind of doctor. This chat stays only in this browser tab and is erased when you close it or start a new chat.";
+    const BOT_STATUS_LABELS = {
+      emergency: 'Emergency \u2013 call 112 now',
+      urgent: 'Urgent \u2013 see a doctor within 24 hours',
+      routine: 'Routine \u2013 book an appointment soon',
+      self_care: 'Self-care \u2013 monitor at home'
+    };
+
+    let botChatHistory = [];   // sent to the server with every message
+    let botTranscript = [];    // what is on screen, replayed after a page change
+    let botOpen = false;
+
+    function botSave() {
+      try {
+        sessionStorage.setItem(BOT_STORAGE_KEY, JSON.stringify({
+          history: botChatHistory.slice(-40), transcript: botTranscript.slice(-80), open: botOpen
+        }));
+      } catch (e) { /* storage unavailable (private mode / quota): the chat still works, it just isn't kept */ }
+    }
+
+    function botLoad() {
+      try {
+        const raw = sessionStorage.getItem(BOT_STORAGE_KEY);
+        const saved = raw ? JSON.parse(raw) : null;
+        return (saved && Array.isArray(saved.history) && Array.isArray(saved.transcript)) ? saved : null;
+      } catch (e) { return null; }
+    }
+
+    function botRecord(event) {
+      botTranscript.push(event);
+      botSave();
+    }
 
     function toggleHealthBot() {
       const popup = document.getElementById('healthbot-popup');
-      if (popup.style.display === 'none') {
-        popup.style.display = 'flex';
-        document.getElementById('bot-chat-input').focus();
-      } else {
-        popup.style.display = 'none';
-      }
+      const opening = popup.style.display === 'none';
+      popup.style.display = opening ? 'flex' : 'none';
+      botOpen = opening;
+      botSave();
+      if (opening) document.getElementById('bot-chat-input').focus();
     }
 
-    function addBotMessageToUI(role, content) {
+    function addBotMessageToUI(role, content, record = true) {
       const chatWindow = document.getElementById('bot-chat-window');
       const messageDiv = document.createElement('div');
       messageDiv.className = `bot-msg-container bot-${role}-message`;
-      
+
       const bubbleDiv = document.createElement('div');
       bubbleDiv.className = 'bot-bubble';
-      
+
       let formattedContent = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       formattedContent = formattedContent.replace(/\n/g, '<br>');
       formattedContent = formattedContent.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" style="color: var(--primary); text-decoration: underline;">$1</a>');
-      
-      bubbleDiv.innerHTML = DOMPurify.sanitize(formattedContent);
+
+      if (window.DOMPurify) {
+        bubbleDiv.innerHTML = DOMPurify.sanitize(formattedContent);
+      } else {
+        bubbleDiv.textContent = content;   // sanitizer failed to load: show plain text rather than risk raw HTML
+      }
       messageDiv.appendChild(bubbleDiv);
       chatWindow.appendChild(messageDiv);
       chatWindow.scrollTop = chatWindow.scrollHeight;
+      if (record) botRecord({ t: 'msg', role: role, text: content });
     }
+
+    // Everything below is built with textContent and validated URLs, never innerHTML: names, specialties
+    // and even restored session data are treated as untrusted.
+    function botSafeUrl(url) {
+      return (typeof url === 'string' && ((url.startsWith('/') && !url.startsWith('//')) || url.startsWith('https://'))) ? url : null;
+    }
+
+    function botInitial(name) {
+      return name.replace(/^Dr\.?\s*/i, '').charAt(0).toUpperCase() || 'D';
+    }
+
+    function addBotAlerts(alerts, record = true) {
+      const chatWindow = document.getElementById('bot-chat-window');
+      alerts.forEach(function(alert) {
+        const box = document.createElement('div');
+        box.className = 'bot-alert';
+        box.setAttribute('role', 'alert');
+        box.setAttribute('data-testid', 'bot-alert');
+
+        const title = document.createElement('div');
+        title.className = 'bot-alert-title';
+        title.textContent = String(alert.title || 'This may be an emergency');
+        const text = document.createElement('div');
+        text.className = 'bot-alert-text';
+        text.textContent = String(alert.message || '');
+        const call = document.createElement('a');
+        call.className = 'bot-alert-call';
+        call.href = 'tel:112';
+        call.textContent = 'Call 112 now';
+
+        box.appendChild(title);
+        box.appendChild(text);
+        box.appendChild(call);
+        chatWindow.appendChild(box);
+      });
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      if (record) botRecord({ t: 'alert', alerts: alerts.map(function(a) { return { title: a.title, message: a.message }; }) });
+    }
+
+    function addBotStatus(urgency, record = true) {
+      if (!Object.prototype.hasOwnProperty.call(BOT_STATUS_LABELS, urgency)) return;
+      const chatWindow = document.getElementById('bot-chat-window');
+      const chip = document.createElement('div');
+      chip.className = 'bot-status bot-status-' + urgency;
+      chip.setAttribute('data-testid', 'bot-status');
+      chip.textContent = BOT_STATUS_LABELS[urgency];
+      chatWindow.appendChild(chip);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      if (record) botRecord({ t: 'status', urgency: urgency });
+    }
+
+    function addBotDoctorCards(doctors, record = true) {
+      const chatWindow = document.getElementById('bot-chat-window');
+      const container = document.createElement('div');
+      container.className = 'bot-cards-container';
+
+      const title = document.createElement('div');
+      title.className = 'bot-cards-title';
+      title.textContent = 'Recommended doctors';
+      container.appendChild(title);
+
+      doctors.forEach(function(doc) {
+        const link = botSafeUrl(doc.url);
+        if (!link) return;
+
+        const card = document.createElement('a');
+        card.className = 'bot-doctor-card';
+        card.href = link;
+        card.setAttribute('data-testid', 'bot-doctor-card');
+
+        const name = String(doc.name || 'Doctor');
+        const picture = botSafeUrl(doc.profile_picture);
+        let avatar;
+        if (picture) {
+          avatar = document.createElement('img');
+          avatar.src = picture;
+          avatar.alt = name;
+          avatar.loading = 'lazy';
+          avatar.addEventListener('error', function() {   // broken image -> initial instead
+            const fallback = document.createElement('div');
+            fallback.className = 'bot-doctor-avatar';
+            fallback.textContent = botInitial(name);
+            avatar.replaceWith(fallback);
+          });
+        } else {
+          avatar = document.createElement('div');
+          avatar.textContent = botInitial(name);
+        }
+        avatar.classList.add('bot-doctor-avatar');
+
+        const info = document.createElement('div');
+        info.className = 'bot-doctor-info';
+        const nameEl = document.createElement('span');
+        nameEl.className = 'bot-doctor-name';
+        nameEl.textContent = name;
+        const meta = document.createElement('span');
+        meta.className = 'bot-doctor-meta';
+        const years = Number(doc.experience);
+        meta.textContent = String(doc.specialization || '') + (years > 0 ? ' \u2022 ' + years + ' yrs experience' : '');
+        info.appendChild(nameEl);
+        info.appendChild(meta);
+
+        const cta = document.createElement('span');
+        cta.className = 'bot-doctor-cta';
+        cta.textContent = 'View profile \u2192';
+
+        card.appendChild(avatar);
+        card.appendChild(info);
+        card.appendChild(cta);
+        container.appendChild(card);
+      });
+
+      if (container.children.length > 1) {
+        chatWindow.appendChild(container);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+        if (record) {
+          botRecord({ t: 'cards', doctors: doctors.slice(0, 5).map(function(d) {
+            return { name: d.name, specialization: d.specialization, experience: d.experience,
+                     profile_picture: d.profile_picture, url: d.url };
+          }) });
+        }
+      }
+    }
+
+    function addBotNoDoctors(searched, record = true) {
+      const chatWindow = document.getElementById('bot-chat-window');
+      const box = document.createElement('div');
+      box.className = 'bot-nodocs';
+      box.setAttribute('data-testid', 'bot-no-doctors');
+      const text = document.createElement('div');
+      text.textContent = 'No verified ' + (searched ? String(searched) : 'matching') + ' doctors are available on the platform right now.';
+      const link = document.createElement('a');
+      link.href = BOT_DOCTORS_URL;
+      link.textContent = 'Browse all doctors \u2192';
+      box.appendChild(text);
+      box.appendChild(link);
+      chatWindow.appendChild(box);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      if (record) botRecord({ t: 'nodocs', searched: searched ? String(searched) : '' });
+    }
+
+    function botRenderEvent(ev) {
+      if (!ev || typeof ev !== 'object') return;
+      if (ev.t === 'msg' && (ev.role === 'user' || ev.role === 'ai') && typeof ev.text === 'string') {
+        addBotMessageToUI(ev.role, ev.text, false);
+      } else if (ev.t === 'alert' && Array.isArray(ev.alerts)) {
+        addBotAlerts(ev.alerts.slice(0, 3), false);
+      } else if (ev.t === 'status') {
+        addBotStatus(ev.urgency, false);
+      } else if (ev.t === 'cards' && Array.isArray(ev.doctors)) {
+        addBotDoctorCards(ev.doctors.slice(0, 5), false);
+      } else if (ev.t === 'nodocs') {
+        addBotNoDoctors(ev.searched, false);
+      }
+    }
+
+    function botNewChat() {
+      botChatHistory = [];
+      botTranscript = [];
+      document.getElementById('bot-chat-window').textContent = '';
+      addBotMessageToUI('ai', BOT_GREETING, false);
+      botSave();
+      document.getElementById('bot-chat-input').focus();
+    }
+
+    (function botInit() {
+      const saved = botLoad();
+      if (saved) {
+        botChatHistory = saved.history.filter(function(m) {
+          return m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string';
+        });
+        botTranscript = saved.transcript.slice(-80);
+      }
+      addBotMessageToUI('ai', BOT_GREETING, false);
+      botTranscript.forEach(botRenderEvent);
+      if (saved && saved.open) {
+        document.getElementById('healthbot-popup').style.display = 'flex';
+        botOpen = true;
+        const chatWindow = document.getElementById('bot-chat-window');
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      }
+    })();
 
     function handleBotKeyPress(e) {
       if (e.key === 'Enter') {
@@ -380,14 +729,15 @@
       inputEl.disabled = true;
       document.getElementById('bot-send-btn').style.transform = 'scale(0.9)';
       document.getElementById('bot-send-btn').disabled = true;
-      
+
       addBotMessageToUI('user', text);
       botChatHistory.push({ role: 'user', content: text });
-      
+      botSave();
+
       document.getElementById('bot-typing-indicator').style.display = 'block';
       const chatWindow = document.getElementById('bot-chat-window');
       chatWindow.scrollTop = chatWindow.scrollHeight;
-      
+
       try {
         const response = await fetch('/ai-chat/', {
           method: 'POST',
@@ -397,19 +747,35 @@
           },
           body: JSON.stringify({ message: text, history: botChatHistory })
         });
-        
+
         const data = await response.json();
         document.getElementById('bot-typing-indicator').style.display = 'none';
-        
+
         if (response.ok) {
+          const stage = data.stage === 'summary' ? 'summary' : 'question';
+          const alerts = Array.isArray(data.alerts) ? data.alerts.slice(0, 3) : [];
+          if (alerts.length) addBotAlerts(alerts);
+          if (data.urgency) {
+            addBotStatus(data.urgency);
+            if (data.urgency === 'emergency' && !alerts.length) {
+              addBotAlerts([{ title: 'This may be an emergency',
+                              message: 'Call 112 (or your local emergency number) now. Do not wait, and do not drive yourself.' }]);
+            }
+          }
           addBotMessageToUI('ai', data.reply);
-          botChatHistory.push({ role: 'assistant', content: data.reply });
+          botChatHistory.push({ role: 'assistant', content: data.reply, specialization: data.specialization || null, stage: stage });
+          if (Array.isArray(data.doctors) && data.doctors.length > 0) {
+            addBotDoctorCards(data.doctors);
+          } else if (stage === 'summary') {
+            addBotNoDoctors(data.specialization_searched);
+          }
+          botSave();
         } else {
-          addBotMessageToUI('ai', "Sorry, I'm having trouble connecting right now. (" + data.error + ")");
+          addBotMessageToUI('ai', "Sorry, I'm having trouble connecting right now. (" + data.error + ")", false);
         }
       } catch (err) {
         document.getElementById('bot-typing-indicator').style.display = 'none';
-        addBotMessageToUI('ai', "An error occurred while sending your message.");
+        addBotMessageToUI('ai', "An error occurred while sending your message.", false);
       } finally {
         inputEl.disabled = false;
         document.getElementById('bot-send-btn').disabled = false;
