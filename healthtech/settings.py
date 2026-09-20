@@ -219,7 +219,10 @@ EMAIL_TIMEOUT = 10  # seconds - prevents SMTP from hanging forever
 
 # Groq API for LLM Features
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '').strip()
-GROQ_MODEL = os.environ.get('GROQ_MODEL', 'qwen/qwen3.6-27b')
+GROQ_MODEL = os.environ.get('GROQ_MODEL', 'openai/gpt-oss-20b').strip()
+# Tried in order when a key can't use the model above (Groq returns 404 model_not_found for
+# retired or gated models). Comma-separated.
+GROQ_MODEL_FALLBACKS = [m.strip() for m in os.environ.get('GROQ_MODEL_FALLBACKS', 'openai/gpt-oss-120b').split(',') if m.strip()]
 
 # OpenRouter API for Vision LLM (Prescription Scanner)
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '').strip()

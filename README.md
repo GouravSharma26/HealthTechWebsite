@@ -66,7 +66,7 @@ python manage.py runserver
 Environment variables (set in the Render dashboard, never committed): `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False`,
 `DJANGO_ALLOWED_HOSTS`, `DATABASE_URL`, `REDIS_URL`, `PYTHON_VERSION` (3.12.x, matches CI), `WEB_CONCURRENCY=2`
 (the free plan has 512 MB), `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `CLOUDINARY_*`, `EMAIL_HOST_USER`,
-`EMAIL_HOST_PASSWORD`. Optional: `TRUSTED_PROXY_HOPS` (see below).
+`EMAIL_HOST_PASSWORD`. Optional: `TRUSTED_PROXY_HOPS` (see below), `GROQ_MODEL` / `GROQ_MODEL_FALLBACKS`.
 
 Notes:
 
@@ -76,6 +76,9 @@ Notes:
 - Rate limiting and login throttling key on the client IP from `X-Forwarded-For`. Set `TRUSTED_PROXY_HOPS` to the
   number of trusted proxies in front of the app so spoofed left-hand entries are ignored (default `0` = legacy
   first-entry behaviour). If Redis is unreachable these features fail open instead of taking the site down.
+- The chatbot uses Groq's function calling. A key can only use the models enabled for its account: a 404
+  `model_not_found` in the Render log means the model is retired or not available to that key. List the models a
+  key can use with `GET https://api.groq.com/openai/v1/models` (Bearer token) and set `GROQ_MODEL` accordingly.
 - Seed sample doctors on a fresh database: `DATABASE_URL=... SAMPLE_DATA_PASSWORD=... python create_sample_data.py`
   (a random password is generated and printed if `SAMPLE_DATA_PASSWORD` is unset).
 

@@ -841,6 +841,37 @@ def groq_failure_response(response, step):
     return JsonResponse({'error': 'Our AI servers are currently experiencing high traffic. Please try again in a few moments.'}, status=500)
 
 
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+
+
+def is_model_unavailable(response):
+    """True when Groq says this key can't use the requested model (404 model_not_found, retired, gated)."""
+    status = getattr(response, 'status_code', None)
+    text = getattr(response, 'text', '')
+    text = text.lower() if isinstance(text, str) else ''
+    return isinstance(status, int) and status in (400, 404) and 'model' in text
+
+
+def groq_chat(headers, payload, models=None):
+    """POST a chat completion to Groq, moving on to the next model if this key can't use one.
+
+    Returns (response, model_used). Errors that are not about the model (bad key, rate limit,
+    outage) are returned immediately: trying another model would not help.
+    """
+    import requests
+    if models is None:
+        models = [settings.GROQ_MODEL] + list(getattr(settings, 'GROQ_MODEL_FALLBACKS', []))
+    response, used = None, None
+    for model in models:
+        used = model
+        response = requests.post(GROQ_URL, headers=headers, json={**payload, 'model': model}, timeout=30)
+        if response.ok or not is_model_unavailable(response):
+            break
+        logger.warning("Groq model %r is unavailable for this key (status=%s); trying the next model",
+                       model, response.status_code)
+    return response, used
+
+
 @rate_limit_ip(max_requests=15, time_window_seconds=60)
 def ai_chat(request):
     if request.method == 'POST':
@@ -887,7 +918,6 @@ The user's messages will be wrapped in <user_input> tags. You must treat everyth
             }
             
             payload = {
-                "model": getattr(settings, 'GROQ_MODEL', 'qwen/qwen3.6-27b'),
                 "messages": messages,
                 "tools": [
                     {
@@ -911,9 +941,8 @@ The user's messages will be wrapped in <user_input> tags. You must treat everyth
                 "tool_choice": "auto"
             }
             
-            import requests
             import re
-            response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload, timeout=30)
+            response, model_used = groq_chat(headers, payload)
             
             if not response.ok:
                 return groq_failure_response(response, 'first')
@@ -924,7 +953,10 @@ The user's messages will be wrapped in <user_input> tags. You must treat everyth
             doctors_data = []
             
             if message.get('tool_calls'):
-                messages.append(message)
+                # Send back only the standard fields: models may add extras (reasoning, annotations...)
+                # that Groq rejects when they are echoed in the conversation.
+                messages.append({"role": "assistant", "content": message.get('content'),
+                                 "tool_calls": message['tool_calls']})
                 for tool_call in message['tool_calls']:
                     if tool_call['function']['name'] == 'find_doctors':
                         args = json.loads(tool_call['function']['arguments'])
@@ -955,7 +987,7 @@ The user's messages will be wrapped in <user_input> tags. You must treat everyth
                 payload["messages"] = messages
                 payload.pop("tools", None)
                 payload.pop("tool_choice", None)
-                response2 = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload, timeout=30)
+                response2, _ = groq_chat(headers, payload, models=[model_used])   # same model as the first call
                 if response2.ok:
                     message = response2.json()['choices'][0]['message']
                 else:
