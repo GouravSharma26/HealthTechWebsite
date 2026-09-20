@@ -218,11 +218,11 @@ DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'noreply@healthtech.com')
 EMAIL_TIMEOUT = 10  # seconds - prevents SMTP from hanging forever
 
 # Groq API for LLM Features
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '').strip()
 GROQ_MODEL = os.environ.get('GROQ_MODEL', 'qwen/qwen3.6-27b')
 
 # OpenRouter API for Vision LLM (Prescription Scanner)
-OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '')
+OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '').strip()
 OPENROUTER_VISION_MODEL = os.environ.get('OPENROUTER_VISION_MODEL', 'google/gemini-3.7-flash')
 
 # Caching
