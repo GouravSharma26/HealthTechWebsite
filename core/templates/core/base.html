@@ -521,13 +521,29 @@
               z-index: 9999;
           `;
           
-          toast.innerHTML = `
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                  <strong style="font-size: 0.9rem;">${title}</strong>
-                  <span style="cursor: pointer; font-size: 1.2rem; line-height: 1;" onclick="this.parentElement.parentElement.remove()">&times;</span>
-              </div>
-              <div style="font-size: 0.85rem;">${message}</div>
-          `;
+          // Build the toast with textContent: notification text contains user-controlled
+          // values (usernames, cancellation reasons), so it must never be parsed as HTML.
+          const header = document.createElement('div');
+          header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;';
+
+          const titleEl = document.createElement('strong');
+          titleEl.style.fontSize = '0.9rem';
+          titleEl.textContent = title;
+
+          const closeEl = document.createElement('span');
+          closeEl.style.cssText = 'cursor: pointer; font-size: 1.2rem; line-height: 1;';
+          closeEl.textContent = '\u00d7';
+          closeEl.addEventListener('click', () => toast.remove());
+
+          header.appendChild(titleEl);
+          header.appendChild(closeEl);
+
+          const body = document.createElement('div');
+          body.style.fontSize = '0.85rem';
+          body.textContent = message;
+
+          toast.appendChild(header);
+          toast.appendChild(body);
           
           container.appendChild(toast);
           

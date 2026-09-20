@@ -1,0 +1,6 @@
+# OPTIONAL: semantic doctor search (core/search.py). Not installed on Render by default:
+# torch + sentence-transformers need roughly 1GB+ RAM per worker, more than the free tier has.
+# Without these, search transparently falls back to plain text matching.
+# Install locally with:  pip install -r requirements-search.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+sentence-transformers==6.1.0

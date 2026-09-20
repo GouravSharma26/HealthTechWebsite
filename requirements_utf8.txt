@@ -129,6 +129,7 @@ rsa==4.9
 safetensors==0.8.0
 scikit-learn==1.5.2
 scipy==1.16.2
+sentence-transformers==6.1.0
 service-identity==26.1.0
 setuptools==84.0.0
 shellingham==1.5.4
@@ -148,6 +149,7 @@ termcolor==2.5.0
 thinc==8.3.4
 threadpoolctl==3.6.0
 tokenizers==0.23.2
+torch==2.14.0
 tqdm==4.67.1
 transformers==5.17.0
 Twisted==26.4.0

@@ -129,10 +129,15 @@ def doctor_profile_post_save(sender, instance, created, **kwargs):
     # Only run if we are not already generating it (to avoid infinite recursion)
     # The search_embedding field is updated using .update() in search.py, which doesn't trigger post_save
     
+    # Skip entirely when sentence-transformers isn't installed (nothing to compute)
+    import importlib.util
+    if importlib.util.find_spec('sentence_transformers') is None:
+        return
+
     # We delay the import of search to avoid circular dependencies
     try:
-        from core.search import update_doctor_embedding
-        threading.Thread(target=update_doctor_embedding, args=(instance,)).start()
+        from core.search import update_doctor_embedding_in_thread
+        threading.Thread(target=update_doctor_embedding_in_thread, args=(instance.id,), daemon=True).start()
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(f"Failed to start embedding thread: {e}")
@@ -155,12 +160,18 @@ def notification_post_save(sender, instance, created, **kwargs):
         elif 'requested' in instance.message.lower():
             notif_type = 'warning'
             
-        async_to_sync(channel_layer.group_send)(
-            group_name,
-            {
-                'type': 'notification_message',
-                'message': instance.message,
-                'notification_type': notif_type,
-                'title': 'New Notification'
-            }
-        )
+        # Live push is best-effort: if Redis is down the Notification row must still save,
+        # otherwise booking/cancelling an appointment would fail with a 500.
+        try:
+            async_to_sync(channel_layer.group_send)(
+                group_name,
+                {
+                    'type': 'notification_message',
+                    'message': instance.message,
+                    'notification_type': notif_type,
+                    'title': 'New Notification'
+                }
+            )
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception("Failed to push live notification")

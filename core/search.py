@@ -1,6 +1,8 @@
 import json
 import logging
 from django.conf import settings
+from django.db import connection
+from django.db.models import Q
 from .models import DoctorProfile
 
 logger = logging.getLogger(__name__)
@@ -49,26 +51,44 @@ def update_doctor_embedding(doctor_profile):
         # Using update to avoid triggering signals recursively if called from a post_save signal
         DoctorProfile.objects.filter(id=doctor_profile.id).update(search_embedding=embedding_list)
 
+def text_search_doctors(query, top_k=20):
+    """Plain substring search on username / specialization (used as the fallback)."""
+    qs = DoctorProfile.objects.filter(
+        Q(user__username__icontains=query) | Q(specialization__icontains=query)
+    ).select_related('user').distinct()
+    return list(qs[:top_k])
+
+def update_doctor_embedding_in_thread(doctor_id):
+    """Thread target: own DB connection, always closed (threads don't get request cleanup)."""
+    try:
+        doctor = DoctorProfile.objects.filter(id=doctor_id).first()
+        if doctor:
+            update_doctor_embedding(doctor)
+    finally:
+        connection.close()
+
 def search_doctors(query, top_k=5):
     """
     Given a natural language query, searches the database for the most relevant doctors.
+    Falls back to plain text matching when the embedding model is unavailable
+    (e.g. sentence-transformers not installed) or no doctor has an embedding yet.
     """
     model = get_model()
     if not model:
-        return DoctorProfile.objects.none()
+        return text_search_doctors(query, top_k)
         
     try:
         from sentence_transformers import util
         import torch
     except ImportError:
-        return DoctorProfile.objects.none()
+        return text_search_doctors(query, top_k)
 
     query_embedding = model.encode(query, convert_to_tensor=True)
     
     # Load all doctors that have an embedding
-    doctors = list(DoctorProfile.objects.exclude(search_embedding__isnull=True))
+    doctors = list(DoctorProfile.objects.exclude(search_embedding__isnull=True).select_related('user'))
     if not doctors:
-        return DoctorProfile.objects.none()
+        return text_search_doctors(query, top_k)
         
     # Convert stored JSON arrays back to tensors
     doctor_embeddings = [d.search_embedding for d in doctors]
