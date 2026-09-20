@@ -1,3 +1,4 @@
+import logging
 import time
 from functools import wraps
 from django.core.cache import cache
@@ -7,37 +8,71 @@ import joblib
 from django.conf import settings
 from .models import Appointment
 
+logger = logging.getLogger(__name__)
+
+def get_client_ip(request):
+    """Best-effort client IP behind a reverse proxy.
+
+    With settings.TRUSTED_PROXY_HOPS = N > 0 the address is taken N entries from the right of
+    X-Forwarded-For (the part the trusted proxies wrote); anything further left is
+    client-supplied. With 0 the legacy behaviour is kept (first entry).
+    """
+    hops = getattr(settings, 'TRUSTED_PROXY_HOPS', 0)
+    xff = request.META.get('HTTP_X_FORWARDED_FOR')
+    if xff:
+        parts = [p.strip() for p in xff.split(',') if p.strip()]
+        if hops > 0 and len(parts) >= hops:
+            return parts[-hops]
+        if hops == 0 and parts:
+            return parts[0]
+    return request.META.get('REMOTE_ADDR')
+
+
+# The cache backs rate limiting and login throttling. If it is unavailable (Redis down,
+# hosted-Redis quota exhausted) these helpers degrade to "no limiting" instead of raising,
+# so a cache outage can't turn into a login / AI-endpoint outage.
+def safe_cache_get(key, default=None):
+    try:
+        return cache.get(key, default)
+    except Exception:
+        logger.warning("cache.get failed for %r; continuing without it", key, exc_info=True)
+        return default
+
+
+def safe_cache_set(key, value, timeout):
+    try:
+        cache.set(key, value, timeout)
+    except Exception:
+        logger.warning("cache.set failed for %r; continuing without it", key, exc_info=True)
+
+
+def safe_cache_delete(key):
+    try:
+        cache.delete(key)
+    except Exception:
+        logger.warning("cache.delete failed for %r; continuing without it", key, exc_info=True)
+
+
 def rate_limit_ip(max_requests, time_window_seconds=60):
     """
     Simple IP-based rate limiter using Django's caching framework.
-    Limits each IP to max_requests per time_window_seconds.
+    Limits each IP to max_requests per time_window_seconds. Fails open if the cache is down.
     """
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
-            # Get client IP
-            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-            if x_forwarded_for:
-                ip = x_forwarded_for.split(',')[0].strip()
-            else:
-                ip = request.META.get('REMOTE_ADDR')
-                
-            cache_key = f"rl_{view_func.__name__}_{ip}"
-            
-            # Get current request history
-            history = cache.get(cache_key, [])
+            cache_key = f"rl_{view_func.__name__}_{get_client_ip(request)}"
             now = time.time()
-            
-            # Filter out requests older than the time window
+
+            history = safe_cache_get(cache_key, []) or []
             history = [req_time for req_time in history if req_time > now - time_window_seconds]
-            
+
             if len(history) >= max_requests:
                 return JsonResponse({'error': 'Rate limit exceeded. Please wait a moment and try again.'}, status=429)
-                
-            # Add current request and save back to cache
+
             history.append(now)
-            cache.set(cache_key, history, time_window_seconds)
-            
+            safe_cache_set(cache_key, history, time_window_seconds)
+
             return view_func(request, *args, **kwargs)
         return _wrapped_view
     return decorator

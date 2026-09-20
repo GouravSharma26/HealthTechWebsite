@@ -46,6 +46,12 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if os.envi
 
 CSRF_TRUSTED_ORIGINS = ['https://healthtech-web.onrender.com']
 
+# Number of trusted reverse proxies in front of the app that each append the address of the
+# peer they received the request from to X-Forwarded-For. The real client is then the
+# N-th entry from the RIGHT (anything further left is client-supplied and spoofable).
+# 0 keeps the legacy behaviour (trust the first entry). Used by rate limiting / login throttling.
+TRUSTED_PROXY_HOPS = int(os.environ.get('TRUSTED_PROXY_HOPS', '0'))
+
 if not DEBUG:
     # Render terminates TLS at its proxy and forwards plain HTTP with X-Forwarded-Proto.
     # Without this header mapping Django thinks every request is insecure, and

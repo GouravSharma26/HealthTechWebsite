@@ -14,7 +14,8 @@ import datetime
 import requests
 from django.conf import settings
 from .models import User, DoctorProfile, PatientProfile, Appointment, Review, Notification, DoctorTimeSlot, ChatMessage
-from .utils import rate_limit_ip, predict_risk
+from .utils import (rate_limit_ip, predict_risk, get_client_ip,
+                    safe_cache_get, safe_cache_set, safe_cache_delete)
 
 import filetype
 
@@ -116,10 +117,8 @@ def login_view(request):
         # generic AI-endpoint rate limiter, since this view must keep
         # rendering the normal login page (not a JSON error) and must not
         # penalize GET requests (just viewing the page) at all.
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else request.META.get('REMOTE_ADDR')
-        cache_key = f"login_attempts_{ip}"
-        attempts = cache.get(cache_key, 0)
+        cache_key = f"login_attempts_{get_client_ip(request)}"
+        attempts = safe_cache_get(cache_key, 0) or 0
 
         if attempts >= 10:
             messages.error(request, "Too many failed login attempts. Please wait a few minutes and try again.")
@@ -129,7 +128,7 @@ def login_view(request):
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            cache.delete(cache_key)  # reset on success
+            safe_cache_delete(cache_key)  # reset on success
             login(request, user)
             if user.is_doctor:
                 # If they haven't setup profile, go to setup
@@ -141,7 +140,7 @@ def login_view(request):
                     return redirect('patient_setup')
                 return redirect('patient_profile')
         else:
-            cache.set(cache_key, attempts + 1, 300)  # 5-minute window
+            safe_cache_set(cache_key, attempts + 1, 300)  # 5-minute window
             messages.error(request, "Invalid username or password.")
             
     return render(request, 'core/login.html')
@@ -693,6 +692,7 @@ def help_view(request):
 def contact_view(request):
     return render(request, 'core/contact.html')
 
+@rate_limit_ip(max_requests=30, time_window_seconds=60)
 def api_search_doctors(request):
     query = request.GET.get('q', '')
     if not query:
