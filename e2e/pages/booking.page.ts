@@ -1,11 +1,12 @@
 import { Page, expect } from '@playwright/test';
+import { bookingDate } from '../helpers/booking-date';
 
 export class BookingPage {
   constructor(private page: Page) {}
 
   async open(doctorId: number) {
-    const d = new Date();
-    const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    // Tomorrow in the SERVER's timezone: see helpers/booking-date.ts for why "today" is not reliable.
+    const bookingDay = bookingDate();
     await this.page.goto(`/doctor/${doctorId}/`);
     await this.page.locator('#appointment_date').evaluate((node: HTMLInputElement, dateValue) => {
       if ((node as any)._flatpickr) {
@@ -15,7 +16,7 @@ export class BookingPage {
         node.value = dateValue;
         node.dispatchEvent(new Event('change'));
       }
-    }, today);
+    }, bookingDay);
     // Wait a moment for slots to load via JS
     await this.page.waitForTimeout(500);
   }

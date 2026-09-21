@@ -3,7 +3,7 @@ import { AuthPage } from '../pages/auth.page';
 import { BookingPage } from '../pages/booking.page';
 
 // These tests assume a seeded doctor exists (see /mnt/skills or your fixtures
-// loader) with id DOCTOR_ID and at least one open time slot for `today`.
+// loader) with id DOCTOR_ID and at least one open time slot (the tests book for tomorrow, in the server's timezone).
 // Wire this to your actual seed command, e.g.:
 //   python manage.py seed_e2e
 const DOCTOR_ID = process.env.E2E_DOCTOR_PROFILE_ID ? Number(process.env.E2E_DOCTOR_PROFILE_ID) : 9999;
