@@ -90,13 +90,16 @@ def test_api_key_is_never_written_to_the_log(mock_post, client, caplog):
 
 @pytest.mark.django_db
 @patch('requests.post')
-def test_second_call_failure_is_logged_as_second(mock_post, client, caplog):
+def test_second_call_failure_falls_back_to_a_reply_instead_of_a_bare_error(mock_post, client, caplog):
+    # A genuine second-call failure that ISN'T the tool_use_failed glitch (so no retry): the tool call already
+    # found doctors, and the user should still get a reply rather than a bare error.
     tool_call = FakeResponse(200, {'choices': [{'message': {'content': None, 'tool_calls': [{
         'id': 'c1', 'function': {'name': 'find_doctors', 'arguments': '{"specialization": "Cardiology"}'}}]}}]})
     mock_post.side_effect = [tool_call, FakeResponse(400, text='{"error":{"message":"bad message shape"}}')]
     r = post_chat(client, 'my heart hurts')
-    assert r.status_code == 502
+    assert r.status_code == 200
     assert 'second call' in caplog.text and 'bad message shape' in caplog.text
+    assert 'having trouble writing a full summary' in r.json()['reply']
 
 
 @pytest.mark.django_db

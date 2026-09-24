@@ -181,13 +181,18 @@ def test_ai_chat_tool_call_second_request_fails(mock_post, client, users_data, s
     mock_response_2 = MagicMock()
     mock_response_2.ok = False
     
-    mock_post.side_effect = [mock_response_1, mock_response_2]
+    mock_response_2.text = ''
+    mock_post.side_effect = [mock_response_1, mock_response_2, mock_response_2]  # retried once, still fails
     
     url = reverse('ai_chat')
     response = client.post(url, json.dumps({'message': 'My heart hurts'}), content_type='application/json')
     
-    assert response.status_code == 500
-    assert 'high traffic' in response.json()['error']
+    # The tool call (find_doctors) already ran; only the AI's written summary failed. The user still gets a
+    # useful reply instead of a bare error - doctor1 isn't verified, so this is the "no matching doctor" case.
+    assert response.status_code == 200
+    data = response.json()
+    assert 'Cardiology' in data['reply'] and data['doctors'] == []
+    assert data['specialization_searched'] == 'Cardiology' and data['stage'] == 'summary'
 
 @pytest.mark.django_db
 def test_ai_chat_missing_api_key(client, settings):
