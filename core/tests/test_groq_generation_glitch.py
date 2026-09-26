@@ -42,6 +42,19 @@ def glitch():
     return FakeResponse(400, text=PROD_BODY)
 
 
+# Second production incident: this time the malformed generation happened on the FIRST call (Groq's own
+# schema validation, not "tool choice is none") - the model tried find_doctors with no arguments at all,
+# before intake had even started, i.e. before any doctors_data exists to preserve.
+FIRST_CALL_BODY = ('{"error":{"message":"Tool call validation failed: tool call validation failed: parameters '
+                   'for tool find_doctors did not match schema: errors: [missing properties: '
+                   '\'specialization\']","type":"invalid_request_error","code":"tool_use_failed",'
+                   '"failed_generation":"{\\"name\\": \\"find_doctors\\", \\"arguments\\": {}}"}}')
+
+
+def first_call_glitch():
+    return FakeResponse(400, text=FIRST_CALL_BODY)
+
+
 # ---- classifiers ------------------------------------------------------------------------------------------
 def test_tool_use_failed_is_not_classified_as_model_unavailable():
     # Regression: the old check matched status in (400,404) + 'model' in body, and this body says
@@ -156,3 +169,49 @@ def test_prompt_forbids_calling_the_tool_before_the_final_summary(mock_post, cli
     chat(client, 'hi')
     prompt = mock_post.call_args_list[0].kwargs['json']['messages'][0]['content']
     assert 'NEVER on a turn where you are still asking a question' in prompt
+
+
+# ---- production incident #2: the glitch happened on the FIRST call, not the follow-up -----------------------
+# (real log: "Groq API error (first call): status=400 body={...tool_use_failed... missing properties:
+# 'specialization'...}"). Before this fix, only the second call had glitch-retry/fallback handling; the
+# first call went straight to the old bare "temporarily unavailable" error.
+
+def test_body_is_still_classified_as_a_generation_glitch_not_model_unavailable():
+    assert is_generation_glitch(first_call_glitch()) is True
+    assert is_model_unavailable(first_call_glitch()) is False
+
+
+@pytest.mark.django_db
+@patch('requests.post')
+def test_first_call_glitch_is_retried_once_and_recovers(mock_post, client):
+    make_doctor(spec='Neurologist')
+    mock_post.side_effect = [first_call_glitch(), tool_call('Neurologist'), text_reply('See a neurologist.')]
+    r = chat(client)
+    assert r.status_code == 200 and r.json()['reply'] == 'See a neurologist.'
+    assert mock_post.call_count == 3
+    assert models_sent(mock_post) == ['openai/gpt-oss-20b'] * 3   # not a model problem, no fallback model tried
+
+
+@pytest.mark.django_db
+@patch('requests.post')
+def test_first_call_still_glitching_after_retry_gets_a_graceful_continuation_not_a_bare_error(mock_post, client):
+    mock_post.side_effect = [first_call_glitch(), first_call_glitch()]
+    r = chat(client)
+    data = r.json()
+    # Nothing was ever found yet at this stage - intake hadn't even finished - so unlike the second-call
+    # fallback there is no specialization/doctors to report; the honest thing is to just ask the user to
+    # continue, not show an alarming connection error.
+    assert r.status_code == 200 and 'error' not in data
+    assert data['doctors'] == []
+    assert 'tell me' in data['reply'].lower() and 'symptoms' in data['reply'].lower()
+    assert mock_post.call_count == 2   # one retry only, no infinite loop
+
+
+@pytest.mark.django_db
+@patch('requests.post')
+def test_first_call_real_failure_unrelated_to_tool_use_is_not_retried(mock_post, client):
+    mock_post.side_effect = [FakeResponse(401, text='{"error":{"message":"Invalid API Key"}}')]
+    r = chat(client)
+    assert mock_post.call_count == 1   # no retry: this is not a generation glitch
+    assert r.status_code == 502
+    assert 'temporarily unavailable' in r.json()['error']

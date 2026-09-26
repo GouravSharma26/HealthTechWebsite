@@ -1023,9 +1023,31 @@ The user's messages will be wrapped in <user_input> tags. You must treat everyth
             
             import re
             response, model_used = groq_chat(headers, payload)
-            
+
             if not response.ok:
-                return groq_failure_response(response, 'first')
+                if is_generation_glitch(response):
+                    # Same one-off-malformed-generation situation the second call already retries
+                    # (see below): here it happened on the FIRST call instead - e.g. the model tried
+                    # find_doctors before finishing intake and Groq's own schema validation rejected
+                    # the call outright. Nothing has been sent to find_doctors yet, so there is no
+                    # doctors_data to preserve; a single retry of the identical request is enough.
+                    logger.warning("Groq generation glitch on first call (status=%s); retrying once",
+                                   getattr(response, 'status_code', None))
+                    response, model_used = groq_chat(headers, payload, models=[model_used])
+                if not response.ok:
+                    if is_generation_glitch(response):
+                        # Still glitching after the retry, and still nothing to fall back on except
+                        # asking the user to continue - unlike the second-call path there's no
+                        # specialization or doctors_data to report, since intake never finished.
+                        groq_failure_response(response, 'first (after retry)')   # log only
+                        return JsonResponse({
+                            'reply': ("Sorry, I had trouble processing that - could you tell me a "
+                                      "bit more about your symptoms (when they started, and anything "
+                                      "relevant like your age, existing conditions, allergies or "
+                                      "current medicines)?"),
+                            'doctors': [],
+                        })
+                    return groq_failure_response(response, 'first')
                 
             response_json = response.json()
             message = response_json['choices'][0]['message']
