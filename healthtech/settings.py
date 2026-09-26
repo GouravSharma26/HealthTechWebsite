@@ -19,6 +19,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 from dotenv import load_dotenv
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
+# WhiteNoise (as of 6.12.0) serves static files with a plain sync iterator; under our ASGI
+# (Uvicorn) deployment Django has no choice but to consume that synchronously and warns about
+# it on every single static-file request. It's not a bug in our code and doesn't affect
+# correctness (WhiteNoise has no ASGI-native mode yet - see whitenoise's GitHub issue #359) -
+# it just drowns out real errors in the Render log stream. Filtered narrowly by message text
+# so any other, unrelated StreamingHttpResponse warning still surfaces normally.
+import warnings
+warnings.filterwarnings(
+    'ignore',
+    message='StreamingHttpResponse must consume synchronous iterators',
+)
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -60,6 +72,18 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+
+    # HSTS: tells browsers to only ever talk to this host over HTTPS, for the given
+    # number of seconds, even if the user types http:// or clicks an old http:// link.
+    # Safe here because SECURE_SSL_REDIRECT above already forces every request onto
+    # HTTPS, so there is no legitimate plain-HTTP use case being cut off.
+    # Start low and only raise once you've confirmed nothing on the domain breaks
+    # under HTTPS-only; a bad HSTS value can't be undone for returning visitors until
+    # it expires. Override via env once you're ready to ramp up (e.g. 604800 = 1 week,
+    # then 31536000 = 1 year before ever enabling INCLUDE_SUBDOMAINS/PRELOAD).
+    SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '3600'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'False') == 'True'
+    SECURE_HSTS_PRELOAD = os.environ.get('SECURE_HSTS_PRELOAD', 'False') == 'True'
 
 # Application definition
 
