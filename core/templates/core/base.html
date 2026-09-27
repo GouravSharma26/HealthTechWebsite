@@ -403,6 +403,26 @@
       color: var(--primary);
       white-space: nowrap;
     }
+    .bot-cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .bot-show-more {
+      align-self: center;
+      margin-top: 2px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      color: var(--primary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .bot-show-more:hover, .bot-show-more:focus-visible {
+      background: #e0f2fe;
+    }
     .bot-newchat-btn {
       background: rgba(255,255,255,0.18);
       border: 1px solid rgba(255,255,255,0.45);
@@ -478,6 +498,17 @@
     let botChatHistory = [];   // sent to the server with every message
     let botTranscript = [];    // what is on screen, replayed after a page change
     let botOpen = false;
+    let botLat = null, botLng = null, botLocationRequested = false;   // session-only, never saved to storage
+
+    function requestBotLocation() {
+      if (botLocationRequested || !navigator.geolocation) return;
+      botLocationRequested = true;
+      navigator.geolocation.getCurrentPosition(
+        function(pos) { botLat = pos.coords.latitude; botLng = pos.coords.longitude; },
+        function() { /* denied or unavailable: distance sorting is skipped server-side, nothing else changes */ },
+        { timeout: 5000 }
+      );
+    }
 
     function botSave() {
       try {
@@ -506,7 +537,10 @@
       popup.style.display = opening ? 'flex' : 'none';
       botOpen = opening;
       botSave();
-      if (opening) document.getElementById('bot-chat-input').focus();
+      if (opening) {
+        document.getElementById('bot-chat-input').focus();
+        requestBotLocation();
+      }
     }
 
     function addBotMessageToUI(role, content, record = true) {
@@ -582,6 +616,8 @@
       if (record) botRecord({ t: 'status', urgency: urgency });
     }
 
+    const BOT_CARDS_PAGE_SIZE = 5;
+
     function addBotDoctorCards(doctors, record = true) {
       const chatWindow = document.getElementById('bot-chat-window');
       const container = document.createElement('div');
@@ -592,13 +628,17 @@
       title.textContent = 'Recommended doctors';
       container.appendChild(title);
 
-      doctors.forEach(function(doc) {
-        const link = botSafeUrl(doc.url);
-        if (!link) return;
+      const list = document.createElement('div');
+      list.className = 'bot-cards-list';
+      container.appendChild(list);
 
+      const validDoctors = doctors.filter(function(doc) { return !!botSafeUrl(doc.url); });
+      if (validDoctors.length === 0) return;   // nothing safe to show - matches the old container.children check
+
+      function renderCard(doc) {
         const card = document.createElement('a');
         card.className = 'bot-doctor-card';
-        card.href = link;
+        card.href = botSafeUrl(doc.url);
         card.setAttribute('data-testid', 'bot-doctor-card');
 
         const name = String(doc.name || 'Doctor');
@@ -629,7 +669,17 @@
         const meta = document.createElement('span');
         meta.className = 'bot-doctor-meta';
         const years = Number(doc.experience);
-        meta.textContent = String(doc.specialization || '') + (years > 0 ? ' \u2022 ' + years + ' yrs experience' : '');
+        let metaText = String(doc.specialization || '') + (years > 0 ? ' \u2022 ' + years + ' yrs experience' : '');
+        const rating = Number(doc.rating);
+        if (doc.rating !== null && doc.rating !== undefined && !Number.isNaN(rating)) {
+          const count = Number(doc.rating_count);
+          metaText += ' \u2022 \u2605 ' + rating.toFixed(1) + (count > 0 ? ' (' + count + ')' : '');
+        }
+        const distance = Number(doc.distance_km);
+        if (doc.distance_km !== null && doc.distance_km !== undefined && !Number.isNaN(distance)) {
+          metaText += ' \u2022 ' + distance.toFixed(1) + ' km away';
+        }
+        meta.textContent = metaText;
         info.appendChild(nameEl);
         info.appendChild(meta);
 
@@ -640,18 +690,39 @@
         card.appendChild(avatar);
         card.appendChild(info);
         card.appendChild(cta);
-        container.appendChild(card);
-      });
+        list.appendChild(card);
+      }
 
-      if (container.children.length > 1) {
-        chatWindow.appendChild(container);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-        if (record) {
-          botRecord({ t: 'cards', doctors: doctors.slice(0, 5).map(function(d) {
-            return { name: d.name, specialization: d.specialization, experience: d.experience,
-                     profile_picture: d.profile_picture, url: d.url };
-          }) });
+      const showMoreBtn = document.createElement('button');
+      showMoreBtn.type = 'button';
+      showMoreBtn.className = 'bot-show-more';
+      showMoreBtn.setAttribute('data-testid', 'bot-show-more-doctors');
+
+      let shown = 0;
+      function revealNextPage() {
+        const next = validDoctors.slice(shown, shown + BOT_CARDS_PAGE_SIZE);
+        next.forEach(renderCard);
+        shown += next.length;
+        const remaining = validDoctors.length - shown;
+        if (remaining > 0) {
+          showMoreBtn.textContent = 'Show ' + Math.min(BOT_CARDS_PAGE_SIZE, remaining) + ' more';
+        } else if (showMoreBtn.parentNode) {
+          showMoreBtn.remove();
         }
+      }
+      showMoreBtn.addEventListener('click', revealNextPage);
+
+      revealNextPage();
+      if (validDoctors.length > BOT_CARDS_PAGE_SIZE) container.appendChild(showMoreBtn);
+
+      chatWindow.appendChild(container);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      if (record) {
+        botRecord({ t: 'cards', doctors: validDoctors.map(function(d) {
+          return { name: d.name, specialization: d.specialization, experience: d.experience,
+                   profile_picture: d.profile_picture, url: d.url, rating: d.rating,
+                   rating_count: d.rating_count, distance_km: d.distance_km };
+        }) });
       }
     }
 
@@ -681,7 +752,7 @@
       } else if (ev.t === 'status') {
         addBotStatus(ev.urgency, false);
       } else if (ev.t === 'cards' && Array.isArray(ev.doctors)) {
-        addBotDoctorCards(ev.doctors.slice(0, 5), false);
+        addBotDoctorCards(ev.doctors, false);
       } else if (ev.t === 'nodocs') {
         addBotNoDoctors(ev.searched, false);
       }
@@ -709,6 +780,7 @@
       if (saved && saved.open) {
         document.getElementById('healthbot-popup').style.display = 'flex';
         botOpen = true;
+        requestBotLocation();
         const chatWindow = document.getElementById('bot-chat-window');
         chatWindow.scrollTop = chatWindow.scrollHeight;
       }
@@ -745,7 +817,7 @@
             'Content-Type': 'application/json',
             'X-CSRFToken': '{{ csrf_token }}'
           },
-          body: JSON.stringify({ message: text, history: botChatHistory })
+          body: JSON.stringify({ message: text, history: botChatHistory, latitude: botLat, longitude: botLng })
         });
 
         const data = await response.json();

@@ -57,10 +57,18 @@ already answered. Choose the question whose answer would most change the urgency
 | 5 | **Associated symptoms** | Relevant to the body system involved (fever, vomiting, dizziness, rash, cough, urinary changes) | "Have you had any fever, vomiting or dizziness with it?" |
 | 6 | **Background** | Age group, existing conditions, pregnancy, allergies, current medicines (noted only), recent injury or travel | "How old are you, and do you have any existing conditions or allergies?" |
 
+**Never ask before this point:** the `find_doctors` tool is not even made available to the model until at
+least **2 follow-up questions** have been asked (the server omits the tool from the request entirely, not just
+a prompt instruction) - because how many questions "feel like enough" varies run to run on identical input,
+and a soft instruction alone doesn't reliably narrow the search before recommending a specialist. This floor is
+skipped only for a detected emergency (recommend immediately) or when the specialization was already
+established earlier in the same session (e.g. "any doctor nearby?" after the specialty is already known).
+
 **Stop asking when any of these is true**
 
-- an urgency level and one specialty can be chosen with reasonable confidence;
-- the user asks the bot to just recommend a doctor;
+- an urgency level and one specialty can be chosen with reasonable confidence, **and** at least 2 follow-up
+  questions have been asked (or this is an emergency, or the specialization was already established);
+- the user asks the bot to just recommend a doctor - honored once the 2-question floor above is met, not before;
 - **4 follow-up questions** have been asked. The server counts them and tells the model to stop; if information
   is still thin the bot says so and gives its best recommendation.
 
@@ -132,6 +140,20 @@ Example:
 ```
 
 If no verified doctor matches, the bot says so and the widget shows a note with a link to browse all doctors.
+
+### 5a. Doctor ranking and pagination
+
+Once `find_doctors` runs, results are ranked by **average rating first** (unrated doctors sort after rated
+ones, not before), then by **distance** to the patient (closer first, only if the patient's browser shared its
+location - see below), then by years of experience as a final tiebreaker. Up to 20 matching doctors are
+fetched; the widget shows 5 at a time with a "Show N more" button, so a small clinic and a large multi-city
+platform both work with the same code.
+
+Distance uses the browser's geolocation API, requested once when the chat widget is first opened (not on
+every page load) and kept only in memory for that browser tab - never written to session storage, never sent
+anywhere except as part of that tab's own chat requests. If location is denied, unavailable, or simply hasn't
+resolved yet by the time a message is sent, ranking silently falls back to rating + experience only; distance
+is never treated as required.
 
 ## 6. Session memory (session-only)
 

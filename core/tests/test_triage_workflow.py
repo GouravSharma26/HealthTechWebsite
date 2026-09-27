@@ -140,20 +140,20 @@ def test_benign_message_has_no_alert_and_only_the_latest_message_is_screened(moc
 
 @pytest.mark.django_db
 @patch('requests.post')
-@pytest.mark.parametrize('asked, must_contain', [
-    (0, None), (2, 'asked 2 follow-up question(s)'), (MAX_FOLLOW_UPS, 'Do NOT ask another question'),
+@pytest.mark.parametrize('asked, must_contain, must_not_contain', [
+    (0, 'tool is not available to you this turn', 'Do NOT ask another question'),
+    (2, 'asked 2 follow-up question(s)', 'not available to you this turn'),
+    (MAX_FOLLOW_UPS, 'Do NOT ask another question', 'not available to you this turn'),
 ])
-def test_prompt_tells_the_model_how_many_questions_it_has_used(mock_post, client, asked, must_contain):
+def test_prompt_tells_the_model_how_many_questions_it_has_used(mock_post, client, asked, must_contain, must_not_contain):
     mock_post.return_value = text_reply()
     history = []
     for i in range(asked):
         history += [{'role': 'user', 'content': f'a{i}'}, {'role': 'assistant', 'content': f'q{i}?', 'stage': 'question'}]
     chat(client, 'still the same', history)
     prompt = system_prompt(mock_post)
-    if must_contain:
-        assert must_contain in prompt
-    else:
-        assert 'follow-up question(s) so far' not in prompt and 'Do NOT ask another question' not in prompt
+    assert must_contain in prompt
+    assert must_not_contain not in prompt
 
 
 @pytest.mark.django_db
@@ -170,7 +170,8 @@ def test_summary_turn_reports_stage_urgency_specialization_and_cards(mock_post, 
     summary = ('**Emergency status:** URGENT - see a doctor within 24 hours - exertional chest pain\n'
                '**Recommended specialist:** Cardiologist')
     mock_post.side_effect = [tool_call(), text_reply(summary)]
-    r = chat(client, 'about two weeks, 6 out of 10, no other symptoms').json()
+    r = chat(client, 'about two weeks, 6 out of 10, no other symptoms',
+             [turn('question'), turn('question')]).json()
     assert r['stage'] == 'summary' and r['urgency'] == 'urgent' and r['specialization'] == 'Cardiologist'
     assert [d['name'] for d in r['doctors']] == ['Dr. drheart'] and r['doctors'][0]['url'].startswith('/doctor/')
 
@@ -179,7 +180,7 @@ def test_summary_turn_reports_stage_urgency_specialization_and_cards(mock_post, 
 @patch('requests.post')
 def test_summary_without_matching_doctors_reports_what_was_searched(mock_post, client):
     mock_post.side_effect = [tool_call('{"specialization": "Neurologist"}'), text_reply('**Emergency status:** ROUTINE')]
-    r = chat(client, 'headaches for a month').json()
+    r = chat(client, 'headaches for a month', [turn('question'), turn('question')]).json()
     assert r['stage'] == 'summary' and r['doctors'] == [] and r['specialization_searched'] == 'Neurologist'
     assert 'specialization' not in r
 
@@ -188,7 +189,7 @@ def test_summary_without_matching_doctors_reports_what_was_searched(mock_post, c
 @patch('requests.post')
 def test_malformed_tool_arguments_do_not_crash_the_chat(mock_post, client):
     mock_post.side_effect = [tool_call('{not json'), text_reply('Sorry, could you rephrase?')]
-    r = chat(client, 'my knee hurts')
+    r = chat(client, 'my knee hurts', [turn('question'), turn('question')])
     assert r.status_code == 200 and r.json()['doctors'] == []
 
 
@@ -247,3 +248,64 @@ def test_framework_doc_matches_the_code(client):
     assert f'{MAX_FOLLOW_UPS} follow-up questions' in doc
     for category, _, title, _ in EMERGENCY_CATEGORIES:
         assert f'`{category}`' in doc and title in doc
+
+
+# ---- MIN_FOLLOW_UPS discovery gate: find_doctors must be structurally unreachable, not just discouraged --------
+# (root cause of "recommends a doctor straight away sometimes, asks questions other times" on identical input:
+# the model's own confidence judgement is stochastic, so the tool has to be actually withheld, not just asked-
+# nicely-not-to-be-called, for the behaviour to be reliable.)
+from core.utils import MIN_FOLLOW_UPS  # noqa: E402
+
+
+def tools_offered(mock_post, call_index=0):
+    return 'tools' in mock_post.call_args_list[call_index].kwargs['json']
+
+
+@pytest.mark.django_db
+@patch('requests.post')
+@pytest.mark.parametrize('asked', range(MIN_FOLLOW_UPS))
+def test_tool_is_withheld_below_the_minimum_follow_ups(mock_post, client, asked):
+    mock_post.return_value = text_reply('Tell me more.')
+    history = []
+    for i in range(asked):
+        history += [{'role': 'user', 'content': f'a{i}'}, {'role': 'assistant', 'content': f'q{i}?', 'stage': 'question'}]
+    chat(client, 'still the same', history)
+    assert not tools_offered(mock_post)
+
+
+@pytest.mark.django_db
+@patch('requests.post')
+def test_tool_is_offered_once_the_minimum_is_reached(mock_post, client):
+    mock_post.return_value = text_reply('Tell me more.')
+    history = []
+    for i in range(MIN_FOLLOW_UPS):
+        history += [{'role': 'user', 'content': f'a{i}'}, {'role': 'assistant', 'content': f'q{i}?', 'stage': 'question'}]
+    chat(client, 'still the same', history)
+    assert tools_offered(mock_post)
+
+
+@pytest.mark.django_db
+@patch('requests.post')
+def test_tool_is_offered_immediately_on_an_emergency_even_with_zero_follow_ups(mock_post, client):
+    mock_post.return_value = text_reply('Call 112 now.')
+    chat(client, 'my chest hurts and I feel faint')   # cardiac alert, no history at all
+    assert tools_offered(mock_post)
+
+
+@pytest.mark.django_db
+@patch('requests.post')
+def test_tool_is_offered_immediately_when_the_specialization_was_already_established(mock_post, client):
+    make_doctor()   # available_specializations() must actually list 'Cardiologist' for infer_... to match it
+    mock_post.return_value = text_reply('Here you go.')
+    history = [{'role': 'user', 'content': 'my chest hurts'},
+               {'role': 'assistant', 'content': 'A heart specialist should look at this.', 'specialization': 'Cardiologist'},
+               {'role': 'user', 'content': 'any doctor?'}]
+    chat(client, 'any doctor?', history)              # zero 'question'-stage turns, but already discussed
+    assert tools_offered(mock_post)
+
+
+def test_framework_doc_documents_the_min_follow_ups_floor():
+    from pathlib import Path
+    doc = (Path(__file__).resolve().parents[2] / 'docs' / 'triage-framework.md').read_text(encoding='utf-8')
+    assert f'{MIN_FOLLOW_UPS} follow-up question' in doc
+    assert 'not even made available' in doc   # documents that it's a structural gate, not just a prompt ask

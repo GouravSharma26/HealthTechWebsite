@@ -1,4 +1,5 @@
 import logging
+import math
 import re
 import time
 from functools import wraps
@@ -7,7 +8,7 @@ from django.http import JsonResponse
 import os
 import joblib
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Avg, Count, F, Q
 from .models import Appointment, DoctorProfile
 
 logger = logging.getLogger(__name__)
@@ -30,8 +31,15 @@ def specialization_stem(term):
     return word
 
 
-def doctors_matching_specialization(term, limit=5):
-    """Verified doctors whose specialization matches `term`, tolerant of Cardiology/Cardiologist mismatches."""
+DOCTOR_RESULTS_LIMIT = 20   # candidates fetched for ranking/pagination; the widget reveals 5 at a time
+
+
+def doctors_matching_specialization(term, limit=DOCTOR_RESULTS_LIMIT):
+    """Verified doctors whose specialization matches `term`, tolerant of Cardiology/Cardiologist mismatches.
+
+    Annotated with avg_rating/rating_count (from Review) so callers can rank by quality; doctors with no
+    reviews yet get avg_rating=None (nulls sort last, not first, so an unrated doctor isn't shown as
+    if it outranks a well-reviewed one - see rank_doctors_by_rating_and_distance)."""
     term = (term or '').strip()
     if not term:
         return DoctorProfile.objects.none()
@@ -40,7 +48,50 @@ def doctors_matching_specialization(term, limit=5):
     if stem and stem != term.lower():
         query |= Q(specialization__icontains=stem)
     return (DoctorProfile.objects.filter(query, is_verified=True)
-            .select_related('user').order_by('-experience_years')[:limit])
+            .select_related('user')
+            .annotate(avg_rating=Avg('reviews__rating'), rating_count=Count('reviews'))
+            .order_by(F('avg_rating').desc(nulls_last=True), '-experience_years')[:limit])
+
+
+def haversine_km(lat1, lng1, lat2, lng2):
+    """Great-circle distance in km between two lat/lng points."""
+    r = 6371.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dp = math.radians(lat2 - lat1)
+    dl = math.radians(lng2 - lng1)
+    a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return r * 2 * math.asin(min(1, math.sqrt(a)))
+
+
+def rank_doctors_by_rating_and_distance(doctors, patient_lat=None, patient_lng=None):
+    """Sort already-fetched, rating-annotated doctors by (rating desc, distance asc, experience desc).
+
+    Rating is the primary sort (a highly-rated doctor a bit further away still ranks above a nearby
+    unrated one); distance is the tiebreaker within similar ratings, which is what actually narrows
+    things down once discovery has established a specialty - the whole point of asking follow-up
+    questions first is to get the specialty right, then let quality + proximity pick within it.
+    Doctors missing a rating, or missing coordinates (so distance can't be computed), sort after ones
+    that have that data, rather than arbitrarily first or last.
+    Returns a list of (doctor, distance_km_or_None) tuples, not a queryset.
+    """
+    have_patient_location = patient_lat is not None and patient_lng is not None
+    paired = []
+    for doc in doctors:
+        distance_km = None
+        if have_patient_location and doc.latitude is not None and doc.longitude is not None:
+            distance_km = haversine_km(patient_lat, patient_lng, doc.latitude, doc.longitude)
+        paired.append((doc, distance_km))
+
+    def sort_key(pair):
+        doc, distance_km = pair
+        rating = getattr(doc, 'avg_rating', None)
+        return (
+            -rating if rating is not None else 0.0,          # higher rating first; unrated sorts last
+            distance_km if distance_km is not None else float('inf'),   # closer first; unknown sorts last
+            -doc.experience_years,
+        )
+
+    return sorted(paired, key=sort_key)
 
 
 def available_specializations(limit=25):
@@ -108,6 +159,13 @@ def infer_specialization_from_history(history, available):
 # Triage workflow helpers (see docs/triage-framework.md)
 # ---------------------------------------------------------------------------------------------
 MAX_FOLLOW_UPS = 4
+# Below this, find_doctors is deliberately withheld from the model for the turn (the tool definition
+# itself is omitted from the API payload) rather than merely asked-not-to-call-it in the prompt - the
+# model's confidence in "I have enough to recommend" varies run to run on identical input, so a
+# structural floor is what actually makes the narrowing-questions-first behaviour reliable. Bypassed
+# for a detected emergency (recommend immediately, per the safety screen) or when the specialization
+# was already established earlier in this session (see infer_specialization_from_history).
+MIN_FOLLOW_UPS = 2
 VALID_STAGES = ('question', 'summary')
 
 # Emergency indicators. This screen runs on every user message, independent of the AI model, so a

@@ -7,7 +7,7 @@ import pytest
 from django.core.cache import cache
 from django.urls import reverse
 
-from core.models import DoctorProfile, User
+from core.models import DoctorProfile, PatientProfile, User
 from core.utils import available_specializations, doctors_matching_specialization, specialization_stem
 
 
@@ -133,3 +133,84 @@ def test_sample_data_creates_verified_doctors_and_repairs_old_unverified_ones(mo
     create_sample_data.create_sample_doctors()
     assert DoctorProfile.objects.count() == 4                                # no duplicates
     assert not DoctorProfile.objects.filter(is_verified=False).exists()      # repaired
+
+
+# ---- rating + distance ranking, and the geolocation input that feeds it ---------------------------------------
+from core.utils import haversine_km, rank_doctors_by_rating_and_distance  # noqa: E402
+from core.views import _parse_optional_coords  # noqa: E402
+from core.models import Review  # noqa: E402
+from django.db.models import Avg, Count  # noqa: E402
+
+
+def make_review(doctor, patient_user, rating):
+    patient = PatientProfile.objects.create(user=patient_user)
+    return Review.objects.create(doctor=doctor, patient=patient, rating=rating, text='ok')
+
+
+def test_haversine_is_zero_for_the_same_point_and_matches_a_known_distance():
+    assert haversine_km(12.9716, 77.5946, 12.9716, 77.5946) == pytest.approx(0, abs=1e-6)
+    # Delhi <-> Mumbai, ~1150 km great-circle
+    assert haversine_km(28.6139, 77.2090, 19.0760, 72.8777) == pytest.approx(1150, rel=0.05)
+
+
+@pytest.mark.django_db
+def test_ranking_sorts_by_rating_first_then_distance_then_experience():
+    high = make_doctor('drhigh', 'Cardiologist', years=2)     # far, but 5-star
+    near = make_doctor('drnear', 'Cardiologist', years=2)      # close, but unrated
+    far_unrated = make_doctor('drfar', 'Cardiologist', years=20)  # far AND unrated - loses on both counts
+    high.latitude, high.longitude = 19.0760, 72.8777    # Mumbai
+    near.latitude, near.longitude = 28.61, 77.21         # ~ Delhi, essentially at the patient
+    far_unrated.latitude, far_unrated.longitude = 19.0760, 72.8777
+    for d in (high, near, far_unrated):
+        d.save()
+    make_review(high, User.objects.create_user('p1', password='pw'), 5)
+
+    ranked = rank_doctors_by_rating_and_distance(
+        DoctorProfile.objects.filter(id__in=[high.id, near.id, far_unrated.id])
+                             .annotate(avg_rating=Avg('reviews__rating'), rating_count=Count('reviews')),
+        patient_lat=28.6139, patient_lng=77.2090,   # Delhi
+    )
+    assert [d.user.username for d, _ in ranked] == ['drhigh', 'drnear', 'drfar']   # rated beats unrated regardless of distance
+    assert ranked[0][1] > 1000 and ranked[1][1] < 5                                # distances are sane (km)
+
+
+@pytest.mark.django_db
+def test_ranking_falls_back_to_experience_when_no_location_or_ratings_given():
+    junior = make_doctor('drjr', 'Cardiologist', years=2)
+    senior = make_doctor('drsr', 'Cardiologist', years=20)
+    ranked = rank_doctors_by_rating_and_distance(
+        doctors_matching_specialization('Cardiologist'), patient_lat=None, patient_lng=None)
+    assert [d.user.username for d, dist in ranked] == ['drsr', 'drjr']
+    assert all(dist is None for _, dist in ranked)   # no patient location given -> no distance computed
+
+
+@pytest.mark.parametrize('lat, lng, valid', [
+    (12.9, 77.5, True), ('12.9', '77.5', True),        # numeric strings from a JSON body are fine
+    (91, 77.5, False), (12.9, 181, False),              # out of range
+    (None, 77.5, False), (12.9, None, False),           # one missing -> pair discarded
+    ('nope', 77.5, False), (None, None, False),
+])
+def test_optional_coords_are_validated_defensively(lat, lng, valid):
+    result = _parse_optional_coords(lat, lng)
+    assert result == ((float(lat), float(lng)) if valid else (None, None))
+
+
+@pytest.mark.django_db
+@patch('requests.post')
+def test_chat_endpoint_includes_rating_and_distance_in_doctor_cards(mock_post, client, settings):
+    settings.GROQ_API_KEY = 'gsk_test'
+    cache.clear()
+    doc = make_doctor('drheart', 'Cardiologist')
+    doc.latitude, doc.longitude = 19.0760, 72.8777
+    doc.save()
+    make_review(doc, User.objects.create_user('p2', password='pw'), 4)
+    make_review(doc, User.objects.create_user('p3', password='pw'), 5)
+
+    final = FakeResponse({'choices': [{'message': {'content': 'A cardiologist is a good next step.'}}]})
+    mock_post.side_effect = [tool_call('Cardiology'), final]
+    body = {'message': 'my chest hurts when I run', 'latitude': 28.6139, 'longitude': 77.2090}
+    r = client.post(reverse('ai_chat'), json.dumps(body), content_type='application/json')
+
+    card = r.json()['doctors'][0]
+    assert card['rating'] == 4.5 and card['rating_count'] == 2
+    assert card['distance_km'] == pytest.approx(1150, rel=0.05)
