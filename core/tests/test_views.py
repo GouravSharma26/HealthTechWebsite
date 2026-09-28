@@ -28,7 +28,6 @@ def clear_cache():
 def test_chat_detail_patient_to_patient_forbidden(client, users_data):
     patient1, patient2, doctor1, doctor2 = users_data
     client.login(username='patient1', password='pw')
-    
     url = reverse('chat_detail', args=[patient2.id])
     response = client.post(url, {'action': 'send_message', 'message': 'Hello'})
     
@@ -362,3 +361,19 @@ def test_login_succeeds_normally_under_the_limit(client):
     url = reverse('login')
     response = client.post(url, {'username': 'normallogin', 'password': 'correct-horse-battery-staple-2'})
     assert response.status_code == 302
+
+
+# ---- chat WebSocket reconnect (real-time messages silently stopped working until a manual page
+# refresh, reported live - root cause: onclose only logged to console, no reconnect at all) --------------
+@pytest.mark.django_db
+def test_chat_detail_websocket_has_reconnect_logic_not_just_a_console_log(client, users_data):
+    patient1, patient2, doctor1, doctor2 = users_data
+    client.login(username='patient1', password='pw')
+    html = client.get(reverse('chat_detail', args=[doctor1.id])).content.decode()
+
+    assert 'function connectChatSocket' in html
+    assert 'function scheduleReconnect' in html
+    assert 'let chatSocket' in html          # must be reassignable across reconnects, not const
+    assert 'onerror' in html                  # a transport error should also trigger a reconnect
+    assert "console.error('Chat socket closed unexpectedly')" not in html   # the old, silent dead-end
+    assert 'DOMPurify.sanitize' in html       # safety on incoming message content must not have regressed

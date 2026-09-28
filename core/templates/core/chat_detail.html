@@ -53,6 +53,7 @@
       
       <!-- Message Input -->
       <div style="padding: 15px 20px; background: white; border-top: 1px solid var(--border-color);">
+        <div id="chat-connection-status" role="status" style="display: none; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px;">Reconnecting...</div>
         <form id="chat-form" method="POST" style="display: flex; gap: 10px; margin: 0; padding: 0; background: none; box-shadow: none; border: none; border-radius: 0; overflow: visible;">
           {% csrf_token %}
           <input type="hidden" name="action" value="send_message">
@@ -208,34 +209,42 @@
   // WebSocket logic
   const otherUserId = '{{ other_user.id }}';
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const chatSocket = new WebSocket(
-      protocol + '//' + window.location.host + '/ws/chat/' + otherUserId + '/'
-  );
+  const wsUrl = protocol + '//' + window.location.host + '/ws/chat/' + otherUserId + '/';
   const currentUserId = '{{ request.user.id }}';
+  const connectionStatusEl = document.getElementById('chat-connection-status');
 
-  chatSocket.onmessage = function(e) {
+  // Render's free tier (and networks generally) can drop an idle WebSocket at any time -
+  // without reconnecting, the page silently stops receiving live messages and looks broken
+  // until the user manually refreshes. chatSocket is `let`, not `const`, because it gets
+  // reassigned to a fresh connection on every reconnect; the submit/keydown handlers below
+  // read this same outer variable each time they fire, so they always see the current socket.
+  let chatSocket;
+  let reconnectAttempts = 0;
+  let reconnectTimer = null;
+
+  function handleIncomingMessage(e) {
       const data = JSON.parse(e.data);
       const messagesContainer = document.getElementById('messages-container');
-      
+
       // Remove empty message placeholder if present
       if (messagesContainer.innerText.includes("No messages yet.")) {
           messagesContainer.innerHTML = '';
       }
-      
+
       const isSender = (data.sender_id.toString() === currentUserId.toString());
-      
+
       const messageDiv = document.createElement('div');
       messageDiv.style.display = 'flex';
       messageDiv.style.flexDirection = 'column';
       messageDiv.style.maxWidth = '75%';
       messageDiv.style.alignSelf = isSender ? 'flex-end' : 'flex-start';
-      
+
       const bubble = document.createElement('div');
       bubble.style.padding = '12px 16px';
       bubble.style.borderRadius = '18px';
       bubble.style.lineHeight = '1.4';
       bubble.style.fontSize = '0.95rem';
-      
+
       if (isSender) {
           bubble.style.background = 'var(--primary)';
           bubble.style.color = 'white';
@@ -246,10 +255,10 @@
           bubble.style.border = '1px solid var(--border-color)';
           bubble.style.borderBottomLeftRadius = '4px';
       }
-      
+
       // sanitize message to prevent XSS
       bubble.innerHTML = DOMPurify.sanitize(data.message.replace(/\n/g, '<br>'));
-      
+
       const timeSpan = document.createElement('span');
       timeSpan.style.fontSize = '0.75rem';
       timeSpan.style.color = 'var(--text-muted)';
@@ -258,17 +267,46 @@
           timeSpan.style.textAlign = 'right';
       }
       timeSpan.innerText = data.timestamp;
-      
+
       messageDiv.appendChild(bubble);
       messageDiv.appendChild(timeSpan);
       messagesContainer.appendChild(messageDiv);
-      
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-  };
 
-  chatSocket.onclose = function(e) {
-      console.error('Chat socket closed unexpectedly');
-  };
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+
+  function scheduleReconnect() {
+      if (reconnectTimer) return;   // a reconnect is already queued, don't stack more
+      if (connectionStatusEl) connectionStatusEl.style.display = 'block';
+      const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 15000);   // capped exponential backoff
+      reconnectAttempts += 1;
+      reconnectTimer = setTimeout(function() {
+          reconnectTimer = null;
+          connectChatSocket();
+      }, delay);
+  }
+
+  function connectChatSocket() {
+      chatSocket = new WebSocket(wsUrl);
+
+      chatSocket.onopen = function() {
+          reconnectAttempts = 0;
+          if (connectionStatusEl) connectionStatusEl.style.display = 'none';
+      };
+
+      chatSocket.onmessage = handleIncomingMessage;
+
+      chatSocket.onclose = function() {
+          console.warn('Chat socket closed; reconnecting');
+          scheduleReconnect();
+      };
+
+      chatSocket.onerror = function() {
+          chatSocket.close();   // triggers onclose above, which schedules the reconnect
+      };
+  }
+
+  connectChatSocket();
 
   const chatForm = document.getElementById('chat-form');
   if (chatForm) {

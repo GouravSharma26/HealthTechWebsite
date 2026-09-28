@@ -46,15 +46,13 @@
           style="display: flex; flex-direction: column; background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <div>
-              <h4 style="color: var(--text-dark);">Dr. {{
-                appt.doctor.user.get_full_name|default:appt.doctor.user.username }}</h4>
+              <h4 style="color: var(--text-dark);">Dr. {{ appt.doctor.user.get_full_name|default:appt.doctor.user.username }}</h4>
               <p style="color: var(--text-muted); font-size: 0.9rem;">{{ appt.doctor.specialization }}</p>
             </div>
             <div class="text-center">
               <p style="font-weight: 600;">{{ appt.date }} at {{ appt.time }}</p>
               <span
-                class="badge {% if appt.status == 'Confirmed' %}badge-success{% elif 'Requested' in appt.status %}badge-pending{% else %}badge-pending{% endif %}">{{
-                appt.status }}</span>
+                class="badge {% if appt.status == 'Confirmed' %}badge-success{% elif 'Requested' in appt.status %}badge-pending{% else %}badge-pending{% endif %}">{{ appt.status }}</span>
             </div>
           </div>
 
@@ -144,16 +142,14 @@
               {% if appt.prescription_medicines %}
               <div style="margin-bottom: 15px;">
                 <h6 style="color: #166534; margin-bottom: 5px; font-weight: 700;">Prescribed Medicines</h6>
-                <p style="color: var(--text-dark); margin: 0; line-height: 1.5; white-space: pre-line;">{{
-                  appt.prescription_medicines }}</p>
+                <p style="color: var(--text-dark); margin: 0; line-height: 1.5; white-space: pre-line;">{{ appt.prescription_medicines }}</p>
               </div>
               {% endif %}
 
               {% if appt.prescription_instructions %}
               <div style="margin-bottom: 15px;">
                 <h6 style="color: #166534; margin-bottom: 5px; font-weight: 700;">Doctor's Instructions</h6>
-                <p style="color: var(--text-dark); margin: 0; line-height: 1.5; white-space: pre-line;">{{
-                  appt.prescription_instructions }}</p>
+                <p style="color: var(--text-dark); margin: 0; line-height: 1.5; white-space: pre-line;">{{ appt.prescription_instructions }}</p>
               </div>
               {% endif %}
 
