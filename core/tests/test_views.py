@@ -324,7 +324,10 @@ def test_signup_rejects_weak_password(client):
         'phone_number': '9998887777',
         'password': '123',
     })
-    assert response.status_code == 302
+    # Re-renders the form (200), not a redirect (302) - a rejected signup must not wipe what the
+    # person already typed. See test_signup_preserves_typed_fields_on_validation_error below for
+    # the fix this test's old 302 assertion predates.
+    assert response.status_code == 200
     assert not User.objects.filter(username='weakpwuser').exists()
 
 
@@ -339,6 +342,62 @@ def test_signup_accepts_strong_password(client):
     })
     assert response.status_code == 302
     assert User.objects.filter(username='stronguser').exists()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize('field, bad_value, error_substring', [
+    ('username', 'weakpwuser', None),           # duplicate username (created below)
+    ('email', 'weak@example.com', None),         # duplicate email (created below)
+    ('phone_number', '999-888-7777', 'digits'),   # non-digit phone
+])
+def test_signup_preserves_typed_fields_on_validation_error(client, field, bad_value, error_substring):
+    User.objects.create_user(username='weakpwuser', email='weak@example.com', password='x')
+    payload = {
+        'role': 'doctor', 'username': 'newuser', 'email': 'new@example.com',
+        'phone_number': '9991112222', 'password': 'aG3nuinely-Str0ng-Passw0rd!',
+    }
+    payload[field] = bad_value
+    response = client.post(reverse('signup'), payload)
+    html = response.content.decode()
+
+    assert response.status_code == 200   # re-rendered, not redirected - this is the actual fix
+    # every OTHER field they typed must still be there, not just the one that failed
+    for key in ('username', 'email', 'phone_number'):
+        if key != field:
+            assert payload[key] in html
+    assert 'value="doctor"' in html                      # role selection preserved too
+    assert 'value="aG3nuinely-Str0ng-Passw0rd!"' not in html   # password is NEVER echoed back
+    if error_substring:
+        assert error_substring in html.lower()
+
+
+@pytest.mark.django_db
+def test_signup_rejects_a_phone_number_with_letters_or_symbols_server_side(client):
+    # Defense in depth: the form's JS strips non-digits as you type, but the server must not
+    # trust that alone (e.g. a direct POST with JS disabled or bypassed).
+    response = client.post(reverse('signup'), {
+        'role': 'patient', 'username': 'phonebaduser', 'email': 'phonebad@example.com',
+        'phone_number': '98-CALL-NOW', 'password': 'aG3nuinely-Str0ng-Passw0rd!',
+    })
+    assert response.status_code == 200
+    assert not User.objects.filter(username='phonebaduser').exists()
+
+
+@pytest.mark.django_db
+def test_signup_rejects_a_password_too_similar_to_the_username():
+    """UserAttributeSimilarityValidator is configured in AUTH_PASSWORD_VALIDATORS, but
+    validate_password(password) was previously called with no `user` argument - and that
+    validator's own source is `if not user: return`, i.e. it silently did nothing at signup.
+    A password like the username itself was accepted before this fix; must be rejected now."""
+    from django.test import Client
+    client = Client()
+    response = client.post(reverse('signup'), {
+        'role': 'patient', 'username': 'jonathansmith42', 'email': 'jon@example.com',
+        'phone_number': '9991112233', 'password': 'jonathansmith42',   # the password IS the username
+    })
+    assert response.status_code == 200
+    assert not User.objects.filter(username='jonathansmith42').exists()
+    assert 'too similar' in response.content.decode().lower()
 
 
 @pytest.mark.django_db
@@ -377,3 +436,12 @@ def test_chat_detail_websocket_has_reconnect_logic_not_just_a_console_log(client
     assert 'onerror' in html                  # a transport error should also trigger a reconnect
     assert "console.error('Chat socket closed unexpectedly')" not in html   # the old, silent dead-end
     assert 'DOMPurify.sanitize' in html       # safety on incoming message content must not have regressed
+
+
+@pytest.mark.django_db
+def test_signup_page_has_phone_digit_restriction_and_password_checklist(client):
+    html = client.get(reverse('signup')).content.decode()
+    assert 'pattern="[0-9]{7,15}"' in html
+    assert "replace(/\\D/g, '')" in html
+    assert 'password-strength-checklist' in html
+    assert 'isTooSimilar' in html

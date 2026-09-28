@@ -77,25 +77,37 @@ def signup_view(request):
         email = request.POST.get('email')
         phone_number = request.POST.get('phone_number')
         password = request.POST.get('password')
-        
-        if User.objects.filter(username=username).exists():
+
+        # Every error path below re-renders this same form with what they already typed (never the
+        # password) instead of redirecting, so a rejected signup doesn't wipe the whole form and make
+        # them start over - that was the actual reported bug, not any of the validation rules below.
+        form_values = {'role': role or 'patient', 'username': username, 'email': email,
+                       'phone_number': phone_number}
+
+        if username and User.objects.filter(username=username).exists():
             messages.error(request, "Username already exists")
-            return redirect('signup')
-            
-        if User.objects.filter(email=email).exists():
+            return render(request, 'core/signup.html', form_values)
+
+        if email and User.objects.filter(email=email).exists():
             messages.error(request, "Email already in use")
-            return redirect('signup')
+            return render(request, 'core/signup.html', form_values)
+
+        if phone_number and not phone_number.isdigit():
+            # The form's own JS already strips non-digits as you type, so this is a defense-in-depth
+            # backstop (e.g. a direct POST, JS disabled) - never trust client-side-only validation.
+            messages.error(request, "Phone number can only contain digits")
+            return render(request, 'core/signup.html', form_values)
 
         if phone_number and User.objects.filter(phone_number=phone_number).exists():
             messages.error(request, "Phone number already in use")
-            return redirect('signup')
+            return render(request, 'core/signup.html', form_values)
 
         try:
-            validate_password(password)
+            validate_password(password, user=User(username=username or '', email=email or ''))
         except ValidationError as e:
             for err in e.messages:
                 messages.error(request, err)
-            return redirect('signup')
+            return render(request, 'core/signup.html', form_values)
 
         user = User.objects.create_user(username=username, email=email, password=password)
         user.phone_number = phone_number
@@ -113,7 +125,7 @@ def signup_view(request):
         else:
             return redirect('patient_setup')
         
-    return render(request, 'core/signup.html')
+    return render(request, 'core/signup.html', {'role': 'patient'})
 
 
 
