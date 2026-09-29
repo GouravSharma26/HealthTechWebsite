@@ -88,20 +88,21 @@
     font-family: inherit;
     background: rgba(255, 255, 255, 0.4) !important;
     backdrop-filter: blur(12px);
-    padding: 25px;
-    border-radius: 24px;
+    padding: 15px;
+    border-radius: 20px;
     border: 1px solid rgba(255,255,255,0.6);
     box-shadow: inset 2px 2px 10px rgba(255,255,255,0.8), 5px 5px 20px rgba(0,0,0,0.03);
+    font-size: 0.85rem;
   }
 
   /* FullCalendar Aesthetic Overrides */
   .fc-theme-standard th {
     border: none !important;
-    padding: 15px 0 !important;
+    padding: 8px 0 !important;
     color: var(--text-muted);
     font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     letter-spacing: 0.5px;
   }
   .fc-theme-standard td, .fc-theme-standard th, .fc-scrollgrid {
@@ -110,16 +111,22 @@
   .fc .fc-toolbar-title {
     font-weight: 800;
     color: var(--primary);
-    font-size: 1.6rem !important;
+    font-size: 1.3rem !important;
+  }
+  .fc .fc-toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 1rem !important;
   }
   .fc .fc-button-primary {
     background: var(--primary) !important;
     border: 1px solid rgba(255,255,255,0.4) !important;
-    border-radius: 12px !important;
+    border-radius: 10px !important;
     box-shadow: 0 4px 10px rgba(14,165,233,0.3), inset 2px 2px 5px rgba(255,255,255,0.3) !important;
     text-transform: capitalize;
     font-weight: 600;
-    padding: 8px 16px !important;
+    padding: 6px 12px !important;
+    font-size: 0.8rem !important;
     transition: all 0.2s ease !important;
   }
   .fc .fc-button-primary:hover {
@@ -142,7 +149,8 @@
   .fc .fc-daygrid-day-number {
     font-weight: 600;
     color: var(--text-dark);
-    padding: 8px !important;
+    padding: 4px !important;
+    font-size: 0.8rem;
   }
 
   .fc-event {
@@ -691,7 +699,7 @@
 
 <!-- Calendar Modal -->
 <div id="calendar-modal" style="display: none; opacity: 0; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(6px); z-index: 1000; align-items: center; justify-content: center; transition: opacity 0.3s ease;" onclick="if(event.target == this) closeCalendarModal()">
-  <div class="glass-clay-card" style="width: 95%; max-width: 750px; padding: 25px !important; position: relative; display: flex; flex-direction: column; transform: translateY(20px) scale(0.95); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+  <div class="glass-clay-card" style="width: 95%; max-width: 650px; padding: 15px !important; position: relative; display: flex; flex-direction: column; transform: translateY(20px) scale(0.95); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
     <button type="button" style="position: absolute; top: 15px; right: 20px; background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.8); border-radius: 50%; width: 36px; height: 36px; font-size: 1.5rem; cursor: pointer; color: var(--text-dark); z-index: 10; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.8)'" onmouseout="this.style.background='rgba(255,255,255,0.5)'" onclick="closeCalendarModal()">&times;</button>
     <div id="calendar" style="width: 100%;"></div>
   </div>
@@ -1076,7 +1084,7 @@
     if (calendarEl) {
       const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        contentHeight: 480,
+        height: 'auto',
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
