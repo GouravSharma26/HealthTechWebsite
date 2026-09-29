@@ -13,32 +13,45 @@
         linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
   }
   
-  .doctor-profile-grid {
+  .profile-banner {
     display: flex;
-    flex-direction: row;
-    gap: 30px;
+    flex-wrap: wrap;
+    gap: 40px;
     align-items: flex-start;
     width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
+    max-width: 1200px;
+    margin: 0 auto 40px auto;
   }
-  .profile-col {
-    width: 320px;
+  .profile-pic-container {
     flex-shrink: 0;
-  }
-  .main-col {
-    flex: 1;
-    min-width: 0;
+    width: 250px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    align-items: center;
+    text-align: center;
+  }
+  .profile-info-container {
+    flex: 1;
+    min-width: 300px;
+  }
+  .profile-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-top: 25px;
+  }
+  .dashboard-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
   }
   
-  @media (max-width: 1000px) {
-    .doctor-profile-grid {
+  @media (max-width: 768px) {
+    .profile-banner {
       flex-direction: column;
+      align-items: center;
     }
-    .profile-col {
+    .profile-pic-container {
       width: 100%;
     }
   }
@@ -164,164 +177,168 @@
 {% endblock %}
 
 {% block content %}
-<div class="content mt-4">
-  <div class="doctor-profile-grid">
-    <!-- Left Column: Profile Info -->
-    <div class="glass-clay-card text-center profile-col">
+<div class="content mt-4" style="padding: 0 20px;">
+  <!-- Profile Banner -->
+  <div class="glass-clay-card profile-banner">
+    <!-- Left: Picture & Identity -->
+    <div class="profile-pic-container">
       <div style="margin-bottom: 20px;">
         {% if profile.profile_picture %}
-          <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary);">
+          <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" style="width: 160px; height: 160px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
         {% else %}
-          <div style="font-size: 4rem;">👨‍⚕️</div>
+          <div style="font-size: 5rem; text-shadow: 0 10px 25px rgba(0,0,0,0.1);">👨‍⚕️</div>
         {% endif %}
       </div>
-      <h3 style="color: var(--primary); margin-bottom: 5px;">Dr. {{ profile.user.get_full_name|default:profile.user.username }}</h3>
-      <p style="color: var(--accent); font-weight: 600; margin-bottom: 5px;">{{ profile.specialization }}</p>
+      <h3 style="color: var(--primary); margin-bottom: 5px; font-weight: 800; font-size: 1.6rem;">Dr. {{ profile.user.get_full_name|default:profile.user.username }}</h3>
+      <p style="color: var(--accent); font-weight: 600; margin-bottom: 15px; font-size: 1.1rem;">{{ profile.specialization }}</p>
+      
+      <button type="button" class="btn btn-outline" style="width: 100%; font-weight: 600; border-radius: 12px; padding: 10px;" onclick="document.getElementById('editProfileModal').style.display='flex';">Edit Clinic Profile</button>
+    </div>
+
+    <!-- Right: Details & Stats -->
+    <div class="profile-info-container">
       {% if profile.qualifications %}
-        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px; display: inline-block; vertical-align: text-bottom; margin-right: 4px; color: #64748b;"><path d="M11.7 2.805a.75.75 0 01.6 0A60.65 60.65 0 0122.83 8.72a.75.75 0 01-.231 1.337 49.949 49.949 0 00-9.902 3.912l-.157.082a.75.75 0 01-.45.081 49.956 49.956 0 00-10.51-4.075.75.75 0 01-.231-1.337A60.653 60.653 0 0111.7 2.805z" /><path d="M13.06 15.473a48.45 48.45 0 017.666-3.282c.134 1.414.22 2.843.255 4.284a.75.75 0 01-.46.711 47.87 47.87 0 00-8.105 4.342.75.75 0 01-.832 0 47.87 47.87 0 00-8.104-4.342.75.75 0 01-.461-.71c.035-1.442.121-2.87.255-4.286A48.4 48.4 0 016 13.18v1.27a1.5 1.5 0 00-.14 2.508c-.09.38-.222.753-.397 1.11.452.213.901.434 1.346.66a6.727 6.727 0 00.551-1.607 1.5 1.5 0 00.14-2.67v-.645a48.549 48.549 0 013.44 1.667 2.25 2.25 0 002.12 0z" /></svg>
+        <p style="color: var(--text-dark); font-size: 1.05rem; margin-bottom: 15px; font-weight: 500;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 22px; height: 22px; display: inline-block; vertical-align: text-bottom; margin-right: 8px; color: #64748b;"><path d="M11.7 2.805a.75.75 0 01.6 0A60.65 60.65 0 0122.83 8.72a.75.75 0 01-.231 1.337 49.949 49.949 0 00-9.902 3.912l-.157.082a.75.75 0 01-.45.081 49.956 49.956 0 00-10.51-4.075.75.75 0 01-.231-1.337A60.653 60.653 0 0111.7 2.805z" /><path d="M13.06 15.473a48.45 48.45 0 017.666-3.282c.134 1.414.22 2.843.255 4.284a.75.75 0 01-.46.711 47.87 47.87 0 00-8.105 4.342.75.75 0 01-.832 0 47.87 47.87 0 00-8.104-4.342.75.75 0 01-.461-.71c.035-1.442.121-2.87.255-4.286A48.4 48.4 0 016 13.18v1.27a1.5 1.5 0 00-.14 2.508c-.09.38-.222.753-.397 1.11.452.213.901.434 1.346.66a6.727 6.727 0 00.551-1.607 1.5 1.5 0 00.14-2.67v-.645a48.549 48.549 0 013.44 1.667 2.25 2.25 0 002.12 0z" /></svg>
           {{ profile.qualifications }}
         </p>
-      {% else %}
-        <div style="margin-bottom: 20px;"></div>
       {% endif %}
       
       {% if profile.about %}
-      <div class="clay-inner" style="text-align: left; font-size: 0.95rem; margin-bottom: 25px; color: var(--text-dark); font-style: italic; border-left: 4px solid var(--accent);">
+      <div class="clay-inner" style="text-align: left; font-size: 1rem; margin-bottom: 25px; color: var(--text-dark); font-style: italic; border-left: 4px solid var(--accent); padding: 20px;">
         "{{ profile.about }}"
       </div>
       {% endif %}
       
-      <div class="clay-inner" style="text-align: left; margin-bottom: 25px; display: flex; flex-direction: column; gap: 12px;">
-        <div style="display: flex; align-items: flex-start; gap: 12px;">
-          <span style="font-size: 1.3rem; display: flex; align-items: center;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; height: 24px; color: #f59e0b;"><path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" /></svg>
-          </span>
+      <div class="profile-stats-grid">
+        <div class="clay-inner" style="display: flex; align-items: center; gap: 15px; padding: 15px;">
+          <div style="background: rgba(245, 158, 11, 0.1); padding: 10px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 28px; height: 28px; color: #f59e0b;"><path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" /></svg>
+          </div>
           <div>
-            <strong style="color: var(--text-dark); display: block; font-size: 0.95rem;">Experience</strong>
+            <strong style="color: var(--text-dark); display: block; font-size: 1rem;">Experience</strong>
             <span style="color: var(--text-muted); font-size: 0.95rem;">{{ profile.experience_years }} Years</span>
           </div>
         </div>
         
         {% if profile.consultation_fee %}
-        <div style="display: flex; align-items: flex-start; gap: 12px;">
-          <span style="font-size: 1.3rem; display: flex; align-items: center;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; height: 24px; color: #10b981;"><path d="M12 7.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" /><path fill-rule="evenodd" d="M1.5 4.875C1.5 3.839 2.34 3 3.375 3h17.25c1.035 0 1.875.84 1.875 1.875v14.25c0 1.036-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 011.5 19.125V4.875zm11.25 1.875a.75.75 0 00-1.5 0v.75a.75.75 0 001.5 0v-.75zm0 10.5a.75.75 0 00-1.5 0v.75a.75.75 0 001.5 0v-.75z" clip-rule="evenodd" /></svg>
-          </span>
+        <div class="clay-inner" style="display: flex; align-items: center; gap: 15px; padding: 15px;">
+          <div style="background: rgba(16, 185, 129, 0.1); padding: 10px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 28px; height: 28px; color: #10b981;"><path d="M12 7.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" /><path fill-rule="evenodd" d="M1.5 4.875C1.5 3.839 2.34 3 3.375 3h17.25c1.035 0 1.875.84 1.875 1.875v14.25c0 1.036-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 011.5 19.125V4.875zm11.25 1.875a.75.75 0 00-1.5 0v.75a.75.75 0 001.5 0v-.75zm0 10.5a.75.75 0 00-1.5 0v.75a.75.75 0 001.5 0v-.75z" clip-rule="evenodd" /></svg>
+          </div>
           <div>
-            <strong style="color: var(--text-dark); display: block; font-size: 0.95rem;">Consultation Fee</strong>
+            <strong style="color: var(--text-dark); display: block; font-size: 1rem;">Consultation Fee</strong>
             <span style="color: var(--text-muted); font-size: 0.95rem;">₹{{ profile.consultation_fee }}</span>
           </div>
         </div>
         {% endif %}
 
         {% if profile.languages_spoken %}
-        <div style="display: flex; align-items: flex-start; gap: 12px;">
-          <span style="font-size: 1.3rem; display: flex; align-items: center;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; height: 24px; color: #8b5cf6;"><path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.73 3.73 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clip-rule="evenodd" /></svg>
-          </span>
+        <div class="clay-inner" style="display: flex; align-items: center; gap: 15px; padding: 15px;">
+          <div style="background: rgba(139, 92, 246, 0.1); padding: 10px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 28px; height: 28px; color: #8b5cf6;"><path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.73 3.73 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clip-rule="evenodd" /></svg>
+          </div>
           <div>
-            <strong style="color: var(--text-dark); display: block; font-size: 0.95rem;">Languages</strong>
+            <strong style="color: var(--text-dark); display: block; font-size: 1rem;">Languages</strong>
             <span style="color: var(--text-muted); font-size: 0.95rem;">{{ profile.languages_spoken }}</span>
           </div>
         </div>
         {% endif %}
 
-        <div style="display: flex; align-items: flex-start; gap: 12px;">
-          <span style="font-size: 1.3rem; display: flex; align-items: center;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; height: 24px; color: #ec4899;"><path fill-rule="evenodd" d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z" clip-rule="evenodd" /></svg>
-          </span>
+        <div class="clay-inner" style="display: flex; align-items: center; gap: 15px; padding: 15px;">
+          <div style="background: rgba(236, 72, 153, 0.1); padding: 10px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 28px; height: 28px; color: #ec4899;"><path fill-rule="evenodd" d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z" clip-rule="evenodd" /></svg>
+          </div>
           <div>
-            <strong style="color: var(--text-dark); display: block; font-size: 0.95rem;">Contact</strong>
+            <strong style="color: var(--text-dark); display: block; font-size: 1rem;">Contact</strong>
             <span style="color: var(--text-muted); font-size: 0.95rem;">{{ profile.contact }}</span>
           </div>
         </div>
 
-        <div style="display: flex; align-items: flex-start; gap: 12px;">
-          <span style="font-size: 1.3rem; display: flex; align-items: center;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; height: 24px; color: #ef4444;"><path fill-rule="evenodd" d="M12 2.25a.75.75 0 01.75.75v2.25h2.25a.75.75 0 010 1.5H12v2.25a.75.75 0 01-1.5 0V6.75H8.25a.75.75 0 010-1.5h2.25V3a.75.75 0 01.75-.75z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M1.5 11.25v7.5A2.25 2.25 0 003.75 21h16.5a2.25 2.25 0 002.25-2.25v-7.5A2.25 2.25 0 0020.25 9H3.75a2.25 2.25 0 00-2.25 2.25zM12 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd" /></svg>
-          </span>
+        <div class="clay-inner" style="display: flex; align-items: center; gap: 15px; padding: 15px; grid-column: 1 / -1;">
+          <div style="background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 28px; height: 28px; color: #ef4444;"><path fill-rule="evenodd" d="M12 2.25a.75.75 0 01.75.75v2.25h2.25a.75.75 0 010 1.5H12v2.25a.75.75 0 01-1.5 0V6.75H8.25a.75.75 0 010-1.5h2.25V3a.75.75 0 01.75-.75z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M1.5 11.25v7.5A2.25 2.25 0 003.75 21h16.5a2.25 2.25 0 002.25-2.25v-7.5A2.25 2.25 0 0020.25 9H3.75a2.25 2.25 0 00-2.25 2.25zM12 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd" /></svg>
+          </div>
           <div>
-            <strong style="color: var(--text-dark); display: block; font-size: 0.95rem;">Clinic</strong>
+            <strong style="color: var(--text-dark); display: block; font-size: 1rem;">Clinic</strong>
             <span style="color: var(--text-muted); font-size: 0.95rem;">{{ profile.address }}</span>
           </div>
         </div>
       </div>
-      
-      <button type="button" class="btn btn-outline" style="width: 100%; margin-bottom: 10px; font-weight: 600;" onclick="document.getElementById('editProfileModal').style.display='flex';">Edit Clinic Profile</button>
     </div>
+  </div>
 
-    <!-- Edit Profile Modal -->
-    <div id="editProfileModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
-      <div class="card" style="width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative;">
-        <button type="button" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);" onclick="document.getElementById('editProfileModal').style.display='none';">&times;</button>
-        <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">Edit Clinic Profile</h3>
+  <!-- Edit Profile Modal -->
+  <div id="editProfileModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative;">
+      <button type="button" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);" onclick="document.getElementById('editProfileModal').style.display='none';">&times;</button>
+      <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">Edit Clinic Profile</h3>
+      
+      <form method="POST" action="" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 15px;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update_profile">
         
-        <form method="POST" action="" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 15px;">
-          {% csrf_token %}
-          <input type="hidden" name="action" value="update_profile">
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="form-group">
-              <label>Specialization</label>
-              <input type="text" name="specialization" value="{{ profile.specialization }}" required style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
-            </div>
-            <div class="form-group">
-              <label>Qualifications</label>
-              <input type="text" name="qualifications" value="{{ profile.qualifications }}" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
-            </div>
-          </div>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="form-group">
-              <label>Experience (Years)</label>
-              <input type="number" name="experience_years" value="{{ profile.experience_years }}" required style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
-            </div>
-            <div class="form-group">
-              <label>Consultation Fee (₹)</label>
-              <input type="number" name="consultation_fee" value="{{ profile.consultation_fee }}" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
-            </div>
-          </div>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="form-group">
-              <label>Contact Phone</label>
-              <input type="text" name="contact" value="{{ profile.contact }}" required style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
-            </div>
-            <div class="form-group">
-              <label>Languages Spoken</label>
-              <input type="text" name="languages_spoken" value="{{ profile.languages_spoken }}" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
-            </div>
-          </div>
-          
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
           <div class="form-group">
-            <label>Clinic Address</label>
-            <input type="text" name="address" value="{{ profile.address }}" required style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+            <label>Specialization</label>
+            <input type="text" name="specialization" value="{{ profile.specialization }}" required style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
           </div>
-          
           <div class="form-group">
-            <label>About Me</label>
-            <textarea name="about" rows="3" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">{{ profile.about }}</textarea>
+            <label>Qualifications</label>
+            <input type="text" name="qualifications" value="{{ profile.qualifications }}" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
           </div>
-          
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
           <div class="form-group">
-            <label>Update Profile Picture</label>
-            <input type="file" name="profile_picture" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+            <label>Experience (Years)</label>
+            <input type="number" name="experience_years" value="{{ profile.experience_years }}" required style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
           </div>
-          
-          <button type="submit" class="btn btn-primary" style="margin-top: 10px; padding: 10px; font-size: 1rem;">Save Changes</button>
-        </form>
-      </div>
+          <div class="form-group">
+            <label>Consultation Fee (₹)</label>
+            <input type="number" name="consultation_fee" value="{{ profile.consultation_fee }}" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+          </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div class="form-group">
+            <label>Contact Phone</label>
+            <input type="text" name="contact" value="{{ profile.contact }}" required style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+          </div>
+          <div class="form-group">
+            <label>Languages Spoken</label>
+            <input type="text" name="languages_spoken" value="{{ profile.languages_spoken }}" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Clinic Address</label>
+          <input type="text" name="address" value="{{ profile.address }}" required style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+        </div>
+        
+        <div class="form-group">
+          <label>About Me</label>
+          <textarea name="about" rows="3" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">{{ profile.about }}</textarea>
+        </div>
+        
+        <div class="form-group">
+          <label>Update Profile Picture</label>
+          <input type="file" name="profile_picture" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="margin-top: 10px; padding: 10px; font-size: 1rem;">Save Changes</button>
+      </form>
     </div>
+  </div>
 
-    <!-- Main Content Column -->
-    <div class="main-col">
-      
-      <!-- Tabs -->
-      <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-        <button id="tab-appointments" class="btn btn-primary" style="border-radius: 20px; padding: 10px 24px; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);" onclick="switchTab('appointments')">Appointments</button>
-        <button id="tab-manage" class="btn btn-outline" style="border-radius: 20px; padding: 10px 24px; border: 2px solid rgba(14, 165, 233, 0.5); background: rgba(255,255,255,0.4); color: var(--primary);" onclick="switchTab('manage')">Manage Slots</button>
-      </div>
+  <!-- Main Content Dashboard -->
+  <div class="dashboard-content">
+    
+    <!-- Tabs Navigation -->
+    <div style="display: flex; gap: 15px; margin-bottom: 30px; justify-content: center; flex-wrap: wrap;">
+      <button id="tab-appointments" class="btn btn-primary" style="border-radius: 24px; padding: 12px 30px; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3); font-size: 1.05rem;" onclick="switchTab('appointments')">Appointments</button>
+      <button id="tab-manage" class="btn btn-outline" style="border-radius: 24px; padding: 12px 30px; border: 2px solid rgba(14, 165, 233, 0.5); background: rgba(255,255,255,0.4); color: var(--primary); font-size: 1.05rem;" onclick="switchTab('manage')">Manage Slots</button>
+    </div>
 
       <!-- Manage Slots Section -->
       <div id="section-manage" style="display: none;" class="glass-clay-card">
@@ -646,7 +663,6 @@
       </div>
     </div>
   </div>
-</div>
 
 <!-- Calendar Modal -->
 <div id="calendar-modal" style="display: none; opacity: 0; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(6px); z-index: 1000; align-items: center; justify-content: center; transition: opacity 0.3s ease;" onclick="if(event.target == this) closeCalendarModal()">
