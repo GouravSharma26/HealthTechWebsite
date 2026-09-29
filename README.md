@@ -1,12 +1,17 @@
 # HealthTechWebsite
 
-A working doctor–patient telehealth marketplace featuring custom authentication, appointment lifecycle management, in-app messaging, notifications, reviews, and secure AI-assisted triage and prescription scanning.
+A premium, working doctor–patient telehealth marketplace featuring a modern **Glassmorphism/Claymorphism UI**, custom authentication, advanced appointment lifecycle management, dynamic calendar scheduling, in-app messaging, notifications, reviews, and secure AI-assisted triage and prescription scanning.
 
 [Live Demo on Render](https://healthtech-web.onrender.com)
 
 ## Features
 
-- **Doctor-Patient Marketplace**: Custom roles for patients and doctors.
+- **Premium UI/UX**: Completely overhauled frontend utilizing "Claymorphism" and "Glassmorphism" for a stunning, tactile, and deeply interactive user experience.
+- **Advanced Doctor Dashboard**: 
+  - Dynamic slot generation (Morning, Night, 24 Hours).
+  - Responsive, scrollable grid layouts for slot capacities.
+  - Interactive, size-optimized `FullCalendar` integration for appointment overviews.
+- **Doctor-Patient Marketplace**: Custom roles for patients and doctors with a sleek unified login system.
 - **Appointment Lifecycle**: Full state machine (pending → confirmed → cancel/reschedule requests → completed).
 - **Messaging & Notifications**: Role-restricted in-app messaging and notification system.
 - **Doctor Verification**: File uploads for licenses and degrees for review.
