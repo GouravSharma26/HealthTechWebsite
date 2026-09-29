@@ -156,7 +156,7 @@ def infer_specialization_from_history(history, available):
 
 
 # ---------------------------------------------------------------------------------------------
-# Triage workflow helpers (see docs/triage-framework.md)
+# Triage workflow helpers (see docs/project_docs/AI_Integration.md)
 # ---------------------------------------------------------------------------------------------
 MAX_FOLLOW_UPS = 4
 # Below this, find_doctors is deliberately withheld from the model for the turn (the tool definition

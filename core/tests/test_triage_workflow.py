@@ -236,7 +236,7 @@ def test_widget_memory_is_session_only_and_rendering_is_safe(client):
 def test_framework_doc_matches_the_code(client):
     from pathlib import Path
     from core.utils import EMERGENCY_CATEGORIES
-    doc = (Path(__file__).resolve().parents[2] / 'docs' / 'triage-framework.md').read_text(encoding='utf-8')
+    doc = (Path(__file__).resolve().parents[2] / 'docs' / 'project_docs' / 'AI_Integration.md').read_text(encoding='utf-8')
     html = client.get(reverse('home')).content.decode()
     greeting = re.search(r'const BOT_GREETING = "(.*?)";\n', html, re.S).group(1).replace('\\n', '\n').replace('\\u2022', '\u2022')
     assert greeting in doc                                                     # the exact greeting text
@@ -306,6 +306,6 @@ def test_tool_is_offered_immediately_when_the_specialization_was_already_establi
 
 def test_framework_doc_documents_the_min_follow_ups_floor():
     from pathlib import Path
-    doc = (Path(__file__).resolve().parents[2] / 'docs' / 'triage-framework.md').read_text(encoding='utf-8')
+    doc = (Path(__file__).resolve().parents[2] / 'docs' / 'project_docs' / 'AI_Integration.md').read_text(encoding='utf-8')
     assert f'{MIN_FOLLOW_UPS} follow-up question' in doc
     assert 'not even made available' in doc   # documents that it's a structural gate, not just a prompt ask

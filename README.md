@@ -82,7 +82,7 @@ Notes:
   number of trusted proxies in front of the app so spoofed left-hand entries are ignored (default `0` = legacy
   first-entry behaviour). If Redis is unreachable these features fail open instead of taking the site down.
 - The chatbot follows a triage workflow (intake, one-at-a-time follow-up questions, emergency screen, specialist
-  matching, session-only memory): see [docs/triage-framework.md](docs/triage-framework.md).
+  matching, session-only memory): see [docs/project_docs/AI_Integration.md](docs/project_docs/AI_Integration.md).
 - The chatbot uses Groq's function calling. A key can only use the models enabled for its account: a 404
   `model_not_found` in the Render log means the model is retired or not available to that key. List the models a
   key can use with `GET https://api.groq.com/openai/v1/models` (Bearer token) and set `GROQ_MODEL` accordingly.
@@ -90,4 +90,4 @@ Notes:
   (a random password is generated and printed if `SAMPLE_DATA_PASSWORD` is unset).
 
 ## Architecture
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed architecture decisions, including why we chose Django MVT and direct HTTP API calls over LangChain for our AI features.
+See [docs/project_docs/Architecture.md](docs/project_docs/Architecture.md) for detailed architecture decisions, and [docs/project_docs/Memory.md](docs/project_docs/Memory.md) for decision logs including why we chose Django MVT and direct HTTP API calls over LangChain for our AI features.

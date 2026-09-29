@@ -6,6 +6,7 @@
 | Date | Decision | Rationale | Status |
 | :--- | :--- | :--- | :--- |
 | `2026-09-15` | Chose Django MVT over SPA (React) | Faster MVP iteration, built-in robust security features, and simpler auth management without managing complex JWTs. | Active |
+| `2026-09-15` | Direct API Calls over LangChain | We use direct `requests` HTTP calls for AI integrations. LangChain is too heavy for our single-call triage endpoints and obscures prompt injection defenses. | Active |
 | `2026-09-16` | Selected Render for Deployment | Offers managed PostgreSQL and zero-downtime deployments for rapid prototyping. Free tier supports Uvicorn ASGI workers. | Active |
 | `2026-09-29` | Upgraded to Claymorphism UI | The legacy UI felt cluttered and stressful. A modern, soft, frosted-glass UI increases perceived trust and user satisfaction. | Active |
 | `2026-09-29` | Migrated Slots to Responsive CSS Grid | Vertical stacking of 24-hour slots caused extreme page bloat. The internal scrollable grid fixes UX without requiring pagination. | Active |

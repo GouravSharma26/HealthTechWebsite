@@ -206,3 +206,12 @@ Response fields added by the endpoint (each present only when relevant): `stage`
 - The emergency screen matches English phrases only, and 112 is the Indian emergency number; change the number in
   the prompt, the alert texts and the widget if you serve other regions.
 - The screen is a safety net, not a diagnosis tool: it will sometimes alert on mild cases.
+
+
+## 10. Vision-LLM Prescription Scanner (OpenRouter)
+
+An automated tool for clinicians to quickly digitize handwritten prescriptions or lab reports. The AI output is strictly parsed as JSON. It explicitly warns against prompt injection inside the prescription images.
+
+## 11. Direct HTTP API Calls
+
+We use direct HTTP requests to communicate with Groq and OpenRouter instead of abstract frameworks like LangChain, keeping prompt injection defenses strictly visible.
