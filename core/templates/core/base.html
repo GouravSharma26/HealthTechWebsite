@@ -995,6 +995,24 @@
   </script>
   {% endif %}
   
+  <script>
+    // Floating Pill Navbar Logic
+    document.addEventListener('DOMContentLoaded', function() {
+      const navbar = document.querySelector('.navbar');
+      
+      window.addEventListener('scroll', function() {
+        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Morph to floating pill when scrolled past 50px
+        if (scrollTop > 50) {
+          navbar.classList.add('scrolled');
+        } else {
+          navbar.classList.remove('scrolled');
+        }
+      });
+    });
+  </script>
+  
   {% block extra_js %}{% endblock %}
 </body>
 </html>

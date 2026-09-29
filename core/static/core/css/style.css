@@ -46,6 +46,7 @@ body {
   color: var(--text-dark);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  padding-top: 80px; /* Space for the fixed navbar */
 }
 
 /* Typography */
@@ -55,20 +56,38 @@ h1, h2, h3, h4 {
   letter-spacing: -0.025em;
 }
 
-/* Navbar (Glassmorphism) */
+/* Navbar (Floating Pill Glassmorphism) */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 5%;
-  background: var(--clay-bg);
-  position: sticky;
+  padding: 1.5rem 5%;
+  background: transparent;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
   z-index: 1000;
-  box-shadow: 
-    0 10px 20px rgba(0, 0, 0, 0.03), 
-    inset 0 -2px 5px rgba(0,0,0,0.02);
-  border-bottom: none;
+  transition: all 0.5s cubic-bezier(0.3, 0.8, 0.2, 1);
+  border-radius: 0;
+  border: 1px solid transparent;
+}
+
+.navbar.scrolled {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  padding: 0.8rem 2rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  
+  width: 85%;
+  max-width: 900px;
+  margin-top: 20px;
+  border-radius: 50px;
 }
 
 .logo-container {
