@@ -364,20 +364,27 @@
             <div class="shift-toggles" style="display: flex; gap: 10px; flex-wrap: wrap;">
               <style>
                 .shift-btn {
-                  padding: 10px 20px;
-                  border: 1px solid var(--border-color);
-                  border-radius: 8px;
-                  background: white;
+                  padding: 12px 24px;
+                  border: 2px solid transparent;
+                  border-radius: 12px;
+                  background: rgba(255,255,255,0.6);
                   cursor: pointer;
-                  font-weight: 500;
-                  transition: all 0.2s;
+                  font-weight: 600;
+                  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                   display: flex;
                   align-items: center;
+                  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+                }
+                .shift-btn:hover {
+                  background: rgba(255,255,255,0.9);
+                  transform: translateY(-2px);
+                  box-shadow: 0 8px 15px rgba(0,0,0,0.05);
                 }
                 input[name="shift"]:checked + .shift-btn {
                   background: var(--primary);
                   color: white;
-                  border-color: var(--primary);
+                  border-color: rgba(255,255,255,0.4);
+                  box-shadow: 0 6px 15px rgba(14,165,233,0.4);
                 }
                 input[name="shift"]:checked + .shift-btn svg {
                   color: white !important;
@@ -405,15 +412,15 @@
                 </div>
               </label>
             </div>
-            <button type="button" class="btn btn-primary" onclick="openSlotModal()" style="padding: 12px 24px; font-weight: 600; border-radius: 8px;">Select Available Slots</button>
+            <button type="button" class="btn btn-primary" onclick="openSlotModal()" style="padding: 12px 24px; font-weight: 600; border-radius: 12px; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(14, 165, 233, 0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(14, 165, 233, 0.4)';">Select Available Slots</button>
           </div>
         </div>
 
-        <div class="card">
+        <div class="clay-inner">
           <h4 style="color: var(--text-dark); margin-bottom: 20px;">2. Set Slot Capacities</h4>
           <form method="POST" action="{% url 'update_slot_capacity' %}" id="capacity-form">
             {% csrf_token %}
-            <div style="margin-bottom: 20px; padding: 20px; background: white; border: 1px solid var(--border-color); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div style="margin-bottom: 25px; padding: 20px 25px; background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.4)); border: 1px solid rgba(255,255,255,0.8); border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
               <div>
                 <h5 style="margin-bottom: 5px; color: var(--text-dark);">Global Capacity</h5>
                 <label style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.95rem; cursor: pointer;">
@@ -421,23 +428,25 @@
                 </label>
               </div>
               <div id="master-capacity-container" style="display: none; align-items: center; gap: 10px;">
-                <label style="font-weight: 600;">Capacity:</label>
-                <input type="number" id="master-capacity" name="master_capacity" value="{% if slots %}{{ slots.0.capacity }}{% else %}1{% endif %}" min="1" max="8" style="width: 80px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; text-align: center;" onchange="updateMasterCapacity()">
+                <label style="font-weight: 600; color: var(--text-dark);">Capacity:</label>
+                <input type="number" id="master-capacity" name="master_capacity" value="{% if slots %}{{ slots.0.capacity }}{% else %}1{% endif %}" min="1" max="8" style="width: 70px; padding: 10px; border: 1px solid rgba(14,165,233,0.3); border-radius: 8px; font-weight: 600; font-size: 1.1rem; text-align: center; color: var(--primary); background: rgba(255,255,255,0.8);" onchange="updateMasterCapacity()">
               </div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
               {% for slot in slots %}
-              <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--bg-color); border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(255,255,255,0.6); border-radius: 12px; border-left: 4px solid var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: transform 0.2s;">
                 <div>
-                  <strong>{{ slot.start_time|time:"h:i A" }} - {{ slot.end_time|time:"h:i A" }}</strong>
+                  <strong style="color: var(--text-dark); font-size: 1.05rem;">{{ slot.start_time|time:"h:i A" }} - {{ slot.end_time|time:"h:i A" }}</strong>
                 </div>
                 <div style="display: flex; align-items: center; gap: 15px;">
-                  <div>
-                    <label style="font-size: 0.9rem;">Capacity:</label>
-                    <input type="number" name="capacity_{{ slot.id }}" value="{{ slot.capacity }}" min="1" max="8" class="slot-capacity-input" style="width: 60px; padding: 5px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <label style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Capacity:</label>
+                    <input type="number" name="capacity_{{ slot.id }}" value="{{ slot.capacity }}" min="1" max="8" class="slot-capacity-input" style="width: 55px; padding: 8px; border: 1px solid rgba(14,165,233,0.3); border-radius: 8px; font-weight: 600; text-align: center; color: var(--primary); background: rgba(255,255,255,0.8);">
                   </div>
-                  <button type="button" class="btn btn-outline" style="padding: 4px 8px; color: #ef4444; border-color: #ef4444; font-size: 0.8rem;" onclick="deleteSlot({{ slot.id }})">Delete</button>
+                  <button type="button" title="Delete Slot" style="background: rgba(239, 68, 68, 0.1); border: none; border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ef4444; transition: all 0.2s;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" onclick="deleteSlot({{ slot.id }})">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                  </button>
                 </div>
               </div>
               {% empty %}
@@ -445,8 +454,8 @@
               {% endfor %}
             </div>
             {% if slots %}
-            <div style="margin-top: 20px; text-align: right;">
-              <button type="submit" class="btn btn-primary">Save Capacities</button>
+            <div style="margin-top: 25px; text-align: right;">
+              <button type="submit" class="btn btn-primary" style="padding: 12px 30px; font-weight: 600; border-radius: 12px; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(14, 165, 233, 0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(14, 165, 233, 0.4)';">Save Capacities</button>
             </div>
             {% endif %}
           </form>
