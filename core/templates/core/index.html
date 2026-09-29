@@ -1,13 +1,13 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}Welcome to HealthTech{% endblock %}
+{% block title %}HealthTech - Modern Healthcare Platform{% endblock %}
 
 {% block extra_head %}
 <style>
-  /* Base page override to support claymorphism */
+  /* Base page override */
   body {
-    background-color: #f1f5f9; /* Very soft grayish blue */
+    background-color: #ffffff; 
     overflow-x: hidden;
   }
   
@@ -15,37 +15,27 @@
   .clay-blob {
     position: absolute;
     border-radius: 50%;
-    z-index: -1;
+    z-index: 0;
     animation: float 6s ease-in-out infinite;
   }
   
   .blob-1 {
-    width: 300px;
-    height: 300px;
+    width: 400px;
+    height: 400px;
     background: linear-gradient(135deg, #e0f2fe, #bae6fd);
-    top: -50px;
-    right: -50px;
+    top: -100px;
+    right: -100px;
     box-shadow: inset 10px 10px 20px rgba(255,255,255,0.8), inset -10px -10px 20px rgba(14, 165, 233, 0.2);
   }
   
   .blob-2 {
-    width: 200px;
-    height: 200px;
+    width: 300px;
+    height: 300px;
     background: linear-gradient(135deg, #f0fdf4, #bbf7d0);
     bottom: 50px;
-    left: -80px;
+    left: -150px;
     animation-delay: -3s;
     box-shadow: inset 8px 8px 16px rgba(255,255,255,0.8), inset -8px -8px 16px rgba(34, 197, 94, 0.2);
-  }
-  
-  .blob-3 {
-    width: 150px;
-    height: 150px;
-    background: linear-gradient(135deg, #fff1f2, #fecdd3);
-    top: 40%;
-    right: 20%;
-    animation-duration: 8s;
-    box-shadow: inset 6px 6px 12px rgba(255,255,255,0.8), inset -6px -6px 12px rgba(244, 63, 94, 0.2);
   }
 
   @keyframes float {
@@ -57,14 +47,15 @@
   /* Section styling */
   .hero-section {
     position: relative;
-    padding: 80px 20px;
+    padding: 100px 20px 80px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    max-width: 1200px;
+    max-width: 1280px;
     margin: 0 auto;
-    min-height: 80vh;
-    gap: 40px;
+    min-height: 85vh;
+    gap: 60px;
+    z-index: 10;
   }
 
   .hero-text {
@@ -73,29 +64,61 @@
   }
 
   .hero-text h1 {
-    font-size: 4rem;
+    font-size: 4.5rem;
     font-weight: 800;
     color: #0f172a;
     line-height: 1.1;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    letter-spacing: -1px;
   }
   
   .hero-text h1 span {
     color: #0ea5e9;
+    position: relative;
+    display: inline-block;
   }
 
   .hero-text p {
     font-size: 1.25rem;
-    color: #64748b;
+    color: #475569;
     margin-bottom: 40px;
-    line-height: 1.6;
-    max-width: 500px;
+    line-height: 1.7;
+    max-width: 550px;
   }
 
   .hero-buttons {
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
+  }
+
+  .hero-buttons .btn-primary {
+    padding: 16px 32px;
+    font-size: 1.1rem;
+    border-radius: 9999px;
+    box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .hero-buttons .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px -5px rgba(14, 165, 233, 0.5);
+  }
+
+  .hero-buttons .btn-outline {
+    padding: 16px 32px;
+    font-size: 1.1rem;
+    border-radius: 9999px;
+    border: 2px solid #e2e8f0;
+    color: #475569;
+    background: transparent;
+    transition: all 0.2s;
+  }
+
+  .hero-buttons .btn-outline:hover {
+    border-color: #0ea5e9;
+    color: #0ea5e9;
+    background: #f0f9ff;
   }
 
   .hero-image-wrapper {
@@ -108,126 +131,199 @@
 
   .hero-image {
     width: 100%;
-    max-width: 500px;
-    border-radius: 40px;
-    animation: float 5s ease-in-out infinite;
-    /* We don't apply clay shadow to the img itself because it's transparent/3D */
-    filter: drop-shadow(0 20px 30px rgba(0,0,0,0.15));
+    max-width: 600px;
+    border-radius: 30px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    animation: float 6s ease-in-out infinite;
   }
 
-  .section-title {
-    text-align: center;
-    font-size: 2.5rem;
+  /* Shared Split Section */
+  .split-section {
+    padding: 100px 20px;
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 80px;
+  }
+
+  .split-section.reverse {
+    flex-direction: row-reverse;
+  }
+
+  .split-content {
+    flex: 1;
+  }
+
+  .split-image-wrapper {
+    flex: 1;
+    position: relative;
+  }
+
+  .split-image-wrapper img {
+    width: 100%;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+  }
+
+  .split-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-radius: 9999px;
+    margin-bottom: 20px;
+  }
+
+  .split-content h2 {
+    font-size: 3rem;
     font-weight: 800;
     color: #0f172a;
-    margin-bottom: 50px;
+    margin-bottom: 24px;
+    line-height: 1.2;
   }
 
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px 80px;
+  .split-content p {
+    font-size: 1.15rem;
+    color: #475569;
+    line-height: 1.7;
+    margin-bottom: 30px;
   }
 
-  .feature-card {
-    padding: 40px 30px;
-    text-align: center;
+  .feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .feature-list li {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
   }
 
-  .feature-icon {
-    width: 80px;
-    height: 80px;
-    background: #e0f2fe;
-    border-radius: 24px;
+  .feature-list-icon {
+    width: 40px;
+    height: 40px;
+    background: #f0f9ff;
+    color: #0ea5e9;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-    box-shadow: inset 4px 4px 8px rgba(255,255,255,0.8), inset -4px -4px 8px rgba(14, 165, 233, 0.1);
+    font-size: 1.25rem;
+    flex-shrink: 0;
   }
 
-  .feature-card h3 {
-    color: #0f172a;
-    font-size: 1.5rem;
-    margin-bottom: 15px;
+  .feature-list-text h4 {
+    margin: 0 0 4px;
+    font-size: 1.1rem;
+    color: #1e293b;
     font-weight: 700;
   }
 
-  .feature-card p {
+  .feature-list-text p {
+    margin: 0;
+    font-size: 1rem;
     color: #64748b;
-    line-height: 1.6;
   }
-  
-  .doctor-section {
-    background: #ffffff;
-    padding: 80px 20px;
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.02);
-    border-radius: 60px 60px 0 0;
-    position: relative;
-    z-index: 5;
+
+  /* CTA Banner */
+  .cta-section {
+    padding: 100px 20px;
+    background: #f8fafc;
   }
-  
+
   .cta-banner {
     max-width: 1000px;
-    margin: 40px auto 80px;
-    padding: 60px 40px;
+    margin: 0 auto;
+    padding: 80px 40px;
     text-align: center;
     background: linear-gradient(135deg, #0ea5e9, #38bdf8);
     border-radius: 40px;
     box-shadow: 
-      10px 10px 30px rgba(14, 165, 233, 0.2), 
-      -10px -10px 30px rgba(255, 255, 255, 0.8),
-      inset 4px 4px 20px rgba(255, 255, 255, 0.4),
-      inset -4px -4px 20px rgba(0, 0, 0, 0.1);
+      0 20px 40px -10px rgba(14, 165, 233, 0.4), 
+      inset 0 0 0 1px rgba(255, 255, 255, 0.2);
     color: white;
     position: relative;
-    z-index: 10;
+    overflow: hidden;
+  }
+  
+  .cta-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+    z-index: 1;
+  }
+
+  .cta-banner-content {
+    position: relative;
+    z-index: 2;
   }
   
   .cta-banner h2 {
-    font-size: 3rem;
+    font-size: 3.5rem;
     font-weight: 800;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     color: white;
   }
   
   .cta-banner p {
-    font-size: 1.2rem;
-    margin-bottom: 30px;
+    font-size: 1.25rem;
+    margin-bottom: 40px;
     opacity: 0.9;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
   
   .cta-btn {
     background: white;
     color: #0ea5e9;
-    box-shadow: 
-      8px 8px 16px rgba(0, 0, 0, 0.1), 
-      -8px -8px 16px rgba(255, 255, 255, 0.2),
-      inset 2px 2px 5px rgba(255, 255, 255, 1),
-      inset -2px -2px 5px rgba(0, 0, 0, 0.05);
+    font-size: 1.25rem;
+    padding: 20px 48px;
+    border-radius: 9999px;
+    font-weight: 700;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: inline-block;
   }
   
   .cta-btn:hover {
     color: #0284c7;
     background: #f8fafc;
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1024px) {
+    .split-section {
+      flex-direction: column !important;
+      text-align: center;
+      gap: 50px;
+    }
+    .feature-list li {
+      text-align: left;
+    }
+  }
+
+  @media (max-width: 768px) {
     .hero-section {
       flex-direction: column-reverse;
       text-align: center;
-      padding: 40px 20px;
+      padding: 60px 20px;
+      margin-top: 20px;
     }
-    .hero-text h1 { font-size: 3rem; }
+    .hero-text h1 { font-size: 3.2rem; }
     .hero-buttons { justify-content: center; }
-    .blob-1, .blob-2, .blob-3 { opacity: 0.5; }
+    .cta-banner h2 { font-size: 2.5rem; }
   }
 </style>
 {% endblock %}
@@ -236,77 +332,102 @@
 <!-- Decorative Background Shapes -->
 <div class="clay-blob blob-1"></div>
 <div class="clay-blob blob-2"></div>
-<div class="clay-blob blob-3"></div>
 
 <!-- HERO SECTION -->
 <div class="hero-section">
   <div class="hero-text">
-    <h1>Healthcare made <span>simple</span> & <span>beautiful</span>.</h1>
-    <p>Experience the next generation of patient care. Connect with top doctors, manage your appointments, and take control of your health journey in one intuitive platform.</p>
+    <h1>Healthcare made <span>simple</span> & <span>modern</span>.</h1>
+    <p>Experience the next generation of patient care. Connect with top doctors, manage your appointments, and take control of your health journey in one beautifully intuitive platform.</p>
     <div class="hero-buttons">
       <a href="{% url 'doctors' %}" class="btn btn-primary">Find a Doctor</a>
-      <a href="{% url 'signup' %}" class="btn">Join as Provider</a>
+      <a href="{% url 'signup' %}" class="btn btn-outline">Join as Provider</a>
     </div>
   </div>
   <div class="hero-image-wrapper">
-    <!-- Using the generated 3D clay medical illustration -->
-    <img src="{% static 'images/hero_3d.jpg' %}" alt="3D Medical Illustration" class="hero-image">
+    <img src="{% static 'images/modern_hero_health.jpg' %}" alt="Modern Medical Dashboard Illustration" class="hero-image">
   </div>
 </div>
 
 <!-- PATIENTS SECTION -->
-<div style="margin-top: 40px;">
-  <h2 class="section-title">Seamless Experience for Patients</h2>
-  <div class="features-grid">
-    <div class="card feature-card">
-      <div class="feature-icon">🔍</div>
-      <h3>Smart Search</h3>
-      <p>Instantly find general practitioners and specialists in your area. Filter by availability and specialization to find the perfect match.</p>
-    </div>
+<div class="split-section">
+  <div class="split-image-wrapper">
+    <img src="{% static 'images/patient_booking.jpg' %}" alt="Patient booking appointment on mobile">
+  </div>
+  <div class="split-content">
+    <span class="split-badge">For Patients</span>
+    <h2>Seamless Care at Your Fingertips</h2>
+    <p>Skip the waiting room. Our platform empowers you to find the right care exactly when you need it, with tools designed around your convenience.</p>
     
-    <div class="card feature-card">
-      <div class="feature-icon">📅</div>
-      <h3>Instant Booking</h3>
-      <p>No more waiting on the phone. Select an available time slot and lock in your appointment with a single tap.</p>
-    </div>
-    
-    <div class="card feature-card">
-      <div class="feature-icon">⭐</div>
-      <h3>Verified Reviews</h3>
-      <p>Read real, transparent feedback from other patients. Make informed decisions about who you trust with your health.</p>
-    </div>
+    <ul class="feature-list">
+      <li>
+        <div class="feature-list-icon">🔍</div>
+        <div class="feature-list-text">
+          <h4>Smart Search & Match</h4>
+          <p>Instantly find general practitioners and specialists. Filter by availability, rating, and distance to find your perfect match.</p>
+        </div>
+      </li>
+      <li>
+        <div class="feature-list-icon">📅</div>
+        <div class="feature-list-text">
+          <h4>Instant Booking</h4>
+          <p>No more waiting on hold. View real-time availability and lock in your appointment with a single tap.</p>
+        </div>
+      </li>
+      <li>
+        <div class="feature-list-icon">🤖</div>
+        <div class="feature-list-text">
+          <h4>AI Health Assistant</h4>
+          <p>Not sure who to see? Chat with our AI triage assistant to get specialist recommendations based on your symptoms.</p>
+        </div>
+      </li>
+    </ul>
   </div>
 </div>
 
 <!-- DOCTORS SECTION -->
-<div class="doctor-section">
-  <h2 class="section-title">Powerful Tools for Doctors</h2>
-  <div class="features-grid">
-    <div class="card feature-card" style="background: #f8fafc;">
-      <div class="feature-icon" style="background: #dbeafe;">⏰</div>
-      <h3>Flexible Scheduling</h3>
-      <p>Set your available hours, define patient capacity per slot, and let the system handle the booking automatically.</p>
-    </div>
+<div class="split-section reverse" style="background-color: #f8fafc; border-radius: 60px; margin-bottom: 60px;">
+  <div class="split-image-wrapper">
+    <img src="{% static 'images/doctor_dashboard.jpg' %}" alt="Doctor managing schedule on dashboard">
+  </div>
+  <div class="split-content" style="padding: 40px 0;">
+    <span class="split-badge" style="background: #dbeafe; color: #1e40af;">For Doctors</span>
+    <h2>Run Your Practice Effortlessly</h2>
+    <p>Focus on what matters most: your patients. We handle the scheduling, reminders, and digital presence so you don't have to.</p>
     
-    <div class="card feature-card" style="background: #f8fafc;">
-      <div class="feature-icon" style="background: #dbeafe;">📍</div>
-      <h3>Clinic Geolocation</h3>
-      <p>Pinpoint your exact clinic location on the interactive map so patients can easily navigate to your office.</p>
-    </div>
-    
-    <div class="card feature-card" style="background: #f8fafc;">
-      <div class="feature-icon" style="background: #dbeafe;">📈</div>
-      <h3>Dashboard Analytics</h3>
-      <p>Track your upcoming appointments, manage cancellations, and monitor your clinic's performance in real-time.</p>
-    </div>
+    <ul class="feature-list">
+      <li>
+        <div class="feature-list-icon">⏰</div>
+        <div class="feature-list-text">
+          <h4>Flexible Scheduling</h4>
+          <p>Set your available hours, define patient capacity per slot, and let the system fill your calendar automatically.</p>
+        </div>
+      </li>
+      <li>
+        <div class="feature-list-icon">📝</div>
+        <div class="feature-list-text">
+          <h4>Digital Prescriptions</h4>
+          <p>Easily write and attach prescriptions to patient records immediately after an appointment concludes.</p>
+        </div>
+      </li>
+      <li>
+        <div class="feature-list-icon">📈</div>
+        <div class="feature-list-text">
+          <h4>Dashboard Analytics</h4>
+          <p>Track your upcoming appointments, manage cancellations, and monitor your clinic's performance in real-time.</p>
+        </div>
+      </li>
+    </ul>
   </div>
 </div>
 
 <!-- CTA BANNER -->
-<div class="cta-banner">
-  <h2>Ready to transform your health?</h2>
-  <p>Join thousands of patients and doctors already using HealthTech.</p>
-  <a href="{% url 'signup' %}" class="btn cta-btn" style="font-size: 1.25rem; padding: 20px 40px; border-radius: 25px;">Create Your Free Account</a>
+<div class="cta-section">
+  <div class="cta-banner">
+    <div class="cta-banner-content">
+      <h2>Ready to transform your health journey?</h2>
+      <p>Join thousands of patients and doctors already using HealthTech to simplify their healthcare experience.</p>
+      <a href="{% url 'signup' %}" class="btn cta-btn">Create Your Free Account</a>
+    </div>
+  </div>
 </div>
-
 {% endblock %}
