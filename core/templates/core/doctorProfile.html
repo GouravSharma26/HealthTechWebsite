@@ -136,6 +136,30 @@
     font-size: 0.8rem !important;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
   }
+  
+  .fc-tooltip {
+    position: absolute;
+    background: rgba(15, 23, 42, 0.9);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    z-index: 9999;
+    pointer-events: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.2);
+    line-height: 1.5;
+  }
+  .fc-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: rgba(15, 23, 42, 0.9) transparent transparent transparent;
+  }
 </style>
 {% endblock %}
 
@@ -612,9 +636,9 @@
 </div>
 
 <!-- Calendar Modal -->
-<div id="calendar-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(6px); z-index: 1000; align-items: center; justify-content: center;" onclick="if(event.target == this) closeCalendarModal()">
-  <div class="glass-clay-card" style="width: 95%; max-width: 900px; padding: 25px !important; position: relative; display: flex; flex-direction: column;">
-    <button type="button" style="position: absolute; top: 15px; right: 20px; background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.8); border-radius: 50%; width: 36px; height: 36px; font-size: 1.5rem; cursor: pointer; color: var(--text-dark); z-index: 10; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);" onclick="closeCalendarModal()">&times;</button>
+<div id="calendar-modal" style="display: none; opacity: 0; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(6px); z-index: 1000; align-items: center; justify-content: center; transition: opacity 0.3s ease;" onclick="if(event.target == this) closeCalendarModal()">
+  <div class="glass-clay-card" style="width: 95%; max-width: 900px; padding: 25px !important; position: relative; display: flex; flex-direction: column; transform: translateY(20px) scale(0.95); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+    <button type="button" style="position: absolute; top: 15px; right: 20px; background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.8); border-radius: 50%; width: 36px; height: 36px; font-size: 1.5rem; cursor: pointer; color: var(--text-dark); z-index: 10; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.8)'" onmouseout="this.style.background='rgba(255,255,255,0.5)'" onclick="closeCalendarModal()">&times;</button>
     <div id="calendar" style="width: 100%;"></div>
   </div>
 </div>
@@ -835,15 +859,23 @@
   }
 
   function openCalendarModal() {
-    document.getElementById('calendar-modal').style.display = 'flex';
-    // FullCalendar needs a resize event to render properly if initialized inside a hidden div
+    const modal = document.getElementById('calendar-modal');
+    modal.style.display = 'flex';
+    // Allow display:flex to apply before starting transition
     setTimeout(() => {
+      modal.style.opacity = '1';
+      modal.querySelector('.glass-clay-card').style.transform = 'translateY(0) scale(1)';
       window.dispatchEvent(new Event('resize'));
-    }, 100);
+    }, 10);
   }
 
   function closeCalendarModal() {
-    document.getElementById('calendar-modal').style.display = 'none';
+    const modal = document.getElementById('calendar-modal');
+    modal.style.opacity = '0';
+    modal.querySelector('.glass-clay-card').style.transform = 'translateY(20px) scale(0.95)';
+    setTimeout(() => {
+      modal.style.display = 'none';
+    }, 300);
   }
 
   function updateShift() {
@@ -976,9 +1008,26 @@
           right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
         events: '/api/doctor/appointments/',
+        eventMouseEnter: function(info) {
+          const tooltip = document.createElement('div');
+          tooltip.className = 'fc-tooltip';
+          const time = info.event.start ? info.event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Any time';
+          const status = info.event.extendedProps.status || 'Scheduled';
+          tooltip.innerHTML = `<strong>${info.event.title}</strong><br><span style="color:#94a3b8">Time:</span> ${time}<br><span style="color:#94a3b8">Status:</span> ${status}`;
+          document.body.appendChild(tooltip);
+          
+          const rect = info.el.getBoundingClientRect();
+          // Position tooltip above the event
+          tooltip.style.left = (rect.left + window.scrollX) + 'px';
+          tooltip.style.top = (rect.top + window.scrollY - tooltip.offsetHeight - 12) + 'px';
+          
+          info.el.addEventListener('mouseleave', () => {
+            if(tooltip.parentNode) tooltip.parentNode.removeChild(tooltip);
+          }, { once: true });
+        },
         eventClick: function(info) {
           // Could open a modal or scroll to the appointment in the list below
-          alert('Event: ' + info.event.title + '\nStatus: ' + info.event.extendedProps.status);
+          closeCalendarModal();
         }
       });
       calendar.render();
