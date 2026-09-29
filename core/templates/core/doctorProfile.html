@@ -30,11 +30,11 @@
 
   .appointments-layout {
     display: grid;
-    grid-template-columns: 1fr 450px;
+    grid-template-columns: 1fr minmax(320px, 400px);
     gap: 30px;
     align-items: start;
   }
-  @media (max-width: 1400px) {
+  @media (max-width: 1000px) {
     .appointments-layout {
       grid-template-columns: 1fr;
     }
