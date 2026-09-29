@@ -4,28 +4,77 @@
 {% block title %}Messages{% endblock %}
 
 {% block content %}
-<div class="content mt-4 mb-4">
-  <div class="card" style="max-width: 800px; margin: 0 auto;">
-    <h2 style="color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">Messages</h2>
+<div class="content" style="min-height: calc(100vh - 200px); padding: 40px 20px; background: linear-gradient(135deg, #f0f8ff, #e6f2ff);">
+  <style>
+    .glass-clay-card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 24px;
+      box-shadow: 
+        10px 10px 30px rgba(14, 165, 233, 0.1),
+        -10px -10px 30px rgba(255, 255, 255, 0.9),
+        inset 2px 2px 5px rgba(255, 255, 255, 0.8),
+        inset -2px -2px 5px rgba(14, 165, 233, 0.05);
+      padding: 30px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .chat-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    }
+    .chat-item:hover {
+      transform: translateY(-3px);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 20px rgba(14, 165, 233, 0.1);
+      border-color: rgba(14, 165, 233, 0.3);
+    }
+    .chat-avatar {
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
+    }
+  </style>
+
+  <div class="glass-clay-card">
+    <h2 style="color: var(--primary); font-weight: 800; font-size: 2rem; text-shadow: 0 2px 10px rgba(14,165,233,0.1); margin-bottom: 25px; border-bottom: 2px solid rgba(14,165,233,0.1); padding-bottom: 15px;">Messages</h2>
     
     {% if users %}
       <div style="display: flex; flex-direction: column; gap: 15px;">
         {% for u in users %}
-          <a href="{% url 'chat_detail' u.id %}" style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
-            <div style="display: flex; align-items: center; gap: 15px;">
+          <a href="{% url 'chat_detail' u.id %}" class="chat-item">
+            <div style="display: flex; align-items: center; gap: 18px;">
               {% if hasattr_u_doctor_profile and u.doctor_profile.profile_picture %}
-                <img src="{{ u.doctor_profile.profile_picture.url }}" alt="{{ u.username }}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                <img src="{{ u.doctor_profile.profile_picture.url }}" alt="{{ u.username }}" style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px solid white;">
               {% else %}
-                <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold;">
+                <div class="chat-avatar">
                   {{ u.username|make_list|first|upper }}
                 </div>
               {% endif %}
               
               <div>
-                <h4 style="margin: 0; color: var(--text-dark);">
+                <h4 style="margin: 0; color: var(--text-dark); font-weight: 700; font-size: 1.15rem;">
                   {% if u.is_doctor %}Dr. {% endif %}{{ u.get_full_name|default:u.username }}
                 </h4>
-                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">
+                <p style="margin: 4px 0 0 0; color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">
                   {% if u.is_doctor and hasattr_u_doctor_profile %}
                     {{ u.doctor_profile.specialization }}
                   {% elif u.is_patient %}
@@ -35,21 +84,21 @@
               </div>
             </div>
             
-            <div style="color: var(--primary);">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+            <div style="color: var(--primary); opacity: 0.7; transition: opacity 0.3s;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 24px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
             </div>
           </a>
         {% endfor %}
       </div>
     {% else %}
-      <div class="empty-state">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+      <div style="text-align: center; padding: 40px 20px; background: rgba(255,255,255,0.5); border-radius: 16px; border: 1px dashed rgba(14,165,233,0.3);">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 60px; height: 60px; color: var(--text-muted); margin-bottom: 15px;">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
-        <h3>No active conversations</h3>
-        <p>You don't have any active conversations yet. {% if user.is_patient %}Book an appointment to chat with a doctor.{% endif %}</p>
+        <h3 style="color: var(--text-dark); font-weight: 700;">No active conversations</h3>
+        <p style="color: var(--text-muted); font-size: 1.05rem;">You don't have any active conversations yet. {% if user.is_patient %}Book an appointment to chat with a doctor.{% endif %}</p>
         {% if user.is_patient %}
-          <a href="{% url 'doctors' %}" class="btn btn-primary mt-3">Find a Doctor</a>
+          <a href="{% url 'doctors' %}" class="btn btn-primary" style="margin-top: 15px; padding: 12px 24px; border-radius: 12px; font-weight: 600; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);">Find a Doctor</a>
         {% endif %}
       </div>
     {% endif %}
