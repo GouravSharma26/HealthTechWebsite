@@ -144,16 +144,25 @@ If no verified doctor matches, the bot says so and the widget shows a note with 
 ### 5a. Doctor ranking and pagination
 
 Once `find_doctors` runs, results are ranked by **average rating first** (unrated doctors sort after rated
-ones, not before), then by **distance** to the patient (closer first, only if the patient's browser shared its
-location - see below), then by years of experience as a final tiebreaker. Up to 20 matching doctors are
-fetched; the widget shows 5 at a time with a "Show N more" button, so a small clinic and a large multi-city
-platform both work with the same code.
+ones, not before), then by **driving distance** to the patient (closer first, only if the patient's browser
+shared its location - see below), then by years of experience as a final tiebreaker. Up to 20 matching
+doctors are fetched; the widget shows 5 at a time with a "Show N more" button, so a small clinic and a large
+multi-city platform both work with the same code.
 
-Distance uses the browser's geolocation API, requested once when the chat widget is first opened (not on
-every page load) and kept only in memory for that browser tab - never written to session storage, never sent
-anywhere except as part of that tab's own chat requests. If location is denied, unavailable, or simply hasn't
-resolved yet by the time a message is sent, ranking silently falls back to rating + experience only; distance
-is never treated as required.
+Distance is a real driving-route distance from OSRM's routing engine (one batched request covering every
+candidate doctor at once), the same engine the doctor's own profile page already uses client-side (Leaflet
+Routing Machine) - so a doctor shows the same distance in the chat as on their profile page, rather than the
+chat showing a straight-line ("as the crow flies") estimate that disagrees with the profile page's real route.
+If OSRM is unavailable, times out, or can't resolve a particular doctor, that doctor's distance quietly falls
+back to a straight-line estimate rather than being dropped or shown as an error - this is the one case where
+the chat's number and the profile page's number can still legitimately differ, since the profile page's own
+map does its own independent routing call and doesn't share this fallback.
+
+The location itself uses the browser's geolocation API, requested once when the chat widget is first opened
+(not on every page load) and kept only in memory for that browser tab - never written to session storage,
+never sent anywhere except as part of that tab's own chat requests. If location is denied, unavailable, or
+simply hasn't resolved yet by the time a message is sent, ranking silently falls back to rating + experience
+only; distance is never treated as required.
 
 ## 6. Session memory (session-only)
 

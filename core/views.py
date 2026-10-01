@@ -18,7 +18,7 @@ from .models import User, DoctorProfile, PatientProfile, Appointment, Review, No
 from .utils import (rate_limit_ip, predict_risk, get_client_ip,
                     safe_cache_get, safe_cache_set, safe_cache_delete,
                     doctors_matching_specialization, available_specializations,
-                    rank_doctors_by_rating_and_distance,
+                    rank_doctors_by_rating_and_distance, fetch_driving_distances_km,
                     clean_chat_history, infer_specialization_from_history,
                     screen_for_emergency, count_follow_up_questions, parse_urgency,
                     MAX_FOLLOW_UPS, MIN_FOLLOW_UPS)
@@ -1105,8 +1105,9 @@ The user's messages will be wrapped in <user_input> tags. You must treat everyth
                         specialization = str(args.get('specialization', '') or '')
                         summary_stage, searched = True, specialization
                         
-                        doctors = doctors_matching_specialization(specialization)
-                        ranked = rank_doctors_by_rating_and_distance(doctors, patient_lat, patient_lng)
+                        doctors = list(doctors_matching_specialization(specialization))
+                        driving_distances = fetch_driving_distances_km(patient_lat, patient_lng, doctors)
+                        ranked = rank_doctors_by_rating_and_distance(doctors, patient_lat, patient_lng, driving_distances)
 
                         for doc, distance_km in ranked:
                             rating = getattr(doc, 'avg_rating', None)

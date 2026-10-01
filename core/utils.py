@@ -3,6 +3,7 @@ import math
 import re
 import time
 from functools import wraps
+import requests
 from django.core.cache import cache
 from django.http import JsonResponse
 import os
@@ -54,7 +55,9 @@ def doctors_matching_specialization(term, limit=DOCTOR_RESULTS_LIMIT):
 
 
 def haversine_km(lat1, lng1, lat2, lng2):
-    """Great-circle distance in km between two lat/lng points."""
+    """Great-circle distance in km between two lat/lng points - used only as a fallback when a real
+    driving route (fetch_driving_distances_km) isn't available, since it's what disagreed with the
+    doctor profile page's own driving-route distance for the same doctor when both existed."""
     r = 6371.0
     p1, p2 = math.radians(lat1), math.radians(lat2)
     dp = math.radians(lat2 - lat1)
@@ -63,22 +66,82 @@ def haversine_km(lat1, lng1, lat2, lng2):
     return r * 2 * math.asin(min(1, math.sqrt(a)))
 
 
-def rank_doctors_by_rating_and_distance(doctors, patient_lat=None, patient_lng=None):
+OSRM_TABLE_URL = 'https://router.project-osrm.org/table/v1/driving/'
+OSRM_TIMEOUT_SECONDS = 4
+OSRM_MAX_DESTINATIONS = 20   # matches DOCTOR_RESULTS_LIMIT; keeps the batched request small and fast
+
+
+def fetch_driving_distances_km(patient_lat, patient_lng, doctors):
+    """Real driving-route distances (not great-circle) from the patient to each doctor, via OSRM's
+    table service - the same routing engine core/templates/core/doctorDetails.html already uses
+    client-side (Leaflet Routing Machine defaults to router.project-osrm.org), so a doctor shows the
+    same distance in the chat as on their own profile page instead of two different metrics disagreeing.
+
+    One batched request covers every doctor at once (OSRM's /table/ endpoint takes many destinations
+    in a single call), rather than one request per doctor - both faster and much lighter on the public
+    OSRM demo server's rate limits than looping calls.
+
+    Returns {doctor.id: distance_km} - only for doctors OSRM actually resolved. Never raises: any
+    failure (timeout, the demo server being down, a malformed response) just means an empty or partial
+    dict, and callers fall back to haversine per doctor - the same fail-open philosophy already used
+    for cache/Redis elsewhere in this project. The public OSRM demo server is rate-limited and explicitly
+    not meant for heavy production traffic - if this project outgrows it, a self-hosted OSRM instance or
+    a paid routing API (Mapbox, Google Routes) would be the next step; this function's return shape
+    wouldn't need to change to swap that in later.
+    """
+    candidates = [d for d in doctors[:OSRM_MAX_DESTINATIONS]
+                  if d.latitude is not None and d.longitude is not None]
+    if not candidates or patient_lat is None or patient_lng is None:
+        return {}
+    coords = [f"{patient_lng},{patient_lat}"] + [f"{d.longitude},{d.latitude}" for d in candidates]
+    destinations = ';'.join(str(i) for i in range(1, len(candidates) + 1))
+    url = OSRM_TABLE_URL + ';'.join(coords)
+    try:
+        response = requests.get(url, params={'sources': '0', 'destinations': destinations,
+                                              'annotations': 'distance'},
+                                 timeout=OSRM_TIMEOUT_SECONDS)
+        if not response.ok:
+            logger.warning("OSRM table request failed (status=%s); falling back to straight-line distance",
+                           response.status_code)
+            return {}
+        data = response.json()
+        if data.get('code') != 'Ok':
+            logger.warning("OSRM table request returned code=%s; falling back to straight-line distance",
+                           data.get('code'))
+            return {}
+        row = data['distances'][0]
+        if len(row) != len(candidates):
+            logger.warning("OSRM table response length mismatch (%d vs %d doctors); falling back",
+                           len(row), len(candidates))
+            return {}
+        return {doc.id: meters / 1000 for doc, meters in zip(candidates, row) if meters is not None}
+    except (requests.RequestException, OSError, ValueError, KeyError, IndexError, TypeError) as e:
+        logger.warning("OSRM driving-distance lookup failed (%s); falling back to straight-line distance", e)
+        return {}
+
+
+def rank_doctors_by_rating_and_distance(doctors, patient_lat=None, patient_lng=None, driving_distances=None):
     """Sort already-fetched, rating-annotated doctors by (rating desc, distance asc, experience desc).
 
     Rating is the primary sort (a highly-rated doctor a bit further away still ranks above a nearby
     unrated one); distance is the tiebreaker within similar ratings, which is what actually narrows
     things down once discovery has established a specialty - the whole point of asking follow-up
     questions first is to get the specialty right, then let quality + proximity pick within it.
-    Doctors missing a rating, or missing coordinates (so distance can't be computed), sort after ones
-    that have that data, rather than arbitrarily first or last.
+    Doctors missing a rating, or missing any distance figure, sort after ones that have that data,
+    rather than arbitrarily first or last.
+
+    driving_distances: optional {doctor.id: distance_km} from fetch_driving_distances_km - real
+    driving-route distance takes priority per doctor; only falls back to the haversine straight-line
+    estimate for a doctor OSRM couldn't resolve (or if driving_distances wasn't supplied at all).
     Returns a list of (doctor, distance_km_or_None) tuples, not a queryset.
     """
     have_patient_location = patient_lat is not None and patient_lng is not None
     paired = []
     for doc in doctors:
         distance_km = None
-        if have_patient_location and doc.latitude is not None and doc.longitude is not None:
+        if driving_distances is not None and driving_distances.get(doc.id) is not None:
+            distance_km = driving_distances[doc.id]
+        elif have_patient_location and doc.latitude is not None and doc.longitude is not None:
             distance_km = haversine_km(patient_lat, patient_lng, doc.latitude, doc.longitude)
         paired.append((doc, distance_km))
 
